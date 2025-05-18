@@ -43,8 +43,10 @@ export function ThemeProvider({
     // Adjust background color based on theme
     if (theme === 'light') {
       document.body.style.backgroundColor = '#ffffff';
+      document.body.style.color = '#1f2937'; // text-gray-800 equivalent
     } else {
-      document.body.style.backgroundColor = '';
+      document.body.style.backgroundColor = ''; // Reset to CSS default for dark
+      document.body.style.color = ''; // Reset to CSS default for dark
     }
   }, [theme, storageKey]);
 
