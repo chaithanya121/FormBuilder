@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -91,6 +92,16 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  .light-theme {
+    background-color: #ffffff;
+    color: #1f2937;
+  }
+
+  .dark-theme {
+    background-color: #111827;
+    color: #f9fafb;
+  }
 }
 
 /* Add this to your global CSS file */
@@ -108,7 +119,6 @@
   max-height: 1000px; /* Adjust based on your content */
   opacity: 1;
 }
-
 
 .data-\[state\=unchecked\]\:bg-input[data-state="unchecked"]{
   background-color: hsl(214.3deg 11.07% 49.76%) !important;
@@ -146,7 +156,6 @@
 ::-webkit-scrollbar-corner {
   background-color: transparent; /* Color of the corner */
 }
-
 
 @layer components {
   .json-key {
@@ -198,4 +207,8 @@
 .json-node-actions {
   opacity: 0;
   transition: opacity 0.2s ease;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
 }

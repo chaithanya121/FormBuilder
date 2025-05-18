@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from './Footer';
@@ -51,8 +50,8 @@ const Layout = ({ children }: LayoutProps) => {
   }, []);
 
   return (
-    <div className={`flex flex-col min-h-screen w-full ${theme === 'light' ? 'bg-white text-gray-800' : 'dark:bg-gray-900 text-white'} transition-colors duration-300`}>
-      <div className={`fixed top-0 w-full z-30 transition-all duration-300 ${isScrolled ? (theme === 'light' ? 'bg-white/90' : 'dark:bg-gray-900/80') + ' backdrop-blur-md shadow-md' : ''}`}>
+    <div className={`flex flex-col min-h-screen w-full ${theme === 'light' ? 'bg-white text-gray-800' : 'bg-gray-900 text-white'} transition-colors duration-300`}>
+      <div className={`fixed top-0 w-full z-30 transition-all duration-300 ${isScrolled ? (theme === 'light' ? 'bg-white/90' : 'bg-gray-900/80') + ' backdrop-blur-md shadow-md' : ''}`}>
         <Header />
       </div>
       

@@ -44,9 +44,13 @@ export function ThemeProvider({
     if (theme === 'light') {
       document.body.style.backgroundColor = '#ffffff';
       document.body.style.color = '#1f2937'; // text-gray-800 equivalent
+      document.body.classList.add('light-theme');
+      document.body.classList.remove('dark-theme');
     } else {
-      document.body.style.backgroundColor = ''; // Reset to CSS default for dark
-      document.body.style.color = ''; // Reset to CSS default for dark
+      document.body.style.backgroundColor = '#111827'; // dark gray for dark mode
+      document.body.style.color = '#f9fafb'; // text-gray-50 equivalent
+      document.body.classList.add('dark-theme');
+      document.body.classList.remove('light-theme');
     }
   }, [theme, storageKey]);
 
