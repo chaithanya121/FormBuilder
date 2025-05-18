@@ -3,7 +3,7 @@ import Header from '@/components/Header';
 import Footer from './Footer';
 import Sidebar from './Sidebar';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
-import { Outlet } from 'react-router-dom'; // 👈 ADD THIS
+import { Outlet } from 'react-router-dom';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -50,7 +50,7 @@ const Layout = ({ children }: LayoutProps) => {
   return (
     <div className="flex flex-col min-h-screen w-full dark:bg-gray-900 transition-colors duration-300">
       <div className={`fixed top-0 w-full z-30 transition-all duration-300 ${isScrolled ? 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-md' : ''}`}>
-        <Header toggleSidebar={toggleSidebar} />
+        <Header />
       </div>
       
       <div className="flex flex-1 pt-16">
