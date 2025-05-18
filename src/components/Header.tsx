@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, FileText, FilePlus, UserCircle, Settings, LogOut, FerrisWheel, BadgeAlert, Menu as MenuIcon } from "lucide-react";
+import { Home, FileText, FilePlus, UserCircle, Settings, LogOut, FerrisWheel, BadgeAlert, Menu as MenuIcon, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AuthDialog } from "./auth/AuthDialog";
 import { UserSettings } from "./settings/UserSettings";
@@ -52,7 +52,7 @@ const Header = () => {
   },
 {
     label:'Contact',
-    element: <UserSearch className="h-5 w-5 text-blue-200" />
+    element: <User className="h-5 w-5 text-blue-200" />
   }]
   
   const handleOpenSignIn = () => {
