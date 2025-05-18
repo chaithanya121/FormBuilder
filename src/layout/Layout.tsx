@@ -4,6 +4,7 @@ import Footer from './Footer';
 import Sidebar from './Sidebar';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { Outlet } from 'react-router-dom';
+import { useTheme } from '@/components/theme-provider';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -13,6 +14,7 @@ const Layout = ({ children }: LayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false); // Initially closed
   const [isScrolled, setIsScrolled] = useState(false);
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const { theme } = useTheme();
 
   // Always keep sidebar closed by default
   useEffect(() => {
@@ -48,15 +50,15 @@ const Layout = ({ children }: LayoutProps) => {
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen w-full dark:bg-gray-900 transition-colors duration-300">
-      <div className={`fixed top-0 w-full z-30 transition-all duration-300 ${isScrolled ? 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-md' : ''}`}>
+    <div className={`flex flex-col min-h-screen w-full ${theme === 'light' ? 'bg-white' : 'dark:bg-gray-900'} transition-colors duration-300`}>
+      <div className={`fixed top-0 w-full z-30 transition-all duration-300 ${isScrolled ? (theme === 'light' ? 'bg-white/80' : 'dark:bg-gray-900/80') + ' backdrop-blur-md shadow-md' : ''}`}>
         <Header />
       </div>
       
       <div className="flex flex-1 pt-16">
         {/* <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} /> */}
         
-        <main className={`flex-1 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 transition-all duration-300 ${sidebarOpen && !isMobile ? 'md:ml-64' : ''}`}>
+        <main className={`flex-1 ${theme === 'light' ? 'bg-white' : 'bg-gradient-to-b from-gray-900 to-gray-800'} transition-all duration-300 ${sidebarOpen && !isMobile ? 'md:ml-64' : ''}`}>
           <div className="w-full">
             <div className="animate-fade-in">
               {children}

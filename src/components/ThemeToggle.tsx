@@ -22,12 +22,12 @@ export function ThemeToggle({ variant = 'icon', className }: ThemeToggleProps) {
   if (variant === 'switch') {
     return (
       <div className={cn("flex items-center gap-2 rounded-md", className)}>
-        <Sun className="h-4 w-4 text-gray-500" />
+        <Sun className="h-4 w-4 text-yellow-500" />
         <Switch 
           checked={theme === 'dark'} 
           onCheckedChange={toggleTheme}
         />
-        <Moon className="h-4 w-4 text-gray-500" />
+        <Moon className="h-4 w-4 text-blue-500" />
       </div>
     );
   }
@@ -51,9 +51,9 @@ export function ThemeToggle({ variant = 'icon', className }: ThemeToggleProps) {
         className="absolute inset-0 flex items-center justify-center"
       >
         {theme === 'light' ? (
-          <Sun className="h-5 w-5" />
+          <Sun className="h-5 w-5 text-yellow-500" />
         ) : (
-          <Moon className="h-5 w-5" />
+          <Moon className="h-5 w-5 text-blue-400" />
         )}
       </motion.div>
     </Button>

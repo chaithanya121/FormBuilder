@@ -26,7 +26,7 @@ export const ThemeContext = createContext<ThemeProviderState>(initialState);
 export function ThemeProvider({
   children,
   defaultTheme = 'light',
-  storageKey = 'vite-ui-theme',
+  storageKey = 'fb-theme',
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(
@@ -39,6 +39,13 @@ export function ThemeProvider({
     root.classList.remove('light', 'dark');
     root.classList.add(theme);
     localStorage.setItem(storageKey, theme);
+
+    // Adjust background color based on theme
+    if (theme === 'light') {
+      document.body.style.backgroundColor = '#ffffff';
+    } else {
+      document.body.style.backgroundColor = '';
+    }
   }, [theme, storageKey]);
 
   const value = {
