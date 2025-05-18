@@ -133,7 +133,7 @@ const FormSubmission = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
-      <header className="border-b border-gray-800 bg-gray-900 sticky top-0 z-50 shadow-md">
+      {/* <header className="border-b border-gray-800 bg-gray-900 sticky top-0 z-50 shadow-md">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
@@ -147,7 +147,7 @@ const FormSubmission = () => {
             </div>
           </div>
         </div>
-      </header>
+      </header> */}
 
       <div className="container mx-auto p-4" style={{width: '38%'}}>
         <Card className="bg-gray-800 border-gray-700 p-6 mb-6">

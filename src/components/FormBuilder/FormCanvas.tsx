@@ -506,6 +506,8 @@ const FormCanvas = ({ elements, setFormConfig, onSelectElement, selectedElement,
                       ? "ring-2 ring-primary bg-primary/10"
                       : "hover:bg-muted/50"
                     } ${group.row ? "flex-1" : "w-full"}`}
+
+                  style={{borderColor:  `${selectedElement?.id === element.id ? 'cyan' : ''}`}}
                   onClick={() => onSelectElement(element)}
                   draggable
                   onDragStart={(e) => handleDragStart(e, element)}

@@ -153,3 +153,56 @@
 ::-webkit-scrollbar-corner {
   background-color: transparent; /* Color of the corner */
 }
+
+
+@layer components {
+  .json-key {
+    @apply text-cyan-400 font-medium;
+  }
+  
+  .json-string {
+    @apply text-green-400;
+  }
+  
+  .json-number {
+    @apply text-yellow-400;
+  }
+  
+  .json-boolean {
+    @apply text-purple-400;
+  }
+  
+  .json-null {
+    @apply text-gray-400 italic;
+  }
+  
+  .json-array {
+    @apply text-blue-400;
+  }
+  
+  .json-object {
+    @apply text-blue-400;
+  }
+
+  .tree-line {
+    @apply border-l border-dashed border-gray-700 pl-4 ml-2;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.json-node-hover:hover > .json-node-actions {
+  opacity: 1;
+}
+
+.json-node-actions {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}

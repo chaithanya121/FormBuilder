@@ -52,7 +52,8 @@ export function SignInForm({ onSuccess }: SignInFormProps) {
         
         setIsLoading(false);
         onSuccess();
-        navigate("/");
+        navigate("/dashboard");
+        window.location.reload();
       }, 1500);
     } catch (error) {
       console.error("Login error:", error);

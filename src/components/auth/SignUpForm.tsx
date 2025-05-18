@@ -95,6 +95,7 @@ export function SignUpForm({ onSuccess }: SignUpFormProps) {
           <User className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
           <Input
             id="name"
+            autoComplete="name"
             placeholder="John Doe"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -111,6 +112,7 @@ export function SignUpForm({ onSuccess }: SignUpFormProps) {
           <Input
             id="email"
             placeholder="your.email@example.com"
+            autoComplete="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}

@@ -147,7 +147,7 @@ const ElementSettings = ({ element, onUpdate, onClose }: ElementSettingsProps) =
                 )}
 
             <div className="space-y-2">
-              <Label>Label</Label>
+              <Label className="text-white">Label</Label>
               <Input
                 value={element.label}
                 onChange={(e) => handleInputChange("label", e.target.value)}
@@ -156,7 +156,7 @@ const ElementSettings = ({ element, onUpdate, onClose }: ElementSettingsProps) =
             </div>
 
             <div className="space-y-2">
-              <Label>Tooltip</Label>
+              <Label className="text-white">Tooltip</Label>
               <Input
                 value={element.tooltip || ""}
                 onChange={(e) => handleInputChange("tooltip", e.target.value)}
@@ -231,7 +231,7 @@ const ElementSettings = ({ element, onUpdate, onClose }: ElementSettingsProps) =
             )}
           </div>
           <div className="flex items-center justify-between">
-               <Label>Submit Data</Label>
+               <Label className="text-white">Submit Data</Label>
                <Switch
                 checked={element.submitData || false}
                 onCheckedChange={(checked) => handleInputChange("submitData", checked)}
@@ -239,7 +239,7 @@ const ElementSettings = ({ element, onUpdate, onClose }: ElementSettingsProps) =
             </div>
 
             <div className="flex items-center justify-between">
-              <Label>Nested Data</Label>
+              <Label className="text-white">Nested Data</Label>
               <Switch
                 checked={element.nestedData ?? false}
                 onCheckedChange={(checked) => handleInputChange("nestedData", checked)}
@@ -254,7 +254,7 @@ const ElementSettings = ({ element, onUpdate, onClose }: ElementSettingsProps) =
       onClick={() => setIsLabelStylingExpanded(!isLabelStylingExpanded)}
     >
       <Label className="text-white">Label Styling</Label>
-      <Button variant="ghost" size="icon">
+      <Button className="text-white" variant="ghost" size="icon">
         {isLabelStylingExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
       </Button>
     </div>
@@ -320,7 +320,7 @@ const ElementSettings = ({ element, onUpdate, onClose }: ElementSettingsProps) =
       onClick={() => setIsFieldStylingExpanded(!isFieldStylingExpanded)}
     >
       <Label className="text-white">Field Styling</Label>
-      <Button variant="ghost" size="icon">
+      <Button variant="ghost" size="icon" className="text-white">
         {isFieldStylingExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
       </Button>
     </div>

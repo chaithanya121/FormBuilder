@@ -9,8 +9,10 @@ import NotFound from "./pages/NotFound";
 import Header from "./components/Header";
 import FormBuilder from "./components/FormBuilder";
 import Dashboard from "@/components/Dashboard";
+import MainDashboard from "@/components/Dashboard";
 import FormSubmission from "@/components/FormSubmission";
 import { AuthProvider } from "./hooks/use-auth";
+import Layout from "./layout/Layout";
 
 const queryClient = new QueryClient();
 
@@ -19,19 +21,22 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BrowserRouter>
-          <div className="relative min-h-screen bg-gradient-to-b from-slate-950 to-indigo-950/70">
+          <div className="relative min-h-scree">
             <TooltipProvider delayDuration={0}>
-              <Header />
-              <main className="container mx-auto px-4 py-6 md:py-8">
-                <Routes>
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/forms" element={<Index />} />
-                  <Route path="/create" element={<FormBuilder />} />
-                  <Route path="/form-builder/:id" element={<FormBuilder />} />
-                  <Route path="/form/:id" element={<FormSubmission />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </main>
+              {/* <Header />
+              <main> */}
+                  <Layout>
+                  <Routes>
+                    <Route path="/" element={<MainDashboard/>} />
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/forms" element={<Index />} />
+                    <Route path="/create" element={<FormBuilder />} />
+                    <Route path="/form-builder/:id" element={<FormBuilder />} />
+                    <Route path="/form/:id" element={<FormSubmission />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Layout>
+              {/* </main> */}
               <Toaster />
               <Sonner />
             </TooltipProvider>

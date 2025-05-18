@@ -13,6 +13,7 @@ import { Label } from "../ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "../ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/tabs";
 import { useNavigate, useParams } from "react-router-dom";
+import JsonViewer from "../ui/json-viewer";
 
 const DEFAULT_CONFIG: FormConfig = {
   name: "Create account",
@@ -362,7 +363,7 @@ const FormBuilder = () => {
           </div>
         </div>
 
-        <div className={previewMode ?'justify-center align-center': "grid grid-cols-12 gap-4"} style={{display: previewMode ? 'flex' : 'grid'}}>
+        <div className={"grid grid-cols-12 gap-4"}>
           {!previewMode ? (
             <>
               <Card className="col-span-3 bg-gray-800 border-gray-700 p-4">
@@ -533,22 +534,30 @@ const FormBuilder = () => {
               </Card>
             </>
           ) : (
-            <Card 
-              className="col-span-12 bg-gray-800 border-gray-700 p-4 "
-              style={{
-                backgroundColor: formConfig.settings.canvasStyles?.backgroundColor || '',
-                backgroundImage: formConfig.settings.canvasStyles?.backgroundImage || '',
-                padding: formConfig.settings.canvasStyles?.padding || '',
-                margin: formConfig.settings.canvasStyles?.margin || '',
-                borderRadius: formConfig.settings.canvasStyles?.borderRadius || '',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                height: 'auto',
-                width: '46%'
-              }}
-            >
-              <FormPreview formConfig={formConfig} />
-            </Card>
+            <>
+              <Card 
+                className="col-span-8 bg-gray-800 border-gray-700 p-4"
+                style={{
+                  backgroundColor: formConfig.settings.canvasStyles?.backgroundColor || '',
+                  backgroundImage: formConfig.settings.canvasStyles?.backgroundImage || '',
+                  padding: formConfig.settings.canvasStyles?.padding || '',
+                  margin: formConfig.settings.canvasStyles?.margin || '',
+                  borderRadius: formConfig.settings.canvasStyles?.borderRadius || '',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  height: 'auto',
+                  // width: '46%'
+                }}
+              >
+                <FormPreview formConfig={formConfig} />
+              </Card>
+              <Card className="col-span-4 bg-gray-800 border-gray-700 p-4">
+
+                  <JsonViewer />
+              </Card>
+            
+            </>
+            
           )}
         </div>
       </div>

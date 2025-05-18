@@ -20,10 +20,17 @@ const FormPreview = ({ formConfig, values, onChange, onSubmit, isSubmission = fa
   const { toast } = useToast();
 
   const handleChange = (elementId: string, value: any) => {
+    console.log('data',formConfig)
+    
+    let label_set = formConfig.elements.filter((item)=> item.id === elementId)[0]['label']
+    
     const updatedData = {
       ...formData,
-      [elementId]: value,
+      [label_set]: value,
     };
+
+    console.log('data',updatedData)
+
     
     setFormData(updatedData);
     
@@ -114,7 +121,7 @@ const FormPreview = ({ formConfig, values, onChange, onSubmit, isSubmission = fa
                 >
                   <FormElementRenderer
                     element={element}
-                    value={formData[element.id]}
+                    value={formData[element.label]}
                     onChange={(value) => handleChange(element.id, value)}
                     error=""
                   />

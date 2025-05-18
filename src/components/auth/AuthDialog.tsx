@@ -17,9 +17,12 @@ interface AuthDialogProps {
   defaultTab?: "signin" | "signup";
 }
 
+
 export function AuthDialog({ isOpen, onOpenChange, defaultTab = "signin" }: AuthDialogProps) {
   const [activeTab, setActiveTab] = useState<"signin" | "signup">(defaultTab);
 
+  console.log(isOpen);
+  
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] bg-gray-800 border-gray-700 text-white">
