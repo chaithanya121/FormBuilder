@@ -13,19 +13,19 @@ import MainDashboard from "@/components/Dashboard";
 import FormSubmission from "@/components/FormSubmission";
 import { AuthProvider } from "./hooks/use-auth";
 import Layout from "./layout/Layout";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <BrowserRouter>
-          <div className="relative min-h-scree">
-            <TooltipProvider delayDuration={0}>
-              {/* <Header />
-              <main> */}
-                  <Layout>
+      <ThemeProvider defaultTheme="light" storageKey="fb-theme">
+        <AuthProvider>
+          <BrowserRouter>
+            <div className="relative min-h-scree">
+              <TooltipProvider delayDuration={0}>
+                <Layout>
                   <Routes>
                     <Route path="/" element={<MainDashboard/>} />
                     <Route path="/dashboard" element={<Dashboard />} />
@@ -36,13 +36,13 @@ const App = () => {
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Layout>
-              {/* </main> */}
-              <Toaster />
-              <Sonner />
-            </TooltipProvider>
-          </div>
-        </BrowserRouter>
-      </AuthProvider>
+                <Toaster />
+                <Sonner />
+              </TooltipProvider>
+            </div>
+          </BrowserRouter>
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 };

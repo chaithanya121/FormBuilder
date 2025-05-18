@@ -48,15 +48,15 @@ const Layout = ({ children }: LayoutProps) => {
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen  w-full  ">
-      <div className={`fixed top-0 w-full z-30 transition-all duration-300 ${isScrolled ? 'bg-white/80 backdrop-blur-md shadow-md' : ''}`}>
-        <Header />
+    <div className="flex flex-col min-h-screen w-full dark:bg-gray-900 transition-colors duration-300">
+      <div className={`fixed top-0 w-full z-30 transition-all duration-300 ${isScrolled ? 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-md' : ''}`}>
+        <Header toggleSidebar={toggleSidebar} />
       </div>
       
       <div className="flex flex-1 pt-16">
         {/* <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} /> */}
         
-        <main className={`flex-1 bg-gradient-to-b from-gray-50 to-white transition-all duration-300 ${sidebarOpen && !isMobile ? 'md:ml-64' : ''}`}>
+        <main className={`flex-1 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 transition-all duration-300 ${sidebarOpen && !isMobile ? 'md:ml-64' : ''}`}>
           <div className="w-full">
             <div className="animate-fade-in">
               {children}
