@@ -1,6 +1,7 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, FileText, FilePlus, UserCircle, Settings,UserSearch, LogOut,FerrisWheel ,BadgeAlert, Menu as MenuIcon} from "lucide-react";
+import { Home, FileText, FilePlus, UserCircle, Settings, LogOut, FerrisWheel, BadgeAlert, Menu as MenuIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AuthDialog } from "./auth/AuthDialog";
 import { UserSettings } from "./settings/UserSettings";
@@ -27,6 +28,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import Menu from "./menu.jsx";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Header = () => {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
@@ -137,22 +139,11 @@ const Header = () => {
                     <FilePlus className="h-5 w-5 text-blue-200" />
                     <span className="text-blue-100">Create</span>
                   </Link>
-                  {/* {
-                   nav_tabs.map((item)=>{
-                      return(
-
-                    <Link 
-                      to="/" 
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-indigo-800/30"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {item.element}
-                      <span className="text-blue-100">{item.label}</span>
-                    </Link>
-                      )
-                    })
-                  } */}
-                 
+                  
+                  <div className="flex items-center gap-3 p-2 rounded-lg">
+                    <ThemeToggle variant="switch" className="w-full" />
+                  </div>
+                  
                   {!isAuthenticated && (
                     <>
                       <Button 
@@ -228,7 +219,7 @@ const Header = () => {
                    nav_tabs.map((item)=>{
                       return(
 
-                      <NavigationMenuItem>
+                      <NavigationMenuItem key={item.label}>
                         <Link to="/">
                           <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), "gap-2 text-blue-100 hover:text-white hover:bg-indigo-700/30 rounded-xl transition-all duration-200")}>
                            {item.element}
@@ -239,22 +230,6 @@ const Header = () => {
                       )
                     })
                   }
-              {/* <NavigationMenuItem>
-                <Link to="/">
-                  <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), "gap-2 text-blue-100 hover:text-white hover:bg-indigo-700/30 rounded-xl transition-all duration-200")}>
-                    <Home className="h-4 w-4" />
-                    <span>Home</span>
-                  </NavigationMenuLink>
-                </Link>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <Link to="/forms">
-                  <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), "gap-2 text-blue-100 hover:text-white hover:bg-indigo-700/30 rounded-xl transition-all duration-200")}>
-                    <FileText className="h-4 w-4" />
-                    <span>Forms</span>
-                  </NavigationMenuLink>
-                </Link>
-              </NavigationMenuItem> */}
             </NavigationMenuList>
           </NavigationMenu>
         </div>
@@ -310,6 +285,12 @@ const Header = () => {
                   <Settings className="mr-2 h-4 w-4 text-indigo-400" />
                   <span>Settings</span>
                 </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer hover:bg-indigo-700/30 py-2.5 rounded-lg transition-colors duration-200">
+                  <div className="flex items-center justify-between w-full">
+                    <span>Theme</span>
+                    <ThemeToggle variant="switch" />
+                  </div>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-indigo-500/20 my-1" />
                 <DropdownMenuItem 
                   onClick={handleLogout}
@@ -322,6 +303,8 @@ const Header = () => {
             </DropdownMenu>
           ) : (
             <div className="flex items-center gap-2">
+              <ThemeToggle variant="icon" className="text-blue-100 hover:text-white hover:bg-indigo-700/30" />
+              
               <Button 
                 variant="ghost" 
                 onClick={handleOpenSignIn}
