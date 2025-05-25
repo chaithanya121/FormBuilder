@@ -1,7 +1,6 @@
 import api, { API_CONFIG, formatUrl, getApiUrl } from './index';
 import { v4 as uuidv4 } from 'uuid';
 import { FormConfig } from '@/components/FormBuilder/types';
-import process from 'process'
 
 export interface FormData {
   primary_id: string;
