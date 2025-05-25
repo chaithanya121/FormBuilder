@@ -8,16 +8,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Upload, User, Mail, Key, LogOut } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
-
-interface UserData {
-  id: string;
-  name: string;
-  email: string;
-  avatar: string | null;
-}
+import { useAuth } from "@/hooks/use-auth";
+import { authApi } from "@/services/api/auth";
 
 export function UserSettings({ isOpen, onOpenChange }: { isOpen: boolean; onOpenChange: (open: boolean) => void }) {
-  const [userData, setUserData] = useState<UserData | null>(null);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -27,20 +21,17 @@ export function UserSettings({ isOpen, onOpenChange }: { isOpen: boolean; onOpen
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user, updateUser, logout } = useAuth();
 
   useEffect(() => {
-    // Get user from local storage
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      setUserData(parsedUser);
-      setName(parsedUser.name || "");
-      setEmail(parsedUser.email || "");
-      setAvatarPreview(parsedUser.avatar);
+    if (user && isOpen) {
+      setName(user.name || "");
+      setEmail(user.email || "");
+      setAvatarPreview(user.avatar);
     }
-  }, [isOpen]);
+  }, [user, isOpen]);
 
-  const handleProfileUpdate = () => {
+  const handleProfileUpdate = async () => {
     if (!name || !email) {
       toast({
         title: "Error",
@@ -52,30 +43,30 @@ export function UserSettings({ isOpen, onOpenChange }: { isOpen: boolean; onOpen
 
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      if (userData) {
-        const updatedUser = {
-          ...userData,
-          name,
-          email,
-          avatar: avatarPreview,
-        };
-        
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-        setUserData(updatedUser);
-        
-        toast({
-          title: "Profile updated",
-          description: "Your profile has been updated successfully",
-        });
-      }
+    try {
+      await updateUser({
+        name,
+        email,
+        avatar: avatarPreview
+      });
       
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been updated successfully",
+      });
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update profile",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
       toast({
         title: "Error",
@@ -96,18 +87,22 @@ export function UserSettings({ isOpen, onOpenChange }: { isOpen: boolean; onOpen
 
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      toast({
-        title: "Password updated",
-        description: "Your password has been changed successfully",
-      });
+    try {
+      await authApi.changePassword(currentPassword, newPassword);
       
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
+    } catch (error) {
+      console.error("Error changing password:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update password",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -122,7 +117,7 @@ export function UserSettings({ isOpen, onOpenChange }: { isOpen: boolean; onOpen
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("user");
+    logout();
     toast({
       title: "Logged out",
       description: "You have been logged out successfully",

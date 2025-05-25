@@ -14,6 +14,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from ".
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/tabs";
 import { useNavigate, useParams } from "react-router-dom";
 import JsonViewer from "../ui/json-viewer";
+import { formsApi } from "@/services/forms";
 
 const DEFAULT_CONFIG: FormConfig = {
   name: "Create account",
@@ -85,42 +86,46 @@ const FormBuilder = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { id } = useParams();
+  const [formId, setFormId] = useState<string | undefined>(undefined);
   const formInitialized = useRef(false);
 
   useEffect(() => {
     if (id && !formInitialized.current) {
       formInitialized.current = true;
-      try {
-        const storedFormsJson = localStorage.getItem('nifty-forms');
-        if (storedFormsJson) {
-          const storedForms = JSON.parse(storedFormsJson);
-          const formToEdit = storedForms.find((form: any) => form.id === id);
+      const loadForm = async () => {
+        try {
+          console.log('Attempting to load form with primary_id:', id);
+          const formToEdit = await formsApi.getFormById(id);
           if (formToEdit) {
             setFormConfig(formToEdit.config);
             setIsPublished(formToEdit.published || false);
+            setFormId(formToEdit.primary_id);
             toast({
               title: "Form Loaded",
               description: `Editing form: ${formToEdit.name}`,
             });
           } else {
+            console.log('Form not found, creating new form');
             toast({
-              title: "Error",
-              description: "Form not found",
+              title: "Form Not Found",
+              description: "Creating a new form instead",
               variant: "destructive"
             });
-            navigate('/');
+            // Don't navigate away, just continue with new form creation
           }
+        } catch (error) {
+          console.error('Error loading form:', error);
+          toast({
+            title: "Error Loading Form",
+            description: "Creating a new form instead",
+            variant: "destructive"
+          });
+          // Don't navigate away, just continue with new form creation
         }
-      } catch (error) {
-        console.error('Error loading form:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load form data",
-          variant: "destructive"
-        });
-      }
+      };
+      loadForm();
     }
-  }, [id, navigate, toast]);
+  }, [id, toast]);
 
   const handleDragStart = (e: DragEvent<HTMLDivElement>, elementType: string) => {
     e.dataTransfer.setData("elementType", elementType);
@@ -211,80 +216,100 @@ const FormBuilder = () => {
     });
   };
 
-  const handleSaveForm = () => {
-    const formId = id || `form-${Date.now()}`;
-    const existingFormsJson = localStorage.getItem('nifty-forms');
-    const existingForms = existingFormsJson ? JSON.parse(existingFormsJson) : [];
-    const formIndex = existingForms.findIndex((form: any) => form.id === id);
-    
-    // If the form doesn't exist yet, create a new one
-    if (formIndex < 0) {
-      const formObject = {
-        id: formId,
-        name: formConfig.name,
-        createdAt: new Date().toISOString(),
-        lastModified: new Date().toISOString(),
-        submissions: 0,
-        published: isPublished,
-        config: formConfig
-      };
-      existingForms.push(formObject);
-    } else {
-      // Update the existing form
-      existingForms[formIndex] = {
-        ...existingForms[formIndex],
-        lastModified: new Date().toISOString(),
-        config: formConfig
-      };
+  const handleSaveForm = async () => {
+    try {
+      if (id) {
+        // Update existing form
+        const currentForm = await formsApi.getFormById(id);
+        if (currentForm) {
+          const formToUpdate = {
+            ...currentForm,
+            name: formConfig.name,
+            last_modified: new Date().toISOString(),
+            config: formConfig
+          };
+          await formsApi.updateForm(formToUpdate);
+          toast({
+            title: "Form Updated",
+            description: "Your form has been updated successfully",
+          });
+          navigate('/');
+        }
+      } else {
+        // Create new form
+        const formObject = {
+          name: formConfig.name,
+          published: isPublished,
+          config: formConfig
+        };
+        await formsApi.createForm(formObject);
+        toast({
+          title: "Form Saved",
+          description: "Your form has been saved successfully",
+        });
+        navigate('/');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save form. " + (error as Error).message,
+        variant: "destructive"
+      });
     }
-    
-    localStorage.setItem('nifty-forms', JSON.stringify(existingForms));
-    toast({
-      title: "Form Saved",
-      description: "Your form has been saved successfully",
-    });
-    navigate('/');
   };
 
-  const handlePublishForm = () => {
-    const formId = id || `form-${Date.now()}`;
-    const existingFormsJson = localStorage.getItem('nifty-forms');
-    const existingForms = existingFormsJson ? JSON.parse(existingFormsJson) : [];
-    const formIndex = existingForms.findIndex((form: any) => form.id === id);
-    
-    // If the form doesn't exist yet, save it first
-    if (formIndex < 0) {
-      const formObject = {
-        id: formId,
-        name: formConfig.name,
-        createdAt: new Date().toISOString(),
-        lastModified: new Date().toISOString(),
-        submissions: 0,
-        published: true,
-        config: formConfig
-      };
-      existingForms.push(formObject);
-    } else {
-      // Update the existing form to be published
-      existingForms[formIndex] = {
-        ...existingForms[formIndex],
-        published: true,
-        lastModified: new Date().toISOString(),
-        config: formConfig
-      };
+  const handlePublishForm = async () => {
+    try {
+      if (id) {
+        // Update existing form to published state
+        const currentForm = await formsApi.getFormById(id);
+        if (currentForm) {
+          const formToUpdate = {
+            ...currentForm,
+            published: true,
+            last_modified: new Date().toISOString(),
+            config: formConfig
+          };
+          await formsApi.updateForm(formToUpdate);
+        }
+      } else {
+        // Create new form in published state
+        const formObject = {
+          name: formConfig.name,
+          published: true,
+          config: formConfig
+        };
+        const newForm = await formsApi.createForm(formObject);
+        // Store the new primary_id
+        setFormId(newForm.primary_id);
+      }
+      
+      setIsPublished(true);
+      toast({
+        title: "Form Published",
+        description: "Your form has been published and is now available for submissions",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to publish form. " + (error as Error).message,
+        variant: "destructive"
+      });
     }
-    
-    localStorage.setItem('nifty-forms', JSON.stringify(existingForms));
-    setIsPublished(true);
-    toast({
-      title: "Form Published",
-      description: "Your form has been published and is now available for submissions",
-    });
   };
 
   const handleShareLink = () => {
-    const formId = id || `form-${Date.now()}`;
-    const shareableLink = `${window.location.origin}/form/${formId}`;
+    const shareableFormId = id || formId;
+    if (!shareableFormId) {
+      toast({
+        title: "Error",
+        description: "Please save or publish the form first to generate a shareable link",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const shareableLink = `${window.location.origin}/form/${shareableFormId}`;
     navigator.clipboard.writeText(shareableLink);
     toast({
       title: "Link Copied",
@@ -319,7 +344,7 @@ const FormBuilder = () => {
 
       <div className="container mx-auto p-4">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold">Create account</h1>
+          <h1 className="text-2xl font-bold">{formConfig.name}</h1>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <span>Theme</span>
@@ -546,18 +571,14 @@ const FormBuilder = () => {
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                   height: 'auto',
-                  // width: '46%'
                 }}
               >
                 <FormPreview formConfig={formConfig} />
               </Card>
               <Card className="col-span-4 bg-gray-800 border-gray-700 p-4">
-
-                  <JsonViewer />
+                <JsonViewer />
               </Card>
-            
             </>
-            
           )}
         </div>
       </div>

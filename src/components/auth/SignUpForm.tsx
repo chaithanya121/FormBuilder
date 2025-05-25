@@ -7,6 +7,10 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Mail, User, Lock, Loader2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useAppDispatch } from "@/hooks/redux";
+import { setShowVerificationModal, setVerificationEmail } from "@/store/slices/uiSlice";
+import { motion } from "framer-motion";
+import { authApi } from "@/services/api/auth";
 
 interface SignUpFormProps {
   onSuccess: () => void;
@@ -21,6 +25,7 @@ export function SignUpForm({ onSuccess }: SignUpFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,27 +60,24 @@ export function SignUpForm({ onSuccess }: SignUpFormProps) {
     setIsLoading(true);
     
     try {
-      // Simulate registration
-      setTimeout(() => {
-        // Store user data in local storage
-        const userData = {
-          id: "user-" + Date.now(),
-          name,
-          email,
-          avatar: null,
-        };
-        
-        localStorage.setItem("user", JSON.stringify(userData));
-        
-        toast({
-          title: "Account created",
-          description: "Your account has been created successfully",
-        });
-        
-        setIsLoading(false);
-        onSuccess();
-        navigate("/");
-      }, 1500);
+      // Register the user
+      let UserData ={
+        name, email, password,password2:confirmPassword
+      }
+      
+      await authApi.signUp(UserData);
+      
+      // Close the signup dialog
+      onSuccess();
+      
+      // Set verification email and show verification modal
+      dispatch(setVerificationEmail(email));
+      dispatch(setShowVerificationModal(true));
+      
+      toast({
+        title: "Verification Required",
+        description: "Please verify your email to complete registration",
+      });
     } catch (error) {
       console.error("Registration error:", error);
       toast({
@@ -83,32 +85,39 @@ export function SignUpForm({ onSuccess }: SignUpFormProps) {
         description: "Failed to create account. Please try again.",
         variant: "destructive",
       });
+    } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 py-4">
+    <motion.form 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+      onSubmit={handleSubmit} 
+      className="space-y-4"
+    >
       <div className="space-y-2">
-        <Label htmlFor="name" className="text-white">Full Name</Label>
+        <Label htmlFor="name" className="text-white text-sm font-medium">Full Name</Label>
         <div className="relative">
-          <User className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+          <User className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
           <Input
             id="name"
             autoComplete="name"
             placeholder="John Doe"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="pl-10 bg-gray-700 border-gray-600 text-white"
+            className="pl-10 bg-slate-700/50 border-slate-600 text-white focus:ring-blue-500 focus:border-blue-500"
             disabled={isLoading}
           />
         </div>
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-white">Email</Label>
+        <Label htmlFor="email" className="text-white text-sm font-medium">Email</Label>
         <div className="relative">
-          <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+          <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
           <Input
             id="email"
             placeholder="your.email@example.com"
@@ -116,39 +125,39 @@ export function SignUpForm({ onSuccess }: SignUpFormProps) {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="pl-10 bg-gray-700 border-gray-600 text-white"
+            className="pl-10 bg-slate-700/50 border-slate-600 text-white focus:ring-blue-500 focus:border-blue-500"
             disabled={isLoading}
           />
         </div>
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="password" className="text-white">Password</Label>
+        <Label htmlFor="password" className="text-white text-sm font-medium">Password</Label>
         <div className="relative">
-          <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+          <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
           <Input
             id="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="pl-10 bg-gray-700 border-gray-600 text-white"
+            className="pl-10 bg-slate-700/50 border-slate-600 text-white focus:ring-blue-500 focus:border-blue-500"
             disabled={isLoading}
           />
         </div>
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="confirmPassword" className="text-white">Confirm Password</Label>
+        <Label htmlFor="confirmPassword" className="text-white text-sm font-medium">Confirm Password</Label>
         <div className="relative">
-          <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+          <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
           <Input
             id="confirmPassword"
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="••••••••"
-            className="pl-10 bg-gray-700 border-gray-600 text-white"
+            className="pl-10 bg-slate-700/50 border-slate-600 text-white focus:ring-blue-500 focus:border-blue-500"
             disabled={isLoading}
           />
         </div>
@@ -159,20 +168,20 @@ export function SignUpForm({ onSuccess }: SignUpFormProps) {
           id="terms" 
           checked={acceptTerms}
           onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
-          className="data-[state=checked]:bg-blue-600"
+          className="data-[state=checked]:bg-blue-600 border-slate-500"
           disabled={isLoading}
         />
         <label
           htmlFor="terms"
           className="text-sm text-gray-300 font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
         >
-          I accept the Terms & Conditions
+          I accept the <span className="text-blue-400 hover:text-blue-300 cursor-pointer">Terms & Conditions</span>
         </label>
       </div>
       
       <Button 
         type="submit" 
-        className="w-full bg-blue-600 hover:bg-blue-700" 
+        className="w-full bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 text-white" 
         disabled={isLoading}
       >
         {isLoading ? (
@@ -184,6 +193,6 @@ export function SignUpForm({ onSuccess }: SignUpFormProps) {
           "Create Account"
         )}
       </Button>
-    </form>
+    </motion.form>
   );
 }

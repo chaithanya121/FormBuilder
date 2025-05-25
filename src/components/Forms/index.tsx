@@ -23,15 +23,7 @@ import { Search, Filter, PlusCircle, Edit3, Eye, Trash2, Clock } from "lucide-re
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-
-interface FormData {
-  id: string;
-  name: string;
-  createdAt: string | Date;
-  lastModified: string | Date;
-  submissions: number;
-  published: boolean;
-}
+import { formsApi, FormData } from "@/services/api/forms";
 
 const FormList = () => {
   const [forms, setForms] = useState<FormData[]>([]);
@@ -42,24 +34,23 @@ const FormList = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Load forms from localStorage
-    const storedFormsJson = localStorage.getItem('nifty-forms');
-    let storedForms: FormData[] = [];
-    
-    if (storedFormsJson) {
+    const loadForms = async () => {
       try {
-        storedForms = JSON.parse(storedFormsJson);
+        console.log('Loading forms...');
+        const formData = await formsApi.getAllForms();
+       
+        setForms(formData);
       } catch (error) {
-        console.error('Error parsing stored forms:', error);
+        console.error('Error loading forms:', error);
         toast({
           title: "Error",
           description: "Failed to load saved forms",
           variant: "destructive"
         });
       }
-    }
+    };
     
-    setForms(storedForms || []);
+    loadForms();
   }, [toast]);
 
   const formatDate = (dateValue: string | Date): string => {
@@ -76,17 +67,23 @@ const FormList = () => {
     return dateValue.toLocaleDateString();
   };
 
-  const handleDeleteForm = (formId: string, e: React.MouseEvent) => {
+  const handleDeleteForm = async (formId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    const updatedForms = forms.filter(form => form.id !== formId);
-    setForms(updatedForms);
-    
-    localStorage.setItem('nifty-forms', JSON.stringify(updatedForms));
-    
-    toast({
-      title: "Success",
-      description: "Form deleted successfully"
-    });
+    try {
+      await formsApi.deleteForm(formId);
+      setForms(forms.filter(form => form.primary_id !== formId));
+      
+      toast({
+        title: "Success",
+        description: "Form deleted successfully"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete form",
+        variant: "destructive"
+      });
+    }
   };
 
   const sortForms = (formsToSort: FormData[]) => {
@@ -95,7 +92,7 @@ const FormList = () => {
         return [...formsToSort].sort((a, b) => a.name.localeCompare(b.name));
       case 'date':
         return [...formsToSort].sort((a, b) => 
-          new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime()
+          new Date(b.last_modified).getTime() - new Date(a.last_modified).getTime()
         );
       case 'submissions':
         return [...formsToSort].sort((a, b) => b.submissions - a.submissions);
@@ -204,9 +201,9 @@ const FormList = () => {
               <TableBody>
                 {filteredAndSortedForms.map((form) => (
                   <TableRow 
-                    key={form.id} 
+                    key={form.primary_id} 
                     className="hover:bg-gray-700/50 cursor-pointer"
-                    onClick={() => navigate(`/form-builder/${form.id}`)}
+                    onClick={() => navigate(`/form-builder/${form.primary_id}`)}
                   >
                     <TableCell className="font-medium text-white">{form.name}</TableCell>
                     <TableCell>
@@ -222,7 +219,7 @@ const FormList = () => {
                     </TableCell>
                     <TableCell className="text-gray-300 flex items-center gap-1">
                       <Clock className="h-3 w-3 text-gray-500" />
-                      {formatDate(form.lastModified)}
+                      {formatDate(form.last_modified)}
                     </TableCell>
                     <TableCell className="text-right text-gray-300">{form.submissions}</TableCell>
                     <TableCell className="text-right">
@@ -233,7 +230,7 @@ const FormList = () => {
                           className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-gray-700"
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigate(`/form-builder/${form.id}`);
+                            navigate(`/form-builder/${form.primary_id}`);
                           }}
                         >
                           <Edit3 className="h-4 w-4" />
@@ -245,7 +242,7 @@ const FormList = () => {
                             className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-gray-700"
                             onClick={(e) => {
                               e.stopPropagation();
-                              navigate(`/form/${form.id}`);
+                              navigate(`/form/${form.primary_id}`);
                             }}
                           >
                             <Eye className="h-4 w-4" />
@@ -255,7 +252,7 @@ const FormList = () => {
                           variant="ghost" 
                           size="sm" 
                           className="h-8 w-8 p-0 text-gray-400 hover:text-red-400 hover:bg-gray-700"
-                          onClick={(e) => handleDeleteForm(form.id, e)}
+                          onClick={(e) => handleDeleteForm(form.primary_id, e)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

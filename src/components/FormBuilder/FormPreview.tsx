@@ -3,8 +3,10 @@ import FormElementRenderer from "./FormElementRenderer";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useNavigate, useParams } from "react-router-dom";
+import { formsApi } from "@/services/forms";
 
 interface FormPreviewProps {
   formConfig: FormConfig;
@@ -15,10 +17,14 @@ interface FormPreviewProps {
 }
 
 const FormPreview = ({ formConfig, values, onChange, onSubmit, isSubmission = false }: FormPreviewProps) => {
+  // const [fornData,setFormData] = 
   const [formData, setFormData] = useState<Record<string, any>>(values || {});
   const [termsAccepted, setTermsAccepted] = useState(false);
   const { toast } = useToast();
 
+
+
+    
   const handleChange = (elementId: string, value: any) => {
     console.log('data',formConfig)
     
@@ -98,6 +104,8 @@ const FormPreview = ({ formConfig, values, onChange, onSubmit, isSubmission = fa
   };
 
   const groupedElements = groupElementsByLayout(formConfig.elements);
+
+  console.log('privew',formConfig)
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">

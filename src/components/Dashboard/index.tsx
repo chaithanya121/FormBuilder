@@ -55,16 +55,7 @@ import {
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { motion } from 'framer-motion';
-
-interface FormData {
-  id: string;
-  name: string;
-  createdAt: string | Date;
-  lastModified: string | Date;
-  submissions: number;
-  published: boolean;
-  config: FormConfig;
-}
+import { formsApi, FormData } from '@/services/api/forms';
 
 const Dashboard = () => {
   const [forms, setForms] = useState<FormData[]>([]);
@@ -83,33 +74,43 @@ const Dashboard = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const storedFormsJson = localStorage.getItem('nifty-forms');
-    let storedForms: FormData[] = [];
-    
-    if (storedFormsJson) {
+    const loadForms = async () => {
       try {
-        storedForms = JSON.parse(storedFormsJson);
+        const formData = await formsApi.getAllForms();
+        console.log("API response:", formData);
+        
+        // Handle response - expect array of FormData
+        let storedForms: FormData[] = [];
+        
+        if (Array.isArray(formData)) {
+          storedForms = formData;
+        } else {
+          console.warn("Expected array of forms, got:", formData);
+          storedForms = [];
+        }
+        
+        setForms(storedForms);
+        
+        setStats({
+          totalForms: storedForms.length,
+          totalSubmissions: storedForms.reduce((acc, form) => acc + (form.submissions || 0), 0),
+          activeUsers: Math.floor(Math.random() * 100), // This would come from a real API
+          completionRate: 0 // This would come from a real API
+        });
       } catch (error) {
-        console.error('Error parsing stored forms:', error);
+        console.error('Error loading forms:', error);
         toast({
           title: "Error",
           description: "Failed to load saved forms",
           variant: "destructive"
         });
       }
-    }
+    };
     
-    setForms(storedForms || []);
-    
-    setStats({
-      totalForms: storedForms.length,
-      totalSubmissions: storedForms.reduce((acc, form) => acc + form.submissions, 0),
-      activeUsers: Math.floor(Math.random() * 100),
-      completionRate: 0
-    });
+    loadForms();
   }, [toast]);
 
-  const handleCreateForm = () => {
+  const handleCreateForm = async () => {
     if (!newFormName.trim()) {
       toast({
         title: "Error",
@@ -119,103 +120,153 @@ const Dashboard = () => {
       return;
     }
 
-    const newForm: FormData = {
-      id: `form-${Date.now()}`,
-      name: newFormName,
-      createdAt: new Date().toISOString(),
-      lastModified: new Date().toISOString(),
-      submissions: 0,
-      published: false,
-      config: {
+    try {
+      const newForm: Omit<FormData, 'primary_id' | 'createdAt' | 'last_modified' | 'submissions'> = {
         name: newFormName,
-        elements: [],
-        settings: {
-          termsAndConditions: {
-            enabled: true,
-            required: true,
-            text: "I accept the Terms & Conditions & Privacy Policy",
-          },
-          submitButton: {
-            enabled: true,
-            text: "Submit",
-          },
-          preview: {
-            width: "Full",
-            nesting: true,
-          },
-          validation: {
-            liveValidation: "Default",
-          },
-          layout: {
-            size: "Default",
-            columns: {
-              default: true,
-              tablet: false,
-              desktop: false,
+        published: false,
+        config: {
+          name: newFormName,
+          elements: [],
+          settings: {
+            termsAndConditions: {
+              enabled: true,
+              required: true,
+              text: "I accept the Terms & Conditions & Privacy Policy",
             },
-            labels: "Default",
-            placeholders: "Default",
-            errors: "Default",
-            messages: "Default",
+            submitButton: {
+              enabled: true,
+              text: "Submit",
+            },
+            preview: {
+              width: "Contained" as const,
+              nesting: true,
+            },
+            validation: {
+              liveValidation: "Default" as const,
+            },
+            layout: {
+              size: "Default" as const,
+              columns: {
+                default: true,
+                tablet: false,
+                desktop: false,
+              },
+              labels: "Default" as const,
+              placeholders: "Default" as const,
+              errors: "Default" as const,
+              messages: "Default" as const,
+            },
           },
-        },
-      }
-    };
-
-    const updatedForms = [newForm, ...forms];
-    setForms(updatedForms);
-    
-    localStorage.setItem('nifty-forms', JSON.stringify(updatedForms));
-    
-    setStats(prev => ({
-      ...prev,
-      totalForms: prev.totalForms + 1
-    }));
-    setIsCreateFormOpen(false);
-    setNewFormName('');
-    navigate(`/form-builder/${newForm.id}`);
+        }
+      };
+      
+      // Call the create_form API
+      const createdForm = await formsApi.createForm(newForm);
+      
+      setForms(prevForms => [createdForm, ...prevForms]);
+      setStats(prev => ({
+        ...prev,
+        totalForms: prev.totalForms + 1
+      }));
+      
+      setIsCreateFormOpen(false);
+      setNewFormName('');
+      
+      // Navigate to the form builder with the created form primary_id
+      navigate(`/form-builder/${createdForm.primary_id}`);
+      
+      toast({
+        title: "Success",
+        description: "Form created successfully"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create form",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleDeleteForm = (formId: string) => {
-    const updatedForms = forms.filter(form => form.id !== formId);
-    setForms(updatedForms);
-    
-    localStorage.setItem('nifty-forms', JSON.stringify(updatedForms));
-    
-    setStats(prev => ({
-      ...prev,
-      totalForms: prev.totalForms - 1
-    }));
-    toast({
-      title: "Success",
-      description: "Form deleted successfully"
-    });
+  const handleDeleteForm = async (formId: string) => {
+    try {
+      await formsApi.deleteForm(formId);
+      setForms(forms.filter(form => form.primary_id !== formId));
+      
+      setStats(prev => ({
+        ...prev,
+        totalForms: prev.totalForms - 1
+      }));
+      
+      toast({
+        title: "Success",
+        description: "Form deleted successfully"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete form",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleDuplicateForm = (form: FormData) => {
-    const duplicatedForm: FormData = {
-      ...form,
-      id: `form-${Date.now()}`,
-      name: `${form.name} (Copy)`,
-      createdAt: new Date().toISOString(),
-      lastModified: new Date().toISOString(),
-      submissions: 0,
-      published: false
-    };
+  const handleDuplicateForm = async (form: FormData) => {
+    try {
+      const duplicatedForm: Omit<FormData, 'primary_id' | 'createdAt' | 'last_modified' | 'submissions'> = {
+        name: `${form.name} (Copy)`,
+        published: false,
+        config: form.config
+      };
+      
+      const createdForm = await formsApi.createForm(duplicatedForm);
+      
+      setForms(prevForms => [createdForm, ...prevForms]);
+      setStats(prev => ({
+        ...prev,
+        totalForms: prev.totalForms + 1
+      }));
+      
+      toast({
+        title: "Success",
+        description: "Form duplicated successfully"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to duplicate form",
+        variant: "destructive"
+      });
+    }
+  };
 
-    const updatedForms = [duplicatedForm, ...forms];
-    setForms(updatedForms);
-    
-    localStorage.setItem('nifty-forms', JSON.stringify(updatedForms));
-    
-    setStats(prev => ({
-      ...prev,
-      totalForms: prev.totalForms + 1
-    }));
-    toast({
-      title: "Success",
-      description: "Form duplicated successfully"
-    });
+  const handleTogglePublish = async (form: FormData) => {
+    try {
+      const updatedForm = {
+        ...form,
+        published: !form.published,
+        last_modified: new Date().toISOString()
+      };
+      
+      await formsApi.updateForm(updatedForm);
+      
+      setForms(prevForms => prevForms.map(f => 
+        f.primary_id === form.primary_id ? updatedForm : f
+      ));
+      
+      toast({
+        title: form.published ? "Form Unpublished" : "Form Published",
+        description: form.published ? 
+          "The form is now in draft mode" : 
+          "The form is now available for submissions"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update form status",
+        variant: "destructive"
+      });
+    }
   };
 
   const formatDate = (dateValue: string | Date): string => {
@@ -238,10 +289,10 @@ const Dashboard = () => {
         return [...formsToSort].sort((a, b) => a.name.localeCompare(b.name));
       case 'date':
         return [...formsToSort].sort((a, b) => 
-          new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime()
+          new Date(b.last_modified).getTime() - new Date(a.last_modified).getTime()
         );
       case 'submissions':
-        return [...formsToSort].sort((a, b) => b.submissions - a.submissions);
+        return [...formsToSort].sort((a, b) => (b.submissions || 0) - (a.submissions || 0));
       default:
         return formsToSort;
     }
@@ -522,7 +573,7 @@ const Dashboard = () => {
           >
             {filteredAndSortedForms.map((form, index) => (
               <motion.div
-                key={form.id}
+                key={form.primary_id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 * index }}
@@ -551,7 +602,7 @@ const Dashboard = () => {
                           <DropdownMenuSeparator className="bg-gray-700" />
                           <DropdownMenuItem 
                             className="hover:bg-gray-700 cursor-pointer text-white" 
-                            onClick={() => navigate(`/form-builder/${form.id}`)}
+                            onClick={() => navigate(`/form-builder/${form.primary_id}`)}
                           >
                             <Edit3 className="h-4 w-4 mr-2 text-blue-500" />
                             Edit Form
@@ -560,7 +611,7 @@ const Dashboard = () => {
                             <>
                               <DropdownMenuItem 
                                 className="hover:bg-gray-700 cursor-pointer text-white"
-                                onClick={() => navigate(`/form/${form.id}`)}
+                                onClick={() => navigate(`/form/${form.primary_id}`)}
                               >
                                 <Eye className="h-4 w-4 mr-2 text-green-400" />
                                 View Form
@@ -568,7 +619,7 @@ const Dashboard = () => {
                               <DropdownMenuItem 
                                 className="hover:bg-gray-700 cursor-pointer text-white"
                                 onClick={() => {
-                                  const shareableLink = `${window.location.origin}/form/${form.id}`;
+                                  const shareableLink = `${window.location.origin}/form/${form.primary_id}`;
                                   navigator.clipboard.writeText(shareableLink);
                                   toast({
                                     title: "Link Copied",
@@ -590,26 +641,7 @@ const Dashboard = () => {
                           </DropdownMenuItem>
                           <DropdownMenuItem 
                             className="hover:bg-gray-700 cursor-pointer text-white"
-                            onClick={() => {
-                              const updatedForms = forms.map(f => {
-                                if (f.id === form.id) {
-                                  return {
-                                    ...f,
-                                    published: !f.published,
-                                    lastModified: new Date().toISOString()
-                                  };
-                                }
-                                return f;
-                              });
-                              setForms(updatedForms);
-                              localStorage.setItem('nifty-forms', JSON.stringify(updatedForms));
-                              toast({
-                                title: form.published ? "Form Unpublished" : "Form Published",
-                                description: form.published ? 
-                                  "The form is now in draft mode" : 
-                                  "The form is now available for submissions"
-                              });
-                            }}
+                            onClick={() => handleTogglePublish(form)}
                           >
                             <Globe className="h-4 w-4 mr-2 text-purple-500" />
                             {form.published ? "Unpublish" : "Publish"}
@@ -617,7 +649,7 @@ const Dashboard = () => {
                           <DropdownMenuSeparator className="bg-gray-700" />
                           <DropdownMenuItem 
                             className="hover:bg-red-900/30 text-red-400 hover:text-red-300 cursor-pointer"
-                            onClick={() => handleDeleteForm(form.id)}
+                            onClick={() => handleDeleteForm(form.primary_id)}
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
                             Delete
@@ -629,21 +661,21 @@ const Dashboard = () => {
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 text-sm text-white">
                         <Clock className="h-4 w-4 text-white" />
-                        Last modified {formatDate(form.lastModified)}
+                        Last modified {formatDate(form.last_modified)}
                       </div>
 
                       <div className="flex items-center justify-between mt-4">
                         <div className="flex items-center gap-2">
                           <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs text-white`}>
                             <CheckCircle2 className="h-3 w-3" />
-                            <span>{form.submissions} submissions</span>
+                            <span>{form.submissions || 0} submissions</span>
                           </div>
                         </div>
                         
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          onClick={() => navigate(`/form-builder/${form.id}`)}
+                          onClick={() => navigate(`/form-builder/${form.primary_id}`)}
                           className="bg-gray-700 hover:bg-gray-600 border border-gray-600 text-white px-3 py-1 rounded-lg flex items-center gap-1 text-sm transition-colors"
                         >
                           <Eye className="h-3 w-3 mr-1" />

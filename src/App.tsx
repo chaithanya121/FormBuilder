@@ -14,6 +14,8 @@ import FormSubmission from "@/components/FormSubmission";
 import { AuthProvider } from "./hooks/use-auth";
 import Layout from "./layout/Layout";
 import { ThemeProvider } from "@/components/theme-provider";
+import { EmailVerification } from "./components/auth/EmailVerification";
+import { AnimatePresence } from "framer-motion";
 
 const queryClient = new QueryClient();
 
@@ -23,23 +25,26 @@ const App = () => {
       <ThemeProvider defaultTheme="light" storageKey="fb-theme">
         <AuthProvider>
           <BrowserRouter>
-            <div className="relative min-h-scree">
-              <TooltipProvider delayDuration={0}>
-                <Layout>
-                  <Routes>
-                    <Route path="/" element={<MainDashboard/>} />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/forms" element={<Index />} />
-                    <Route path="/create" element={<FormBuilder />} />
-                    <Route path="/form-builder/:id" element={<FormBuilder />} />
-                    <Route path="/form/:id" element={<FormSubmission />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Layout>
-                <Toaster />
-                <Sonner />
-              </TooltipProvider>
-            </div>
+            <AnimatePresence>
+              <div className="relative min-h-screen">
+                <TooltipProvider delayDuration={0}>
+                  <Layout>
+                    <Routes>
+                      <Route path="/" element={<MainDashboard/>} />
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/forms" element={<Index />} />
+                      <Route path="/create" element={<FormBuilder />} />
+                      <Route path="/form-builder/:id" element={<FormBuilder />} />
+                      <Route path="/form/:id" element={<FormSubmission />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </Layout>
+                  <EmailVerification />
+                  <Toaster />
+                  <Sonner />
+                </TooltipProvider>
+              </div>
+            </AnimatePresence>
           </BrowserRouter>
         </AuthProvider>
       </ThemeProvider>

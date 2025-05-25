@@ -7,83 +7,88 @@ import { FormConfig } from '@/components/FormBuilder/types';
 import FormPreview from '@/components/FormBuilder/FormPreview';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, CheckCircle } from 'lucide-react';
-import { saveFormSubmission } from '@/lib/submission-utils';
-
-interface FormData {
-  id: string;
-  name: string;
-  createdAt: string | Date;
-  lastModified: string | Date;
-  submissions: number;
-  published: boolean;
-  config: FormConfig;
-}
+import { formsApi } from '@/services/api/forms';
 
 const FormSubmission = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [form, setForm] = useState<FormData | null>(null);
+  const [form, setForm] = useState<any>(null);
   const [formValues, setFormValues] = useState<Record<string, any>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load form data from localStorage
-    try {
-      const storedFormsJson = localStorage.getItem('nifty-forms');
-      if (storedFormsJson) {
-        const storedForms = JSON.parse(storedFormsJson);
-        const formToView = storedForms.find((form: FormData) => form.id === id);
+    const loadForm = async () => {
+      if (!id) return;
+      
+      try {
+        const formData = await formsApi.getPreviewData(id);
         
-        if (formToView) {
-          if (!formToView.published) {
-            toast({
-              title: "Form Not Available",
-              description: "This form is not published and cannot be submitted.",
-              variant: "destructive"
-            });
-            navigate('/');
-            return;
-          }
-          
-          setForm(formToView);
-        } else {
+        if (!formData) {
           toast({
             title: "Form Not Found",
             description: "The requested form could not be found.",
             variant: "destructive"
           });
           navigate('/');
+          return;
         }
+        
+        if (!formData.published) {
+          toast({
+            title: "Form Not Available",
+            description: "This form is not published and cannot be submitted.",
+            variant: "destructive"
+          });
+          navigate('/');
+          return;
+        }
+        
+        setForm(formData);
+      } catch (error) {
+        console.error('Error loading form:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load form data",
+          variant: "destructive"
+        });
+        navigate('/');
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error loading form:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load form data",
-        variant: "destructive"
-      });
-      navigate('/');
-    }
+    };
+    
+    loadForm();
   }, [id, navigate, toast]);
 
-  const handleFormSubmit = () => {
-    if (!form || !id) return;
+  const handleFormSubmit = async () => {
+    // if (!form || !id) return;
     
-    // Save submission data using our utility function
-    saveFormSubmission(id, formValues);
-    
-    // Show success message
-    setSubmitted(true);
-    toast({
-      title: "Success",
-      description: "Form submitted successfully"
-    });
-    
-    console.log('Form submitted with values:', formValues);
+    try {
+      // Submit form using the API
+      // debugger;
+      await formsApi.submitFormResponse(JSON.parse(id), formValues);
+      
+      // Show success message
+      setSubmitted(true);
+      toast({
+        title: "Success",
+        description: "Form submitted successfully"
+      });
+      
+      console.log('Form submitted with values:', formValues);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit form",
+        variant: "destructive"
+      });
+    }
   };
 
-  if (!form) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white flex items-center justify-center">
         <Card className="bg-gray-800 border-gray-700 p-8 max-w-md w-full">
@@ -120,7 +125,7 @@ const FormSubmission = () => {
   }
 
   // Apply canvas styles from form config if available
-  const canvasStyles = form.config.settings.canvasStyles || {};
+  const canvasStyles = form?.config?.settings?.canvasStyles || {};
   const canvasStylesObj = {
     backgroundColor: canvasStyles.backgroundColor || '',
     backgroundImage: canvasStyles.backgroundImage || '',
@@ -133,25 +138,9 @@ const FormSubmission = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
-      {/* <header className="border-b border-gray-800 bg-gray-900 sticky top-0 z-50 shadow-md">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => navigate('/')}
-                className="text-gray-300 hover:text-white flex items-center gap-1"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                <span>Back to Home</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </header> */}
-
       <div className="container mx-auto p-4" style={{width: '38%'}}>
         <Card className="bg-gray-800 border-gray-700 p-6 mb-6">
-          <h1 className="text-2xl font-bold mb-2">{form.config.name}</h1>
+          <h1 className="text-2xl font-bold mb-2">{form?.config?.name}</h1>
           <p className="text-gray-400">Please fill out the form below</p>
         </Card>
 
@@ -160,7 +149,7 @@ const FormSubmission = () => {
           style={canvasStylesObj}
         >
           <FormPreview 
-            formConfig={form.config} 
+            formConfig={form?.config} 
             onChange={setFormValues}
             values={formValues}
             onSubmit={handleFormSubmit}
