@@ -1,12 +1,11 @@
 
-import { v4 as uuidv4 } from 'uuid';
 import { formsApi, FormSubmission } from '@/services/api/forms';
 
 // Save a new form submission
 export const saveFormSubmission = async (formId: string, submissionData: Record<string, any>): Promise<void> => {
   try {
     await formsApi.submitFormResponse(formId, submissionData);
-    updateFormSubmissionCount(formId);
+    await updateFormSubmissionCount(formId);
   } catch (error) {
     console.error('Error saving form submission:', error);
     throw error;
