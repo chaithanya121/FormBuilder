@@ -133,10 +133,11 @@ export const formsSlice = createSlice({
     });
     builder.addCase(fetchFormById.fulfilled, (state, action) => {
       state.loading = false;
-      if (action.payload && 'primary_id' in action.payload && action.payload.primary_id) {
+      if (action.payload && typeof action.payload === 'object' && 'primary_id' in action.payload) {
+        const form = action.payload as FormData;
         state.currentForm = {
-          primary_id: action.payload.primary_id,
-          config: action.payload.config
+          primary_id: form.primary_id,
+          config: form.config || { title: '', description: '', elements: [], settings: {} }
         };
       }
       state.error = null;

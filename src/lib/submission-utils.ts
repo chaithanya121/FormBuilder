@@ -1,5 +1,5 @@
 
-import { formsApi, FormSubmission } from '@/services/api/forms';
+import { formsApi, FormSubmission, FormData } from '@/services/api/forms';
 
 // Save a new form submission
 export const saveFormSubmission = async (formId: string, submissionData: Record<string, any>): Promise<void> => {
@@ -23,13 +23,13 @@ const updateFormSubmissionCount = async (formId: string): Promise<void> => {
   try {
     const form = await formsApi.getFormById(formId);
     if (form && 'primary_id' in form && form.primary_id) {
-      const formToUpdate = {
+      const formToUpdate: FormData = {
         primary_id: form.primary_id,
-        name: form.name,
-        createdAt: form.createdAt,
+        name: form.name || 'Untitled Form',
+        createdAt: form.createdAt || new Date().toISOString(),
         last_modified: new Date().toISOString(),
         published: form.published || false,
-        config: form.config,
+        config: form.config || { title: '', description: '', elements: [], settings: {} },
         submissions: (form.submissions || 0) + 1
       };
       await formsApi.updateForm(formToUpdate);

@@ -1,162 +1,153 @@
-
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Card } from '@/components/ui/card';
+import { useParams } from 'react-router-dom';
+import { FormElementRenderer } from '@/components/FormElementRenderer';
 import { Button } from '@/components/ui/button';
-import { FormConfig } from '@/components/FormBuilder/types';
-import FormPreview from '@/components/FormBuilder/FormPreview';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, CheckCircle } from 'lucide-react';
-import { formsApi } from '@/services/api/forms';
+import { saveFormSubmission } from '@/lib/submission-utils';
+import { formsApi, FormData } from '@/services/api/forms';
+import { FormConfig } from '@/components/FormBuilder/types';
+import { useTheme } from '@/components/theme-provider';
 
 const FormSubmission = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
+  const { formId } = useParams<{ formId: string }>();
+  const [form, setForm] = useState<FormData | null>(null);
+  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const { toast } = useToast();
-  const [form, setForm] = useState<any>(null);
-  const [formValues, setFormValues] = useState<Record<string, any>>({});
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const { theme } = useTheme();
 
   useEffect(() => {
     const loadForm = async () => {
-      if (!id) return;
+      if (!formId) return;
       
       try {
-        const formData = await formsApi.getPreviewData(id);
-        
-        if (!formData) {
-          toast({
-            title: "Form Not Found",
-            description: "The requested form could not be found.",
-            variant: "destructive"
-          });
-          navigate('/');
-          return;
+        const loadedForm = await formsApi.getFormById(formId);
+        if (loadedForm && 'config' in loadedForm) {
+          setForm(loadedForm);
         }
-        
-        if (!formData.published) {
-          toast({
-            title: "Form Not Available",
-            description: "This form is not published and cannot be submitted.",
-            variant: "destructive"
-          });
-          navigate('/');
-          return;
-        }
-        
-        setForm(formData);
       } catch (error) {
         console.error('Error loading form:', error);
         toast({
           title: "Error",
-          description: "Failed to load form data",
+          description: "Failed to load form",
           variant: "destructive"
         });
-        navigate('/');
-      } finally {
-        setLoading(false);
       }
     };
-    
-    loadForm();
-  }, [id, navigate, toast]);
 
-  const handleFormSubmit = async () => {
-    // if (!form || !id) return;
-    
+    loadForm();
+  }, [formId, toast]);
+
+  const isFormPublished = form && 'published' in form ? form.published : false;
+
+  if (!form || !isFormPublished) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center ${theme === 'light' 
+        ? 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50' 
+        : 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900'
+      }`}>
+        <Card className={`w-full max-w-md mx-4 ${theme === 'light' 
+          ? 'bg-white/80 backdrop-blur-sm border-white/20 shadow-xl' 
+          : 'bg-gray-800/80 backdrop-blur-sm border-gray-700/50'
+        }`}>
+          <CardContent className="pt-6 text-center">
+            <p className={theme === 'light' ? 'text-gray-600' : 'text-gray-300'}>
+              {!form ? 'Loading...' : 'This form is not available'}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const handleInputChange = (elementId: string, value: any) => {
+    setFormData(prevData => ({
+      ...prevData,
+      [elementId]: value,
+    }));
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!formId) return;
+
+    setIsSubmitting(true);
     try {
-      // Submit form using the API
-      // debugger;
-      await formsApi.submitFormResponse(JSON.parse(id), formValues);
-      
-      // Show success message
-      setSubmitted(true);
+      await saveFormSubmission(formId, formData);
+      setIsSubmitted(true);
       toast({
         title: "Success",
-        description: "Form submitted successfully"
+        description: "Form submitted successfully!"
       });
-      
-      console.log('Form submitted with values:', formValues);
+
+      // Handle redirect if specified
+      if (form && form.config && form.config.settings && form.config.settings.redirectUrl) {
+        window.location.href = form.config.settings.redirectUrl;
+      }
     } catch (error) {
-      console.error('Error submitting form:', error);
+      console.error('Form submission error:', error);
       toast({
         title: "Error",
         description: "Failed to submit form",
         variant: "destructive"
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white flex items-center justify-center">
-        <Card className="bg-gray-800 border-gray-700 p-8 max-w-md w-full">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <h2 className="text-xl font-semibold mb-2">Loading Form...</h2>
-            <p className="text-gray-400">Please wait while we load the form.</p>
-          </div>
-        </Card>
-      </div>
-    );
-  }
-
-  if (submitted) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white flex items-center justify-center">
-        <Card className="bg-gray-800 border-gray-700 p-8 max-w-md w-full">
-          <div className="text-center">
-            <div className="mx-auto mb-4 bg-green-500/20 p-3 rounded-full w-16 h-16 flex items-center justify-center">
-              <CheckCircle className="h-8 w-8 text-green-500" />
-            </div>
-            <h2 className="text-xl font-semibold mb-2">Form Submitted Successfully!</h2>
-            <p className="text-gray-400 mb-6">Thank you for your submission.</p>
-            <Button 
-              onClick={() => navigate('/')}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              Return Home
-            </Button>
-          </div>
-        </Card>
-      </div>
-    );
-  }
-
-  // Apply canvas styles from form config if available
-  const canvasStyles = form?.config?.settings?.canvasStyles || {};
-  const canvasStylesObj = {
-    backgroundColor: canvasStyles.backgroundColor || '',
-    backgroundImage: canvasStyles.backgroundImage || '',
-    padding: canvasStyles.padding || '',
-    margin: canvasStyles.margin || '',
-    borderRadius: canvasStyles.borderRadius || '',
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-  };
+  const formConfig: FormConfig | undefined = form && 'config' in form ? form.config : undefined;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
-      <div className="container mx-auto p-4" style={{width: '38%'}}>
-        <Card className="bg-gray-800 border-gray-700 p-6 mb-6">
-          <h1 className="text-2xl font-bold mb-2">{form?.config?.name}</h1>
-          <p className="text-gray-400">Please fill out the form below</p>
-        </Card>
-
-        <Card 
-          className="bg-gray-800 border-gray-700 p-6 min-h-[calc(72vh -16rem)]"
-          style={canvasStylesObj}
-        >
-          <FormPreview 
-            formConfig={form?.config} 
-            onChange={setFormValues}
-            values={formValues}
-            onSubmit={handleFormSubmit}
-            isSubmission={true}
-          />
-        </Card>
-      </div>
+    <div className={`min-h-screen flex items-center justify-center ${theme === 'light' 
+      ? 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50' 
+      : 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900'
+    }`}>
+      <Card className={`w-full max-w-2xl mx-4 ${theme === 'light' 
+        ? 'bg-white/80 backdrop-blur-sm border-white/20 shadow-xl' 
+        : 'bg-gray-800/80 backdrop-blur-sm border-gray-700/50'
+      }`}>
+        <CardHeader>
+          <CardTitle className={theme === 'light' ? 'text-gray-800' : 'text-white'}>
+            {formConfig?.title || 'Form'}
+          </CardTitle>
+          <CardDescription className={theme === 'light' ? 'text-gray-600' : 'text-gray-300'}>
+            {formConfig?.description || 'Fill out the form below'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isSubmitted ? (
+            <div className="text-center">
+              <h2 className={theme === 'light' ? 'text-gray-800 text-2xl font-semibold mb-4' : 'text-white text-2xl font-semibold mb-4'}>
+                {formConfig?.settings?.successMessage || 'Thank you for your submission!'}
+              </h2>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {formConfig?.elements && formConfig.elements.map((element) => (
+                <FormElementRenderer
+                  key={element.id}
+                  element={element}
+                  onChange={handleInputChange}
+                  value={formData[element.id]}
+                />
+              ))}
+              <Button 
+                type="submit" 
+                className={`${theme === 'light'
+                  ? 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600'
+                  : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600'
+                } text-white shadow-lg hover:shadow-xl transition-all duration-200`}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Submitting...' : formConfig?.settings?.submitButtonText || 'Submit'}
+              </Button>
+            </form>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
