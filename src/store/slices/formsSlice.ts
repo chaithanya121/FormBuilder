@@ -98,6 +98,34 @@ export const deleteFormAction = createAsyncThunk(
   }
 );
 
+export const duplicateFormAction = createAsyncThunk(
+  'forms/duplicateForm',
+  async (formId: string, { rejectWithValue }) => {
+    try {
+      const form = await formsApi.getFormById(formId);
+      if (!form) {
+        return rejectWithValue('Form not found');
+      }
+      
+      // Create a copy with a new name
+      const duplicatedForm = {
+        ...form,
+        name: `${form.name} (Copy)`,
+        primary_id: undefined, // Let the API generate a new ID
+        createdAt: undefined,
+        last_modified: undefined
+      };
+      
+      const result = await formsApi.createForm(duplicatedForm);
+      console.log('Redux duplicateForm result:', result);
+      return result;
+    } catch (error) {
+      console.error('Redux duplicateForm error:', error);
+      return rejectWithValue((error as Error).message);
+    }
+  }
+);
+
 export const formsSlice = createSlice({
   name: 'forms',
   initialState,
@@ -229,6 +257,21 @@ export const formsSlice = createSlice({
     builder.addCase(deleteFormAction.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload as string || 'Failed to delete form';
+    });
+
+    // Duplicate form
+    builder.addCase(duplicateFormAction.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(duplicateFormAction.fulfilled, (state, action) => {
+      state.loading = false;
+      state.forms.push(action.payload);
+      state.error = null;
+    });
+    builder.addCase(duplicateFormAction.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string || 'Failed to duplicate form';
     });
   },
 });
