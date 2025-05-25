@@ -103,17 +103,19 @@ export const duplicateFormAction = createAsyncThunk(
   async (formId: string, { rejectWithValue }) => {
     try {
       const form = await formsApi.getFormById(formId);
-      if (!form) {
-        return rejectWithValue('Form not found');
+      
+      // Check if form exists and has the required properties
+      if (!form || typeof form !== 'object' || !('name' in form) || !('config' in form)) {
+        return rejectWithValue('Form not found or invalid');
       }
       
-      // Create a copy with a new name
-      const duplicatedForm = {
-        ...form,
-        name: `${form.name} (Copy)`,
-        primary_id: undefined, // Let the API generate a new ID
-        createdAt: undefined,
-        last_modified: undefined
+      const formData = form as FormData;
+      
+      // Create a copy with a new name and ensure all required properties are present
+      const duplicatedForm: Omit<FormData, 'primary_id' | 'createdAt' | 'last_modified' | 'submissions'> = {
+        name: `${formData.name} (Copy)`,
+        published: formData.published || false,
+        config: formData.config
       };
       
       const result = await formsApi.createForm(duplicatedForm);
