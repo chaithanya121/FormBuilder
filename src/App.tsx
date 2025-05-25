@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import Header from "./components/Header";
 import FormBuilder from "./components/FormBuilder";
 import Dashboard from "@/components/Dashboard";
+import MainDashboard from "@/components/Dashboard";
 import FormSubmission from "@/components/FormSubmission";
 import { AuthProvider } from "./hooks/use-auth";
 import Layout from "./layout/Layout";
@@ -29,7 +30,7 @@ const App = () => {
                 <TooltipProvider delayDuration={0}>
                   <Layout>
                     <Routes>
-                      <Route path="/" element={<Dashboard />} />
+                      <Route path="/" element={<MainDashboard/>} />
                       <Route path="/dashboard" element={<Dashboard />} />
                       <Route path="/forms" element={<Index />} />
                       <Route path="/create" element={<FormBuilder />} />
