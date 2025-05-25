@@ -1,4 +1,3 @@
-
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { FormConfig } from '@/components/FormBuilder/types';
 import { formsApi, FormData } from '@/services/api/forms';
@@ -134,7 +133,7 @@ export const formsSlice = createSlice({
     });
     builder.addCase(fetchFormById.fulfilled, (state, action) => {
       state.loading = false;
-      if (action.payload) {
+      if (action.payload && 'primary_id' in action.payload && action.payload.primary_id) {
         state.currentForm = {
           primary_id: action.payload.primary_id,
           config: action.payload.config

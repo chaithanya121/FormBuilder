@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   Table,
@@ -29,7 +28,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
-import { formsApi } from "@/services/forms";
+import { formsApi, FormSubmission as ApiFormSubmission } from "@/services/api/forms";
 
 interface FormData {
   id: string;
@@ -60,7 +59,16 @@ const Submissions = () => {
       console.log("Loading forms...");
       const data = await formsApi.getFormSubmissions(id);
       console.log("submissions", data);
-      setSubmissions(data);
+      
+      // Convert API submissions to local interface
+      const convertedSubmissions: FormSubmission[] = Array.isArray(data) ? data.map(submission => ({
+        id: submission.primary_id || submission.id || `sub-${Date.now()}`,
+        form_id: submission.formId || submission.form_id || id,
+        timestamp: submission.timestamp || new Date().toISOString(),
+        data: submission.data || {}
+      })) : [];
+      
+      setSubmissions(convertedSubmissions);
     } catch (error) {
       console.error("Error loading forms:", error);
       toast({
@@ -75,13 +83,20 @@ const Submissions = () => {
     const loadFormsData = async () => {
       try {
         const storedForms = await formsApi.getFormNameID();
-        if (storedForms && storedForms.length > 0) {
-          setForms(storedForms);
+        if (Array.isArray(storedForms) && storedForms.length > 0) {
+          const convertedForms: FormData[] = storedForms.map(form => ({
+            id: form.primary_id || form.id || `form-${Date.now()}`,
+            primary_id: form.primary_id || form.id || `form-${Date.now()}`,
+            name: form.name || 'Untitled Form',
+            submissions: form.submissions || 0
+          }));
           
-          if (!selectedFormId) {
-            console.log("store", storedForms[0]["primary_id"]);
-            setSelectedFormId(storedForms[0]["primary_id"]);
-            loadForms(storedForms[0]["primary_id"]);
+          setForms(convertedForms);
+          
+          if (!selectedFormId && convertedForms.length > 0) {
+            console.log("store", convertedForms[0]["primary_id"]);
+            setSelectedFormId(convertedForms[0]["primary_id"]);
+            loadForms(convertedForms[0]["primary_id"]);
           }
         }
       } catch (error) {

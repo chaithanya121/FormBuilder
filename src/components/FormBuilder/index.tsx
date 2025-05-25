@@ -96,7 +96,7 @@ const FormBuilder = () => {
         try {
           console.log('Attempting to load form with primary_id:', id);
           const formToEdit = await formsApi.getFormById(id);
-          if (formToEdit) {
+          if (formToEdit && 'config' in formToEdit && formToEdit.config) {
             setFormConfig(formToEdit.config);
             setIsPublished(formToEdit.published || false);
             setFormId(formToEdit.primary_id);
@@ -111,7 +111,6 @@ const FormBuilder = () => {
               description: "Creating a new form instead",
               variant: "destructive"
             });
-            // Don't navigate away, just continue with new form creation
           }
         } catch (error) {
           console.error('Error loading form:', error);
@@ -120,7 +119,6 @@ const FormBuilder = () => {
             description: "Creating a new form instead",
             variant: "destructive"
           });
-          // Don't navigate away, just continue with new form creation
         }
       };
       loadForm();
@@ -221,11 +219,14 @@ const FormBuilder = () => {
       if (id) {
         // Update existing form
         const currentForm = await formsApi.getFormById(id);
-        if (currentForm) {
-          const formToUpdate = {
-            ...currentForm,
+        if (currentForm && 'primary_id' in currentForm && currentForm.primary_id) {
+          const formToUpdate: FormData = {
+            primary_id: currentForm.primary_id,
             name: formConfig.name,
+            createdAt: currentForm.createdAt,
             last_modified: new Date().toISOString(),
+            submissions: currentForm.submissions || 0,
+            published: currentForm.published || false,
             config: formConfig
           };
           await formsApi.updateForm(formToUpdate);
@@ -263,11 +264,14 @@ const FormBuilder = () => {
       if (id) {
         // Update existing form to published state
         const currentForm = await formsApi.getFormById(id);
-        if (currentForm) {
-          const formToUpdate = {
-            ...currentForm,
-            published: true,
+        if (currentForm && 'primary_id' in currentForm && currentForm.primary_id) {
+          const formToUpdate: FormData = {
+            primary_id: currentForm.primary_id,
+            name: currentForm.name,
+            createdAt: currentForm.createdAt,
             last_modified: new Date().toISOString(),
+            submissions: currentForm.submissions || 0,
+            published: true,
             config: formConfig
           };
           await formsApi.updateForm(formToUpdate);
