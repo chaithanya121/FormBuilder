@@ -137,7 +137,32 @@ export const formsSlice = createSlice({
         const form = action.payload as FormData;
         state.currentForm = {
           primary_id: form.primary_id,
-          config: form.config || { title: '', description: '', elements: [], settings: {} }
+          config: form.config || {
+            title: 'Untitled Form',
+            description: 'Form description',
+            elements: [],
+            settings: {
+              preview: {
+                width: "Full",
+                nesting: false
+              },
+              validation: {
+                liveValidation: "Default"
+              },
+              layout: {
+                size: "Default",
+                columns: {
+                  default: false,
+                  tablet: false,
+                  desktop: false
+                },
+                labels: "Default",
+                placeholders: "Default",
+                errors: "Default",
+                messages: "Default"
+              }
+            }
+          }
         };
       }
       state.error = null;

@@ -29,7 +29,32 @@ const updateFormSubmissionCount = async (formId: string): Promise<void> => {
         createdAt: form.createdAt || new Date().toISOString(),
         last_modified: new Date().toISOString(),
         published: form.published || false,
-        config: form.config || { title: '', description: '', elements: [], settings: {} },
+        config: form.config || {
+          title: 'Untitled Form',
+          description: 'Form description',
+          elements: [],
+          settings: {
+            preview: {
+              width: "Full",
+              nesting: false
+            },
+            validation: {
+              liveValidation: "Default"
+            },
+            layout: {
+              size: "Default",
+              columns: {
+                default: false,
+                tablet: false,
+                desktop: false
+              },
+              labels: "Default",
+              placeholders: "Default",
+              errors: "Default",
+              messages: "Default"
+            }
+          }
+        },
         submissions: (form.submissions || 0) + 1
       };
       await formsApi.updateForm(formToUpdate);

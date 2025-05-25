@@ -8,7 +8,10 @@ export type FormElementType =
   | "radio-group" | "radio-blocks" | "radio-tabs" | "toggle" | "slider"
   | "range-slider" | "vertical-slider" | "file-upload" | "multi-file-upload"
   | "image-upload" | "multi-image-upload" | "gallery" | "paragraph" | "quote"
-  | "image" | "link" | "danger-button" | "static-html";
+  | "image" | "link" | "danger-button" | "static-html"
+  | "address" | "street-address" | "street-address-line2" | "city" | "state-province"
+  | "postal-code" | "name" | "first-name" | "last-name" | "appointment" | "rating"
+  | "captcha" | "form_submit";
 
 export interface FormElement {
   id: string;
@@ -43,6 +46,11 @@ export interface FormElement {
   inputType?: string;
   fieldStyles?: Record<string, any>;
   labelStyles?: Record<string, any>;
+  layout?: {
+    inRow?: boolean;
+    rowPosition?: number;
+    rowId?: string;
+  };
 }
 
 export interface FormConfig {
@@ -110,4 +118,11 @@ export interface ElementSettingsProps {
   element: FormElement;
   onUpdate: (updatedElement: FormElement) => void;
   onClose: () => void;
+}
+
+export interface FormElementRendererProps {
+  element: FormElement;
+  value?: any;
+  onChange?: (elementId: string, value: any) => void;
+  error?: string;
 }

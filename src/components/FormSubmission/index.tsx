@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { saveFormSubmission } from '@/lib/submission-utils';
 import { formsApi, FormData } from '@/services/api/forms';
-import { FormConfig } from '@/components/FormBuilder/types';
+import { FormConfig } from '@/types';
 import { useTheme } from '@/components/theme-provider';
 
 const FormSubmission = () => {

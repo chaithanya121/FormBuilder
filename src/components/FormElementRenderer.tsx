@@ -1,6 +1,6 @@
 
 import React from "react";
-import { FormElement } from "../types";
+import { FormElement } from "@/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -10,17 +10,23 @@ import { Input } from "@/components/ui/input";
 interface FormElementRendererProps {
   element: FormElement;
   value?: any;
-  onChange?: (value: any) => void;
+  onChange?: (elementId: string, value: any) => void;
   error?: string;
 }
 
 const FormElementRenderer = ({ element, value, onChange, error }: FormElementRendererProps) => {
+  const handleChange = (newValue: any) => {
+    if (onChange) {
+      onChange(element.id, newValue);
+    }
+  };
+
   switch (element.type) {
     case "select":
       return (
         <div className="w-full">
           <Label>{element.label}</Label>
-          <Select onValueChange={onChange} value={value || element.value}>
+          <Select onValueChange={handleChange} value={value || element.value}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder={element.placeholder || "Select an option"} />
             </SelectTrigger>
@@ -46,7 +52,7 @@ const FormElementRenderer = ({ element, value, onChange, error }: FormElementRen
             type={element.type}
             placeholder={element.placeholder}
             value={value || element.value || ""}
-            onChange={(e) => onChange?.(e.target.value)}
+            onChange={(e) => handleChange(e.target.value)}
             required={element.required}
           />
           {error && <p className="text-sm text-destructive mt-1">{error}</p>}
@@ -59,7 +65,7 @@ const FormElementRenderer = ({ element, value, onChange, error }: FormElementRen
           <Checkbox
             id={element.id}
             checked={value || false}
-            onCheckedChange={onChange}
+            onCheckedChange={handleChange}
           />
           <Label htmlFor={element.id}>{element.label}</Label>
           {error && <p className="text-sm text-destructive mt-1">{error}</p>}
@@ -70,7 +76,7 @@ const FormElementRenderer = ({ element, value, onChange, error }: FormElementRen
       return (
         <div className="w-full">
           <Label>{element.label}</Label>
-          <RadioGroup value={value} onValueChange={onChange}>
+          <RadioGroup value={value} onValueChange={handleChange}>
             {element.options?.map((option, index) => (
               <div key={index} className="flex items-center space-x-2">
                 <RadioGroupItem value={option} id={`${element.id}-${index}`} />
