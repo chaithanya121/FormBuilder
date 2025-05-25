@@ -17,7 +17,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { generate } from 'randomstring';
+import { v4 as uuidv4 } from 'uuid';
 import { motion } from "framer-motion";
 import {
   Accordion,
@@ -292,7 +292,7 @@ const FormBuilder = () => {
   }, [currentForm]);
 
   const addElement = (element: Omit<FormElement, 'id'>) => {
-    const newElement: FormElement = { ...element, id: generate(7) };
+    const newElement: FormElement = { ...element, id: uuidv4().substring(0, 7) };
     setFormConfig(prevConfig => ({
       ...prevConfig,
       elements: [...prevConfig.elements, newElement],
