@@ -107,14 +107,14 @@ const Submissions = () => {
             ) : submissions.length > 0 ? (
               <div className="space-y-4">
                 {submissions.map((submission) => (
-                  <Card key={`${submission.form_id}-${submission.id}`} className={`${theme === 'light' 
+                  <Card key={`${submission.formId}-${submission.id}`} className={`${theme === 'light' 
                     ? 'bg-gray-50/80 border-gray-200/50' 
                     : 'bg-gray-700/50 border-gray-600/50'
                   }`}>
                     <CardContent className="pt-4">
                       <div className="flex justify-between items-start mb-2">
                         <h4 className={`font-medium ${theme === 'light' ? 'text-gray-800' : 'text-white'}`}>
-                          {getFormName(submission.form_id)}
+                          {getFormName(submission.formId)}
                         </h4>
                         <span className={`text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                           {submission.submissions || 0} submissions

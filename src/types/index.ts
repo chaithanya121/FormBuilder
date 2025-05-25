@@ -46,9 +46,22 @@ export interface FormElement {
 }
 
 export interface FormConfig {
-  name: string;
+  title: string;
+  description: string;
   elements: FormElement[];
   settings: {
+    termsAndConditions?: {
+      enabled: boolean;
+      required: boolean;
+      text: string;
+    };
+    submitButton?: {
+      enabled: boolean;
+      text: string;
+    };
+    submitButtonText?: string;
+    successMessage?: string;
+    redirectUrl?: string;
     preview: {
       width: "Full" | number;
       nesting: boolean;

@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { FormElementRenderer } from '@/components/FormElementRenderer';
+import FormElementRenderer from '@/components/FormElementRenderer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
@@ -142,7 +143,7 @@ const FormSubmission = () => {
                 } text-white shadow-lg hover:shadow-xl transition-all duration-200`}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Submitting...' : formConfig?.settings?.submitButtonText || 'Submit'}
+                {isSubmitting ? 'Submitting...' : formConfig?.settings?.submitButtonText || formConfig?.settings?.submitButton?.text || 'Submit'}
               </Button>
             </form>
           )}

@@ -45,6 +45,9 @@ export interface FormSettings {
     enabled: boolean;
     text: string;
   };
+  submitButtonText?: string;
+  successMessage?: string;
+  redirectUrl?: string;
   preview: {
     width: "Full" | "Contained";
     nesting: boolean;
