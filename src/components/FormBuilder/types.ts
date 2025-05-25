@@ -29,7 +29,8 @@ export type FormElementType =
   | "form_submit";
 
 export interface FormConfig {
-  name: string;
+  title: string;
+  description: string;
   elements: FormElement[];
   settings: FormSettings;
 }
@@ -75,7 +76,6 @@ export interface FormCanvasProps {
   onUpdate: (element: FormElement) => void;
 }
 
-// Export types
 export interface FormElement {
   id: string;
   type: FormElementType;
@@ -116,7 +116,6 @@ export interface FormElementProps {
   error?: string;
 }
 
-// Add missing interfaces
 export interface ElementSettingsProps {
   element: FormElement;
   onUpdate: (element: FormElement) => void;
