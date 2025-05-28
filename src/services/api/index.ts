@@ -37,6 +37,7 @@ export const API_CONFIG = {
       CURRENT_USER: '/auth/me/',
       UPDATE_PROFILE: '/auth/profile/',
       CHANGE_PASSWORD: '/auth/change-password/',
+      PLANS: '/auth/plans/',
     },
     FORMS: {
       GET_ALL: '/form_list/',
