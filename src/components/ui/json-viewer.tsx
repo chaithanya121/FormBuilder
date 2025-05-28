@@ -12,9 +12,10 @@ import { formatJson, isValidJson, searchJson, generateSampleJson, SearchResult }
 
 interface JsonViewerProps {
   initialJson?: string;
+  editJson?:boolean
 }
 
-const JsonViewer: React.FC<JsonViewerProps> = ({ initialJson }) => {
+const JsonViewer: React.FC<JsonViewerProps> = ({ initialJson,editJson }) => {
   const [jsonText, setJsonText] = useState(initialJson || generateSampleJson());
   const [parsedJson, setParsedJson] = useState<any>({});
   const [error, setError] = useState<string | null>(null);
@@ -176,9 +177,9 @@ const JsonViewer: React.FC<JsonViewerProps> = ({ initialJson }) => {
             <TabsTrigger
               value="editor"
               className="data-[state=active]:bg-gray-700"
-              disabled
+            
             >
-              Editor
+              {editJson ? 'Editor': 'JSON'}
             </TabsTrigger>
           </TabsList>
           
@@ -209,6 +210,7 @@ const JsonViewer: React.FC<JsonViewerProps> = ({ initialJson }) => {
                     keyName={null}
                     value={parsedJson}
                     isRoot
+                    
                     path={[]}
                     isSearchMatch={searchResults.length > 0 && isPathInSearchResults([])}
                     expandedPaths={expandedPaths}

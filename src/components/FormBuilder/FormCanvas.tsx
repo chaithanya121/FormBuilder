@@ -18,7 +18,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@radix-ui/react-tooltip
 import { useState, useEffect, useRef } from "react";
 import { Calendar } from "lucide-react";
 
-const FormCanvas = ({ elements, setFormConfig, onSelectElement, selectedElement, formConfig, onUpdate }: FormCanvasProps) => {    
+const FormCanvas = ({ elements, setFormConfig, onSelectElement, selectedElement, formConfig, onUpdate}: FormCanvasProps) => {    
   const { toast } = useToast();
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [draggedElement, setDraggedElement] = useState<FormElement | null>(null);

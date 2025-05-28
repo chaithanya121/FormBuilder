@@ -8,7 +8,7 @@ export const API_CONFIG = {
   BASE_URL: process?.env?.REACT_APP_API_URL || 'https://localhost:8000',
   
   // Optional API version path segment
-  API_VERSION: process?.env?.REACT_APP_API_VERSION|| 'v1',
+  API_VERSION: process?.env?.REACT_APP_API_VERSION|| 'v2',
   
   // Flag to determine if we should use API versioning in URLs
   USE_VERSION_IN_URL: process.env.REACT_APP_USE_API_VERSION !== 'false',

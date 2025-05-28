@@ -8,12 +8,15 @@ import { motion } from "framer-motion";
 import { verticalNavClasses } from './../components/styles/mainClass';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
-const Header = () => {
+interface HeaderProps {
+  toggleSidebar: () => void;
+}
+
+const Header = ({ toggleSidebar }: HeaderProps) => {
   const [isToggled, setIsToggled] = useState<boolean>(false);
 
   const handleToggleSidebar = () => {
-    // Sidebar toggle functionality can be implemented later if needed
-    setIsToggled(!isToggled);
+    toggleSidebar(); // Call the toggleSidebar function from Layout
   };
 
   // Handle Backdrop(Content Overlay) Click

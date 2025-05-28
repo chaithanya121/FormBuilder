@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -67,10 +66,10 @@ export function EmailVerification() {
         description: "Your email has been successfully verified",
       });
       
-      // Close the verification modal and navigate to dashboard
+      // Close the verification modal and navigate to plan selection
       dispatch(setShowVerificationModal(false));
       dispatch(setVerificationEmail(null));
-      navigate("/dashboard");
+      navigate("/select-plan");
     } catch (error) {
       console.error("Verification error:", error);
       toast({

@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await authApi.signIn(email, password);
       console.log(response);
       if (response.status === 200 || response.status === 201) {
-        sessionStorage.setItem('auth_token', response.data.access_token);
+        sessionStorage.setItem('auth_token', response.data.access);
         setUser(response.user);
         setIsAuthenticated(true);
       }
@@ -71,7 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = () => {
     try {
-      authApi.logout();
+      authApi.logout( localStorage.getItem('refresh_token'));
       sessionStorage.removeItem('auth_token');
       setUser(null);
       setIsAuthenticated(false);

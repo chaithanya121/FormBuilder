@@ -32,12 +32,12 @@ const FormElementRenderer = ({
   const [date, setDate] = useState<Date | undefined>(value ? new Date(value) : undefined);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    onChange(element.id, e.target.value);
+    onChange(e.target.value);
   };
 
   const handleDateChange = (selectedDate: Date | undefined) => {
     setDate(selectedDate);
-    onChange(element.id, selectedDate ? selectedDate.toISOString() : "");
+    onChange(selectedDate ? selectedDate.toISOString() : "");
   };
 
   const renderElement = () => {
@@ -70,7 +70,7 @@ const FormElementRenderer = ({
         );
       case "select":
         return (
-          <Select value={value} onValueChange={(val) => onChange(element.id, val)}>
+          <Select value={value} onValueChange={onChange}>
             <SelectTrigger style={element.fieldStyles || {}}>
               <SelectValue placeholder={element.placeholder} />
             </SelectTrigger>
@@ -91,7 +91,7 @@ const FormElementRenderer = ({
             <Checkbox
               id={element.id}
               checked={value || false}
-              onCheckedChange={(checked) => onChange(element.id, checked)}
+              onCheckedChange={onChange}
               style={element.fieldStyles || {}}
             />
             <label
@@ -104,7 +104,7 @@ const FormElementRenderer = ({
         );
       case "radio":
         return (
-          <RadioGroup value={value} onValueChange={(val) => onChange(element.id, val)}>
+          <RadioGroup value={value} onValueChange={onChange}>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="default" id={element.id} style={element.fieldStyles || {}} />
               <label
@@ -196,7 +196,7 @@ const FormElementRenderer = ({
                 className={`text-${
                   value >= rating ? "yellow" : "gray"
                 }-500 hover:text-yellow-500 focus:text-yellow-500`}
-                onClick={() => onChange(element.id, rating)}
+                onClick={() => onChange(rating)}
               >
                 <Star className="h-6 w-6" />
               </button>

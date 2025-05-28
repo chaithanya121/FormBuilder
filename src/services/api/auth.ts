@@ -91,7 +91,7 @@ export const authApi = {
     try {
       // For real API integration, uncomment this code
         const url = getApiUrl(API_CONFIG.ENDPOINTS.AUTH.VERIFY_EMAIL);
-        const { data } = await api.post(url, { email, otp });
+        const { data } = await api.get(url+otp);
         sessionStorage.setItem('auth_token', data.token);
         return data;
       
@@ -137,12 +137,28 @@ export const authApi = {
   },
 
   // Logout user
-  logout: (): void => {
-    // For real API integration, you might want to invalidate the token on the server
-    // const url = getApiUrl(API_CONFIG.ENDPOINTS.AUTH.LOGOUT);
-    // api.post(url);
-    sessionStorage.removeItem('auth_token');
+    logout: async (refresh: string): Promise<void> => {
+    try {
+      // For real API integration, uncomment this code
+      const url = getApiUrl(API_CONFIG.ENDPOINTS.AUTH.LOGOUT);
+      await api.post(url, { refresh });
+      
+      // Simulation for demo purposes
+      // await new Promise(resolve => setTimeout(resolve, 1000));
+          sessionStorage.removeItem('auth_token');
+
+      // toast.success(`Verification code resent to `);
+    } catch (error) {
+      console.error("Error resending code:", error);
+      throw new Error("Failed to resend verification code");
+    }
   },
+  // logout: (): void => {
+  //   // For real API integration, you might want to invalidate the token on the server
+  //   const url = getApiUrl(API_CONFIG.ENDPOINTS.AUTH.LOGOUT);
+  //   api.post(url);
+  //   sessionStorage.removeItem('auth_token');
+  // },
 
   // Get current user
   getCurrentUser: async (): Promise<User | null> => {

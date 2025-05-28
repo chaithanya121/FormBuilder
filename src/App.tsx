@@ -9,7 +9,12 @@ import NotFound from "./pages/NotFound";
 import Header from "./components/Header";
 import FormBuilder from "./components/FormBuilder";
 import Dashboard from "@/components/Dashboard";
+import MainDashboard from "@/components/Dashboard";
 import FormSubmission from "@/components/FormSubmission";
+import PlanSelection from "@/components/PlanSelection";
+import PaymentMethod from "@/components/PaymentMethod";
+import PaymentSuccess from "@/components/PaymentSuccess";
+import { EnhancedUserSettings } from "@/components/settings/EnhancedUserSettings";
 import { AuthProvider } from "./hooks/use-auth";
 import Layout from "./layout/Layout";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -29,12 +34,16 @@ const App = () => {
                 <TooltipProvider delayDuration={0}>
                   <Layout>
                     <Routes>
-                      <Route path="/" element={<Dashboard />} />
+                      <Route path="/" element={<MainDashboard/>} />
                       <Route path="/dashboard" element={<Dashboard />} />
                       <Route path="/forms" element={<Index />} />
                       <Route path="/create" element={<FormBuilder />} />
                       <Route path="/form-builder/:id" element={<FormBuilder />} />
                       <Route path="/form/:id" element={<FormSubmission />} />
+                      <Route path="/select-plan" element={<PlanSelection />} />
+                      <Route path="/payment" element={<PaymentMethod />} />
+                      <Route path="/payment-success" element={<PaymentSuccess />} />
+                      <Route path="/settings" element={<EnhancedUserSettings />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Layout>

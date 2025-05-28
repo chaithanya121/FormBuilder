@@ -17,10 +17,14 @@ interface FormPreviewProps {
 }
 
 const FormPreview = ({ formConfig, values, onChange, onSubmit, isSubmission = false }: FormPreviewProps) => {
+  // const [fornData,setFormData] = 
   const [formData, setFormData] = useState<Record<string, any>>(values || {});
   const [termsAccepted, setTermsAccepted] = useState(false);
   const { toast } = useToast();
 
+
+
+    
   const handleChange = (elementId: string, value: any) => {
     console.log('data',formConfig)
     
@@ -32,6 +36,7 @@ const FormPreview = ({ formConfig, values, onChange, onSubmit, isSubmission = fa
     };
 
     console.log('data',updatedData)
+
     
     setFormData(updatedData);
     
@@ -104,7 +109,7 @@ const FormPreview = ({ formConfig, values, onChange, onSubmit, isSubmission = fa
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {!isSubmission && <h1 className="text-2xl font-bold mb-6">{formConfig.title}</h1>}
+      {!isSubmission && <h1 className="text-2xl font-bold mb-6">{formConfig.name}</h1>}
 
       <div className="space-y-4">
         {groupedElements.map((group) => (

@@ -1,669 +1,563 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, useParams } from 'react-router-dom';
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-  SensorContext,
-} from '@dnd-kit/core';
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { v4 as uuidv4 } from 'uuid';
-import { motion } from "framer-motion";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { Button } from "@/components/ui/button"
-import { PlusCircle, Save, Eye, Upload, GripVertical, CheckCircle, XCircle } from "lucide-react";
+import { DragEvent, useState, useRef, useEffect } from "react";
+import { Card } from "@/components/ui/card";
+import { FormElement, FormConfig, FormElementType } from "./types";
+import FormElementLibrary from "./FormElementLibrary";
+import FormCanvas from "./FormCanvas";
+import FormPreview from "./FormPreview";
+import ElementSettings from "./ElementSettings";
+import { Button } from "@/components/ui/button";
+import { Eye, Code, Layers, ArrowLeft, Globe, Link } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { setCurrentForm, updateFormAction, createForm, fetchFormById } from '@/store/slices/formsSlice';
-import { togglePreviewMode, setPreviewMode } from '@/store/slices/uiSlice';
-import { FormElement, FormConfig } from './types';
-import { useTheme } from '@/components/theme-provider';
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "../ui/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/tabs";
+import { useNavigate, useParams } from "react-router-dom";
+import JsonViewer from "../ui/json-viewer";
+import { formsApi, FormData } from "@/services/forms";
+import SaveSuccessDialog from "./SaveSuccessDialog";
+import PublishSuccessDialog from "./PublishSuccessDialog";
 
-// Simple element select component
-const ElementSelect = ({ onSelect }: { onSelect: (element: Omit<FormElement, 'id'>) => void }) => {
-  const elementTypes = [
-    { type: 'text', label: 'Text Input' },
-    { type: 'email', label: 'Email Input' },
-    { type: 'textarea', label: 'Text Area' },
-    { type: 'select', label: 'Select Dropdown' },
-    { type: 'checkbox', label: 'Checkbox' },
-    { type: 'radio', label: 'Radio Button' },
-    { type: 'date', label: 'Date Picker' },
-  ];
-
-  return (
-    <div className="space-y-2">
-      {elementTypes.map((element) => (
-        <Button
-          key={element.type}
-          variant="outline"
-          className="w-full justify-start"
-          onClick={() => onSelect({
-            type: element.type as any,
-            label: element.label,
-            placeholder: `Enter ${element.label.toLowerCase()}`,
-            required: false,
-          })}
-        >
-          <PlusCircle className="h-4 w-4 mr-2" />
-          {element.label}
-        </Button>
-      ))}
-    </div>
-  );
+const DEFAULT_CONFIG: FormConfig = {
+  name: "Create account",
+  elements: [],
+  settings: {
+    termsAndConditions: {
+      enabled: true,
+      required: true,
+      text: "I accept the Terms & Conditions & Privacy Policy",
+    },
+    submitButton: {
+      enabled: true,
+      text: "Submit",
+    },
+    preview: {
+      width: "Full",
+      nesting: true,
+    },
+    validation: {
+      liveValidation: "Default",
+    },
+    layout: {
+      size: "Default",
+      columns: {
+        default: true,
+        tablet: false,
+        desktop: false,
+      },
+      labels: "Default",
+      placeholders: "Default",
+      errors: "Default",
+      messages: "Default",
+    },
+  },
 };
 
-// Simple render element component
-const RenderElement = ({ 
-  element, 
-  onSelect, 
-  previewMode 
-}: { 
-  element: FormElement; 
-  onSelect: (element: FormElement) => void; 
-  previewMode: boolean;
-}) => {
-  return (
-    <div 
-      className="p-4 border rounded-lg cursor-pointer hover:bg-gray-50"
-      onClick={() => !previewMode && onSelect(element)}
-    >
-      <div className="space-y-2">
-        <label className="block text-sm font-medium">
-          {element.label} {element.required && <span className="text-red-500">*</span>}
-        </label>
-        {element.type === 'text' || element.type === 'email' ? (
-          <Input type={element.type} placeholder={element.placeholder} />
-        ) : element.type === 'textarea' ? (
-          <textarea 
-            className="w-full p-2 border rounded-md" 
-            placeholder={element.placeholder}
-            rows={3}
-          />
-        ) : element.type === 'select' ? (
-          <select className="w-full p-2 border rounded-md">
-            <option>Select an option</option>
-          </select>
-        ) : element.type === 'checkbox' ? (
-          <div className="flex items-center space-x-2">
-            <input type="checkbox" />
-            <span>Checkbox option</span>
-          </div>
-        ) : element.type === 'radio' ? (
-          <div className="flex items-center space-x-2">
-            <input type="radio" name={element.id} />
-            <span>Radio option</span>
-          </div>
-        ) : element.type === 'date' ? (
-          <Input type="date" />
-        ) : null}
-      </div>
-    </div>
-  );
-};
-
-// Simple settings panel component
-const SettingsPanel = ({ 
-  element, 
-  onUpdate, 
-  onDelete 
-}: { 
-  element: FormElement; 
-  onUpdate: (updatedElement: Partial<FormElement>) => void; 
-  onDelete: () => void;
-}) => {
-  return (
-    <div className="space-y-4">
-      <div>
-        <Label>Label</Label>
-        <Input 
-          value={element.label} 
-          onChange={(e) => onUpdate({ label: e.target.value })}
-        />
-      </div>
-      <div>
-        <Label>Placeholder</Label>
-        <Input 
-          value={element.placeholder || ''} 
-          onChange={(e) => onUpdate({ placeholder: e.target.value })}
-        />
-      </div>
-      <div className="flex items-center space-x-2">
-        <Switch 
-          checked={element.required || false}
-          onCheckedChange={(checked) => onUpdate({ required: checked })}
-        />
-        <Label>Required</Label>
-      </div>
-      <Button variant="destructive" onClick={onDelete} className="w-full">
-        Delete Element
-      </Button>
-    </div>
-  );
-};
-
-// Simple publish button component
-const PublishButton = ({ 
-  isPublished, 
-  onPublish 
-}: { 
-  isPublished: boolean; 
-  onPublish: () => void;
-}) => {
-  return (
-    <Button
-      onClick={onPublish}
-      variant={isPublished ? "secondary" : "default"}
-      className="flex items-center space-x-2"
-    >
-      {isPublished ? <XCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
-      <span>{isPublished ? 'Unpublish' : 'Publish'}</span>
-    </Button>
-  );
+const PRESET_STYLES = {
+  "Light Theme": {
+    backgroundColor: "#ffffff",
+    color: "#000000",
+    padding: "20px",
+    margin: "10px",
+    borderRadius: "8px",
+    backgroundImage: "",
+  },
+  "Dark Theme": {
+    backgroundColor: "#1a1a1a",
+    color: "#ffffff",
+    padding: "20px",
+    margin: "10px",
+    borderRadius: "8px",
+    backgroundImage: "",
+  },
+  "Gradient Background": {
+    backgroundColor: "",
+    backgroundImage: "linear-gradient(135deg, #6a11cb, #2575fc)",
+    color: "#ffffff",
+    padding: "20px",
+    margin: "10px",
+    borderRadius: "8px",
+  },
 };
 
 const FormBuilder = () => {
-  const { formId } = useParams<{ formId: string }>();
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const [formConfig, setFormConfig] = useState<FormConfig>(DEFAULT_CONFIG);
+  const [previewMode, setPreviewMode] = useState(false);
+  const [selectedElement, setSelectedElement] = useState<FormElement | undefined>();
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [showPublishDialog, setShowPublishDialog] = useState(false);
+  const [savedFormId, setSavedFormId] = useState<string | undefined>();
   const { toast } = useToast();
-  const { theme } = useTheme();
-  const currentForm = useSelector((state: any) => state.forms.currentForm);
-  const previewMode = useSelector((state: any) => state.ui.previewMode);
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const [formId, setFormId] = useState<string | undefined>(undefined);
+  const formInitialized = useRef(false);
 
-  const [formName, setFormName] = useState('Untitled Form');
-  const [formConfig, setFormConfig] = useState<FormConfig>({
-    title: 'Untitled Form',
-    description: 'Form description',
-    elements: [],
-    settings: {
-      submitButton: {
-        text: 'Submit',
-        enabled: true
-      },
-      termsAndConditions: {
-        enabled: false,
-        required: false,
-        text: 'I agree to the terms and conditions'
-      },
-      preview: {
-        width: "Full",
-        nesting: false
-      },
-      validation: {
-        liveValidation: "Default"
-      },
-      layout: {
-        size: "Default",
-        columns: {
-          default: false,
-          tablet: false,
-          desktop: false
-        },
-        labels: "Default",
-        placeholders: "Default",
-        errors: "Default",
-        messages: "Default"
-      }
+  useEffect(() => {
+    if (id && !formInitialized.current) {
+      formInitialized.current = true;
+      const loadForm = async () => {
+        try {
+          console.log('Attempting to load form with primary_id:', id);
+          const formToEdit = await formsApi.getFormById(id);
+          if (formToEdit && 'config' in formToEdit && formToEdit.config) {
+            setFormConfig(formToEdit.config);
+            setIsPublished(formToEdit.published || false);
+            setFormId(formToEdit.primary_id);
+            toast({
+              title: "Form Loaded",
+              description: `Editing form: ${formToEdit.name}`,
+            });
+          } else {
+            console.log('Form not found, creating new form');
+            toast({
+              title: "Form Not Found",
+              description: "Creating a new form instead",
+              variant: "destructive"
+            });
+          }
+        } catch (error) {
+          console.error('Error loading form:', error);
+          toast({
+            title: "Error Loading Form",
+            description: "Creating a new form instead",
+            variant: "destructive"
+          });
+        }
+      };
+      loadForm();
     }
-  });
-  const [selectedElement, setSelectedElement] = useState<FormElement | null>(null);
+  }, [id, toast]);
+
   const [isPublished, setIsPublished] = useState(false);
 
-  useEffect(() => {
-    if (formId && formId !== 'new') {
-      dispatch(fetchFormById(formId) as any);
-    } else {
-      // Initialize with a new form for 'new' route
-      setFormName('Untitled Form');
-      setFormConfig({
-        title: 'Untitled Form',
-        description: 'Form description',
-        elements: [],
-        settings: {
-          submitButton: {
-            text: 'Submit',
-            enabled: true
-          },
-          termsAndConditions: {
-            enabled: false,
-            required: false,
-            text: 'I agree to the terms and conditions'
-          },
-          preview: {
-            width: "Full",
-            nesting: false
-          },
-          validation: {
-            liveValidation: "Default"
-          },
-          layout: {
-            size: "Default",
-            columns: {
-              default: false,
-              tablet: false,
-              desktop: false
-            },
-            labels: "Default",
-            placeholders: "Default",
-            errors: "Default",
-            messages: "Default"
-          }
-        }
-      });
-    }
-  }, [formId, dispatch]);
-
-  useEffect(() => {
-    if (currentForm && typeof currentForm === 'object' && 'config' in currentForm && currentForm.config) {
-      setFormConfig(currentForm.config);
-      setIsPublished(currentForm.published || false);
-      setFormName(currentForm.name || 'Untitled Form');
-    }
-  }, [currentForm]);
-
-  const addElement = (element: Omit<FormElement, 'id'>) => {
-    const newElement: FormElement = { ...element, id: uuidv4().substring(0, 7) };
-    setFormConfig(prevConfig => ({
-      ...prevConfig,
-      elements: [...prevConfig.elements, newElement],
-    }));
+  const handleDragStart = (e: DragEvent<HTMLDivElement>, elementType: string) => {
+    e.dataTransfer.setData("elementType", elementType);
   };
 
-  const handleSelectElement = (element: FormElement) => {
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const elementType = e.dataTransfer.getData("elementType");
+    const newElement: FormElement = {
+      id: `element-${Date.now()}`,
+      type: elementType as FormElementType,
+      label: `New ${elementType}`,
+      required: false,
+      placeholder: `Enter ${elementType}`,
+      nestedData: false,
+      description: "",
+      name: elementType.toLowerCase(),
+      options: [],
+    };
+
+    setFormConfig((prev) => ({
+      ...prev,
+      elements: [...prev.elements, newElement],
+    }));
+
+    toast({
+      title: "Element Added",
+      description: `Added new ${elementType} element to the form`,
+    });
+  };
+
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  };
+
+  const handleElementSelect = (element: FormElement) => {
     setSelectedElement(element);
   };
 
-  const handleUpdateElement = (id: string, updatedElement: Partial<FormElement>) => {
-    setFormConfig(prevConfig => ({
-      ...prevConfig,
-      elements: prevConfig.elements.map(element =>
-        element.id === id ? { ...element, ...updatedElement } : element
+  const handleElementUpdate = (updatedElement: FormElement) => {
+    setFormConfig((prev) => ({
+      ...prev,
+      elements: prev.elements.map((el) =>
+        el.id === updatedElement.id ? updatedElement : el
       ),
     }));
-    setSelectedElement(null);
+
+    setSelectedElement(updatedElement);
   };
 
-  const handleDeleteElement = (id: string) => {
-    setFormConfig(prevConfig => ({
-      ...prevConfig,
-      elements: prevConfig.elements.filter(element => element.id !== id),
+  const handleCanvasStyleChange = (field: string, value: string) => {
+    const updatedCanvasStyles = { ...formConfig.settings.canvasStyles, [field]: value };
+    setFormConfig((prev) => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        canvasStyles: updatedCanvasStyles,
+      },
     }));
-    setSelectedElement(null);
   };
 
-  const handleUpdateFormConfig = (updatedConfig: Partial<FormConfig>) => {
-    setFormConfig(prevConfig => ({ ...prevConfig, ...updatedConfig }));
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (!over) return;
-
-    if (active.id !== over.id) {
-      setFormConfig(prevConfig => {
-        const activeIndex = prevConfig.elements.findIndex(element => element.id === active.id);
-        const overIndex = prevConfig.elements.findIndex(element => element.id === over.id);
-
-        if (activeIndex === -1 || overIndex === -1) {
-          return prevConfig;
-        }
-
-        return {
-          ...prevConfig,
-          elements: arrayMove(prevConfig.elements, activeIndex, overIndex),
-        };
-      });
+  const getStyleStringValue = (style: string | number | undefined): string => {
+    if (style === undefined) return '';
+    
+    if (typeof style === 'string') {
+      return style.replace('px', '');
     }
+    
+    return String(style);
   };
 
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
-  const handleTogglePreviewMode = () => {
-    dispatch(togglePreviewMode());
+  const applyPresetStyle = (presetName: string) => {
+    const presetStyles = PRESET_STYLES[presetName];
+    setFormConfig((prev) => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        canvasStyles: {
+          ...prev.settings.canvasStyles,
+          ...presetStyles,
+        },
+      },
+    }));
+    
+    toast({
+      title: "Style Applied",
+      description: `Applied ${presetName} style to the form`,
+    });
   };
 
-  const handleSaveForm = async () => {
-    if (!formConfig || !formName.trim()) {
-      toast({
-        title: "Error",
-        description: "Please provide a form name and ensure the form has content",
-        variant: "destructive"
-      });
-      return;
-    }
-
+  const handleSaveAndPublish = async () => {
     try {
-      if (formId && formId !== 'new') {
-        const updateData = {
-          primary_id: formId,
-          name: formName,
-          last_modified: new Date().toISOString(),
-          config: formConfig,
-          createdAt: new Date().toISOString(),
-          submissions: 0,
-          published: isPublished
-        };
-        await dispatch(updateFormAction(updateData) as any);
-      } else {
-        const formData = {
-          name: formName,
-          last_modified: new Date().toISOString(),
-          config: formConfig,
-          createdAt: new Date().toISOString(),
-          submissions: 0,
-          published: isPublished
-        };
-        const result = await dispatch(createForm(formData) as any);
-        if (createForm.fulfilled.match(result)) {
-          navigate(`/form-builder/${result.payload.primary_id}`);
+      let currentFormId = id;
+      
+      if (id) {
+        // Update existing form
+        const currentForm = await formsApi.getFormById(id);
+        if (currentForm && 'primary_id' in currentForm && currentForm.primary_id) {
+          const formToUpdate: FormData = {
+            primary_id: currentForm.primary_id,
+            name: formConfig.name,
+            createdAt: currentForm.createdAt,
+            last_modified: new Date().toISOString(),
+            submissions: currentForm.submissions || 0,
+            published: false,
+            config: formConfig
+          };
+          await formsApi.updateForm(formToUpdate);
         }
+      } else {
+        // Create new form
+        const formObject = {
+          name: formConfig.name,
+          published: false,
+          config: formConfig
+        };
+        const newForm = await formsApi.createForm(formObject);
+        currentFormId = newForm.primary_id;
+        setFormId(newForm.primary_id);
       }
-
-      toast({
-        title: "Success",
-        description: `Form ${formId && formId !== 'new' ? 'updated' : 'created'} successfully`
-      });
+      
+      setSavedFormId(currentFormId);
+      setShowSaveDialog(true);
     } catch (error) {
-      console.error('Save form error:', error);
       toast({
         title: "Error",
-        description: "Failed to save form",
+        description: "Failed to save form. " + (error as Error).message,
         variant: "destructive"
       });
     }
   };
 
   const handlePublishForm = async () => {
-    if (!formConfig || !formName.trim()) {
-      toast({
-        title: "Error",
-        description: "Please provide a form name and ensure the form has content",
-        variant: "destructive"
-      });
-      return;
-    }
-
     try {
-      const formData = {
-        published: !isPublished,
-        last_modified: new Date().toISOString(),
-        config: formConfig,
-        primary_id: formId && formId !== 'new' ? formId : undefined,
-        name: formName,
-        createdAt: new Date().toISOString(),
-        submissions: 0
-      };
+      const formIdToPublish = savedFormId || id;
+      if (!formIdToPublish) return;
 
-      await dispatch(updateFormAction(formData as any) as any);
-      setIsPublished(!isPublished);
-
-      toast({
-        title: "Success",
-        description: `Form ${!isPublished ? 'published' : 'unpublished'} successfully`
-      });
+      const currentForm = await formsApi.getFormById(formIdToPublish);
+      if (currentForm && 'primary_id' in currentForm && currentForm.primary_id) {
+        const formToUpdate: FormData = {
+          primary_id: currentForm.primary_id,
+          name: currentForm.name,
+          createdAt: currentForm.createdAt,
+          last_modified: new Date().toISOString(),
+          submissions: currentForm.submissions || 0,
+          published: true,
+          config: formConfig
+        };
+        await formsApi.updateForm(formToUpdate);
+      }
+      
+      setShowSaveDialog(false);
+      setShowPublishDialog(true);
     } catch (error) {
-      console.error('Publish form error:', error);
       toast({
         title: "Error",
-        description: "Failed to publish form",
+        description: "Failed to publish form. " + (error as Error).message,
         variant: "destructive"
       });
     }
   };
 
+  const handleCloseDialogs = () => {
+    setShowSaveDialog(false);
+    setShowPublishDialog(false);
+    navigate('/');
+  };
+
   return (
-    <div className={`min-h-screen ${theme === 'light' 
-      ? 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50' 
-      : 'bg-gray-900'
-    } text-${theme === 'light' ? 'gray-800' : 'white'}`}>
+    <div className="min-h-screen bg-gray-900 text-white">
+      {/* Header */}
+      <header className="border-b border-gray-800 bg-gray-900 sticky top-0 z-50 shadow-md">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => navigate('/')}
+                className="text-gray-300 hover:text-white flex items-center gap-1"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Back to Dashboard</span>
+              </button>
+              <div className="flex items-center gap-2">
+                <Layers className="h-6 w-6 text-blue-500" />
+                <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
+                  Form Builder
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
       <div className="container mx-auto p-4">
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-8 mt-6"
-        >
-          <h1 className={`text-3xl font-bold tracking-tight mb-3 md:text-4xl lg:text-5xl ${theme === 'light'
-            ? 'bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600'
-            : 'text-white'
-          }`}>
-            Form Builder
-          </h1>
-          <p className={`text-lg max-w-2xl mx-auto ${theme === 'light' ? 'text-gray-600' : 'text-blue-100/80'}`}>
-            Design and customize your form with ease
-          </p>
-        </motion.div>
-
-        <div className="flex flex-col md:flex-row gap-4">
-          {/* Left Panel - Element Selection */}
-          <motion.div 
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="w-full md:w-1/4"
-          >
-            <Card className={`${theme === 'light' 
-              ? 'bg-white/80 backdrop-blur-sm border border-white/20 shadow-xl' 
-              : 'bg-gray-800/70 border border-gray-700/50'
-            }`}>
-              <CardHeader>
-                <CardTitle className={theme === 'light' ? 'text-gray-800' : 'text-white'}>Add Elements</CardTitle>
-                <CardDescription className={theme === 'light' ? 'text-gray-600' : 'text-gray-400'}>
-                  Choose elements to add to your form
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <ElementSelect onSelect={addElement} />
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Center Panel - Form Preview and Drag & Drop */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6 }}
-            className="w-full md:w-2/4"
-          >
-            <Card className={`${theme === 'light' 
-              ? 'bg-white/80 backdrop-blur-sm border border-white/20 shadow-xl' 
-              : 'bg-gray-800/70 border border-gray-700/50'
-            }`}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className={theme === 'light' ? 'text-gray-800' : 'text-white'}>Form Preview</CardTitle>
-                  <div className="flex items-center space-x-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={handleTogglePreviewMode}
-                      className={`${theme === 'light' 
-                        ? 'bg-white/50 border-gray-300 text-gray-600 hover:bg-gray-100' 
-                        : 'bg-gray-700/50 border-gray-600 text-gray-300 hover:bg-gray-600'
-                      } transition-colors duration-200`}
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      {previewMode ? 'Edit Mode' : 'Preview Mode'}
-                    </Button>
-                  </div>
-                </div>
-                <CardDescription className={theme === 'light' ? 'text-gray-600' : 'text-gray-400'}>
-                  Drag and drop elements to reorder
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Input
-                  type="text"
-                  placeholder="Form Name"
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                  className={`${theme === 'light' 
-                    ? 'bg-white/70 border-gray-300 text-gray-800 placeholder:text-gray-500' 
-                    : 'bg-gray-700/70 border-gray-600 text-white'
-                  } mb-4`}
-                />
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={handleDragEnd}
-                >
-                  <SortableContext
-                    items={formConfig.elements.map(element => element.id)}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    <div className="space-y-2">
-                      {formConfig.elements.map((element) => (
-                        <RenderElement
-                          key={element.id}
-                          element={element}
-                          onSelect={handleSelectElement}
-                          previewMode={previewMode}
-                        />
-                      ))}
-                    </div>
-                  </SortableContext>
-                </DndContext>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Right Panel - Element Settings */}
-          <motion.div 
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="w-full md:w-1/4"
-          >
-            <Card className={`${theme === 'light' 
-              ? 'bg-white/80 backdrop-blur-sm border border-white/20 shadow-xl' 
-              : 'bg-gray-800/70 border border-gray-700/50'
-            }`}>
-              <CardHeader>
-                <CardTitle className={theme === 'light' ? 'text-gray-800' : 'text-white'}>Element Settings</CardTitle>
-                <CardDescription className={theme === 'light' ? 'text-gray-600' : 'text-gray-400'}>
-                  Customize the selected element
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {selectedElement ? (
-                  <SettingsPanel
-                    element={selectedElement}
-                    onUpdate={(updatedElement) => handleUpdateElement(selectedElement.id, updatedElement)}
-                    onDelete={() => handleDeleteElement(selectedElement.id)}
-                  />
-                ) : (
-                  <p className={theme === 'light' ? 'text-gray-600' : 'text-gray-300'}>
-                    Select an element to customize it.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold">{formConfig.name}</h1>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span>Theme</span>
+              <Button variant="outline" size="sm" className="bg-gray-800 text-blage hover:bg-gray-700">
+                Dark
+              </Button>
+            </div>
+            <div className="flex items-center gap-2">
+              <span>Language</span>
+              <Button variant="outline" size="sm" className="bg-gray-800 text-white hover:bg-gray-700">
+                English
+              </Button>
+            </div>
+            <Button variant="outline" onClick={() => setPreviewMode(!previewMode)} className="gap-2 bg-gray-800 text-white hover:bg-gray-700">
+              {previewMode ? <Code /> : <Eye />}
+              {previewMode ? "Edit" : "Preview"}
+            </Button>
+            <Button 
+              onClick={handleSaveAndPublish} 
+              className="gap-2 bg-green-600 text-white hover:bg-green-700"
+            >
+              Save & Publish
+            </Button>
+          </div>
         </div>
 
-        {/* Bottom Panel - Form Settings and Actions */}
-        <motion.div 
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.4 }}
-          className="mt-4"
-        >
-          <Card className={`${theme === 'light' 
-            ? 'bg-white/80 backdrop-blur-sm border border-white/20 shadow-xl' 
-            : 'bg-gray-800/70 border border-gray-700/50'
-          }`}>
-            <CardHeader>
-              <CardTitle className={theme === 'light' ? 'text-gray-800' : 'text-white'}>Form Settings</CardTitle>
-              <CardDescription className={theme === 'light' ? 'text-gray-600' : 'text-gray-400'}>
-                Manage form-wide settings
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="formTitle" className={theme === 'light' ? 'text-gray-700' : 'text-gray-300'}>
-                  Form Title
-                </Label>
-                <Input
-                  type="text"
-                  id="formTitle"
-                  placeholder="Form Title"
-                  value={formConfig.title}
-                  onChange={(e) => handleUpdateFormConfig({ title: e.target.value })}
-                  className={`${theme === 'light' 
-                    ? 'bg-white/70 border-gray-300 text-gray-800 placeholder:text-gray-500' 
-                    : 'bg-gray-700/70 border-gray-600 text-white'
-                  }`}
+        <div className={"grid grid-cols-12 gap-4"}>
+          {!previewMode ? (
+            <>
+              <Card className="col-span-3 bg-gray-800 border-gray-700 p-4">
+                <FormElementLibrary onDragStart={handleDragStart} />
+              </Card>
+              <Card
+                className="col-span-6 bg-gray-800 border-gray-700 p-4"
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                style={{
+                  overflow: 'hidden'
+                }}
+              >
+                <FormCanvas
+                  elements={formConfig.elements}
+                  setFormConfig={setFormConfig}
+                  onSelectElement={handleElementSelect}
+                  selectedElement={selectedElement}
+                  formConfig={formConfig}
+                  onUpdate={handleElementUpdate}
                 />
-              </div>
-              <div>
-                <Label htmlFor="formDescription" className={theme === 'light' ? 'text-gray-700' : 'text-gray-300'}>
-                  Description
-                </Label>
-                <Input
-                  type="text"
-                  id="formDescription"
-                  placeholder="Form Description"
-                  value={formConfig.description}
-                  onChange={(e) => handleUpdateFormConfig({ description: e.target.value })}
-                  className={`${theme === 'light' 
-                    ? 'bg-white/70 border-gray-300 text-gray-800 placeholder:text-gray-500' 
-                    : 'bg-gray-700/70 border-gray-600 text-white'
-                  }`}
-                />
-              </div>
-              <div className="flex justify-between items-center">
-                <Button 
-                  onClick={handleSaveForm}
-                  className={`${theme === 'light'
-                    ? 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600'
-                    : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600'
-                  } text-white shadow-lg hover:shadow-xl transition-all duration-200`}
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Form
-                </Button>
-                <PublishButton isPublished={isPublished} onPublish={handlePublishForm} />
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+              </Card>
+              <Card className="col-span-3 bg-gray-800 border-gray-700 p-4">
+                {selectedElement ? (
+                  <ElementSettings
+                    key={selectedElement.id} // Force re-render when selectedElement changes
+                    element={selectedElement}
+                    onUpdate={handleElementUpdate}
+                    onClose={() => setSelectedElement(undefined)}
+                  />
+                ) : (
+                  <Tabs defaultValue="canvas-styling">
+                    <TabsList   className="bg-gray-700 mb-4"
+                      style={{ width: "fit-content", gap: "13px" }}
+                    > 
+                      <TabsTrigger value="canvas-styling">Canvas Styling</TabsTrigger>
+                      <TabsTrigger value="import">Import</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="canvas-styling" className="space-y-4">
+                      <h4 className="text-lg font-semibold text-white">Canvas Styling</h4>
+
+                      <div className="space-y-2">
+                        <Label className="text-white">Preset Styles</Label>
+                        <Select onValueChange={(value) => applyPresetStyle(value)}>
+                          <SelectTrigger className="bg-gray-800 text-white">
+                            <SelectValue placeholder="Select a preset style" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Object.keys(PRESET_STYLES).map((presetName) => (
+                              <SelectItem key={presetName} value={presetName}>
+                                {presetName}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label className="text-white">Background Color</Label>
+                          <Input
+                            value={formConfig.settings.canvasStyles?.backgroundColor || ""}
+                            onChange={(e) => handleCanvasStyleChange("backgroundColor", e.target.value)}
+                            placeholder="e.g., #ffffff"
+                            className="bg-gray-800 text-white"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-white">Background Image</Label>
+                          <Input
+                            value={formConfig.settings.canvasStyles?.backgroundImage || ""}
+                            onChange={(e) => handleCanvasStyleChange("backgroundImage", e.target.value)}
+                            placeholder="e.g., https://example.com/image.jpg"
+                            className="bg-gray-800 text-white"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-white">Padding</Label>
+                          <Input
+                            type="number"
+                            value={getStyleStringValue(formConfig.settings.canvasStyles?.padding)}
+                            onChange={(e) => handleCanvasStyleChange("padding", `${e.target.value}px`)}
+                            placeholder="e.g., 10"
+                            className="bg-gray-800 text-white"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-white">Margin</Label>
+                          <Input
+                            type="number"
+                            value={getStyleStringValue(formConfig.settings.canvasStyles?.margin)}
+                            onChange={(e) => handleCanvasStyleChange("margin", `${e.target.value}px`)}
+                            placeholder="e.g., 10"
+                            className="bg-gray-800 text-white"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-white">Border Radius</Label>
+                          <Input
+                            type="number"
+                            value={getStyleStringValue(formConfig.settings.canvasStyles?.borderRadius)}
+                            onChange={(e) => handleCanvasStyleChange("borderRadius", `${e.target.value}px`)}
+                            placeholder="e.g., 5"
+                            className="bg-gray-800 text-white"
+                          />
+                        </div>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="import" className="space-y-4">
+                      <h4 className="text-lg font-semibold text-white">Import</h4>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label className="text-white">Import JSON</Label>
+                          <Input
+                            type="file"
+                            accept=".json"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (event) => {
+                                  try {
+                                    const importedConfig = JSON.parse(event.target?.result as string);
+                                    setFormConfig(importedConfig);
+                                    toast({
+                                      title: "Import Successful",
+                                      description: "Form configuration has been imported.",
+                                    });
+                                  } catch (error) {
+                                    toast({
+                                      title: "Import Failed",
+                                      description: "Invalid JSON file.",
+                                      variant: "destructive",
+                                    });
+                                  }
+                                };
+                                reader.readAsText(file);
+                              }
+                            }}
+                            className="bg-gray-800 text-white"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-white">Export JSON</Label>
+                          <Button
+                            variant="outline"
+                            className="w-full bg-gray-800 text-white hover:bg-gray-700"
+                            onClick={() => {
+                              const jsonString = JSON.stringify(formConfig, null, 2);
+                              const blob = new Blob([jsonString], { type: "application/json" });
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement("a");
+                              a.href = url;
+                              a.download = "form-config.json";
+                              a.click();
+                              URL.revokeObjectURL(url);
+                            }}
+                          >
+                            Export Configuration
+                          </Button>
+                        </div>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                )}
+              </Card>
+            </>
+          ) : (
+            <>
+              <Card 
+                className="col-span-8 bg-gray-800 border-gray-700 p-4"
+                style={{
+                  backgroundColor: formConfig.settings.canvasStyles?.backgroundColor || '',
+                  backgroundImage: formConfig.settings.canvasStyles?.backgroundImage || '',
+                  padding: formConfig.settings.canvasStyles?.padding || '',
+                  margin: formConfig.settings.canvasStyles?.margin || '',
+                  borderRadius: formConfig.settings.canvasStyles?.borderRadius || '',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  height: 'auto',
+                }}
+              >
+                <FormPreview formConfig={formConfig} />
+              </Card>
+              <Card className="col-span-4 bg-gray-800 border-gray-700 p-4">
+                <JsonViewer initialJson={JSON.stringify(formConfig, null, 2)} editJson={false}/>
+              </Card>
+            </>
+          )}
+        </div>
       </div>
+
+      <SaveSuccessDialog 
+        open={showSaveDialog}
+        onPublish={handlePublishForm}
+        onClose={handleCloseDialogs}
+      />
+
+      <PublishSuccessDialog 
+        open={showPublishDialog}
+        formId={savedFormId || id || ''}
+        onClose={handleCloseDialogs}
+      />
     </div>
   );
 };

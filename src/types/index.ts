@@ -8,10 +8,7 @@ export type FormElementType =
   | "radio-group" | "radio-blocks" | "radio-tabs" | "toggle" | "slider"
   | "range-slider" | "vertical-slider" | "file-upload" | "multi-file-upload"
   | "image-upload" | "multi-image-upload" | "gallery" | "paragraph" | "quote"
-  | "image" | "link" | "danger-button" | "static-html"
-  | "address" | "street-address" | "street-address-line2" | "city" | "state-province"
-  | "postal-code" | "name" | "first-name" | "last-name" | "appointment" | "rating"
-  | "captcha" | "form_submit";
+  | "image" | "link" | "danger-button" | "static-html";
 
 export interface FormElement {
   id: string;
@@ -46,30 +43,12 @@ export interface FormElement {
   inputType?: string;
   fieldStyles?: Record<string, any>;
   labelStyles?: Record<string, any>;
-  layout?: {
-    inRow?: boolean;
-    rowPosition?: number;
-    rowId?: string;
-  };
 }
 
 export interface FormConfig {
-  title: string;
-  description: string;
+  name: string;
   elements: FormElement[];
   settings: {
-    termsAndConditions?: {
-      enabled: boolean;
-      required: boolean;
-      text: string;
-    };
-    submitButton?: {
-      enabled: boolean;
-      text: string;
-    };
-    submitButtonText?: string;
-    successMessage?: string;
-    redirectUrl?: string;
     preview: {
       width: "Full" | number;
       nesting: boolean;
@@ -118,11 +97,4 @@ export interface ElementSettingsProps {
   element: FormElement;
   onUpdate: (updatedElement: FormElement) => void;
   onClose: () => void;
-}
-
-export interface FormElementRendererProps {
-  element: FormElement;
-  value?: any;
-  onChange?: (elementId: string, value: any) => void;
-  error?: string;
 }

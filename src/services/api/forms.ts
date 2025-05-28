@@ -1,6 +1,8 @@
+
 import api, { API_CONFIG, formatUrl, getApiUrl } from './index';
 import { v4 as uuidv4 } from 'uuid';
 import { FormConfig } from '@/components/FormBuilder/types';
+import process from 'process'
 
 export interface FormData {
   primary_id: string;
@@ -13,11 +15,10 @@ export interface FormData {
 }
 
 export interface FormSubmission {
-  id: string;
+  primary_id: string;
   formId: string;
+  timestamp: string;
   data: Record<string, any>;
-  submittedAt: string;
-  submissions?: number;
 }
 
 // Helper function to map API response to FormData interface

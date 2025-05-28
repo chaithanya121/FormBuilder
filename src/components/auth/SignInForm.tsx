@@ -52,7 +52,7 @@ console.log(response)
       setIsLoading(false);
       onSuccess();
       navigate("/dashboard");
-    } else if (response.response.data.detail === "Email is not verified.") {
+    } else if (response.response.data.detail[0] === "Account not verified. Please check your email for a verification link.") {
       setIsLoading(false);
       onSuccess();
       dispatch(setVerificationEmail(email));

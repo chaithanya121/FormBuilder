@@ -1,3 +1,4 @@
+
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { FormConfig } from '@/components/FormBuilder/types';
 import { formsApi, FormData } from '@/services/api/forms';
@@ -98,36 +99,6 @@ export const deleteFormAction = createAsyncThunk(
   }
 );
 
-export const duplicateFormAction = createAsyncThunk(
-  'forms/duplicateForm',
-  async (formId: string, { rejectWithValue }) => {
-    try {
-      const form = await formsApi.getFormById(formId);
-      
-      // Check if form exists and has the required properties
-      if (!form || typeof form !== 'object' || !('name' in form) || !('config' in form)) {
-        return rejectWithValue('Form not found or invalid');
-      }
-      
-      const formData = form as FormData;
-      
-      // Create a copy with a new name and ensure all required properties are present
-      const duplicatedForm: Omit<FormData, 'primary_id' | 'createdAt' | 'last_modified' | 'submissions'> = {
-        name: `${formData.name} (Copy)`,
-        published: formData.published || false,
-        config: formData.config
-      };
-      
-      const result = await formsApi.createForm(duplicatedForm);
-      console.log('Redux duplicateForm result:', result);
-      return result;
-    } catch (error) {
-      console.error('Redux duplicateForm error:', error);
-      return rejectWithValue((error as Error).message);
-    }
-  }
-);
-
 export const formsSlice = createSlice({
   name: 'forms',
   initialState,
@@ -163,36 +134,11 @@ export const formsSlice = createSlice({
     });
     builder.addCase(fetchFormById.fulfilled, (state, action) => {
       state.loading = false;
-      if (action.payload && typeof action.payload === 'object' && 'primary_id' in action.payload) {
-        const form = action.payload as FormData;
+      const payload = action.payload;
+      if (payload && typeof payload === 'object' && 'primary_id' in payload && 'config' in payload) {
         state.currentForm = {
-          primary_id: form.primary_id,
-          config: form.config || {
-            title: 'Untitled Form',
-            description: 'Form description',
-            elements: [],
-            settings: {
-              preview: {
-                width: "Full",
-                nesting: false
-              },
-              validation: {
-                liveValidation: "Default"
-              },
-              layout: {
-                size: "Default",
-                columns: {
-                  default: false,
-                  tablet: false,
-                  desktop: false
-                },
-                labels: "Default",
-                placeholders: "Default",
-                errors: "Default",
-                messages: "Default"
-              }
-            }
-          }
+          primary_id: payload.primary_id as string,
+          config: payload.config as FormConfig
         };
       }
       state.error = null;
@@ -259,21 +205,6 @@ export const formsSlice = createSlice({
     builder.addCase(deleteFormAction.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload as string || 'Failed to delete form';
-    });
-
-    // Duplicate form
-    builder.addCase(duplicateFormAction.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(duplicateFormAction.fulfilled, (state, action) => {
-      state.loading = false;
-      state.forms.push(action.payload);
-      state.error = null;
-    });
-    builder.addCase(duplicateFormAction.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload as string || 'Failed to duplicate form';
     });
   },
 });

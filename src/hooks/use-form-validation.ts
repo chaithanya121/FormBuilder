@@ -17,9 +17,9 @@ export const useFormValidation = (formConfig: FormConfig): ValidationResult => {
   useEffect(() => {
     const errors: { [key: string]: string } = {};
 
-    // Validate form title
-    if (!formConfig.title.trim()) {
-      errors.title = 'Form title is required';
+    // Validate form name
+    if (!formConfig.name.trim()) {
+      errors.name = 'Form name is required';
     }
 
     // Validate form elements
