@@ -9,10 +9,14 @@ import { Button } from "@/components/ui/button";
 import { X, Type, Mail, Lock, Calendar, CheckSquare, Check, List, Upload, Radio, Grid, Table2, 
   ToggleLeft, Sliders, Image, Images, FileWarning, AlertTriangle, Heading1, Heading2, Heading3, 
   Heading4, AlignLeft, Quote, Link2, SeparatorHorizontal, Code, Rows, LayoutGrid, Container, 
-  Columns2, Columns3, Columns4, ListTree } from "lucide-react";
+  Columns2, Columns3, Columns4, ListTree, Settings, Palette, Layers } from "lucide-react";
 import FormElementRenderer from "@/components/FormElementRenderer";
+import { useEnhancedTheme } from "@/components/ui/enhanced-theme";
+import { motion } from "framer-motion";
 
 const ElementSettings = ({ element, onUpdate, onClose }: ElementSettingsProps) => {
+  const { theme, themeClasses } = useEnhancedTheme();
+
   const handleInputChange = (field: string, value: any) => {
     onUpdate({ ...element, [field]: value });
   };
@@ -59,53 +63,122 @@ const ElementSettings = ({ element, onUpdate, onClose }: ElementSettingsProps) =
   console.log("Current options:", element.options);
 
   return (
-    <div className="space-y-4 p-4 bg-gray-900 rounded-lg">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold flex items-center gap-2 text-white">
-          <X className="h-4 w-4 cursor-pointer" onClick={onClose} />
-          {element.type}
-        </h3>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className={`space-y-6 p-6 ${themeClasses.card} rounded-2xl border-2 backdrop-blur-sm`}
+    >
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className={`p-2 ${themeClasses.accent} rounded-xl`}>
+            <Settings className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h3 className={`text-xl font-bold ${themeClasses.text} capitalize`}>
+              {element.type.replace('-', ' ')} Settings
+            </h3>
+            <p className={`text-sm ${themeClasses.textMuted}`}>
+              Customize this element's properties
+            </p>
+          </div>
+        </div>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={onClose}
+          className={`${themeClasses.button} hover:bg-red-500/10 hover:text-red-500 rounded-xl`}
+        >
+          <X className="h-5 w-5" />
+        </Button>
       </div>
 
-      <Tabs defaultValue="properties">
-        <TabsList className="w-full bg-gray-800">
-          <TabsTrigger value="properties">Properties</TabsTrigger>
-          <TabsTrigger value="layout">Layout</TabsTrigger>
-          {isFieldElement && <TabsTrigger value="validation">Validation</TabsTrigger>}
-          {isSlider && <TabsTrigger value="range">Range</TabsTrigger>}
-          {isFileUpload && <TabsTrigger value="upload">Upload Settings</TabsTrigger>}
+      <Tabs defaultValue="properties" className="w-full">
+        <TabsList className={`${themeClasses.card} p-1 rounded-xl border grid w-full ${isFieldElement ? 'grid-cols-4' : 'grid-cols-2'}`}>
+          <TabsTrigger 
+            value="properties" 
+            className={`data-[state=active]:${themeClasses.accent} data-[state=active]:text-white rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 flex items-center gap-2`}
+          >
+            <Layers className="h-4 w-4" />
+            Properties
+          </TabsTrigger>
+          <TabsTrigger 
+            value="layout" 
+            className={`data-[state=active]:${themeClasses.accent} data-[state=active]:text-white rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 flex items-center gap-2`}
+          >
+            <LayoutGrid className="h-4 w-4" />
+            Layout
+          </TabsTrigger>
+          {isFieldElement && (
+            <TabsTrigger 
+              value="validation" 
+              className={`data-[state=active]:${themeClasses.accent} data-[state=active]:text-white rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 flex items-center gap-2`}
+            >
+              <CheckSquare className="h-4 w-4" />
+              Validation
+            </TabsTrigger>
+          )}
+          {(isSlider || isFileUpload) && (
+            <TabsTrigger 
+              value={isSlider ? "range" : "upload"} 
+              className={`data-[state=active]:${themeClasses.accent} data-[state=active]:text-white rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 flex items-center gap-2`}
+            >
+              {isSlider ? <Sliders className="h-4 w-4" /> : <Upload className="h-4 w-4" />}
+              {isSlider ? "Range" : "Upload"}
+            </TabsTrigger>
+          )}
         </TabsList>
 
-        <TabsContent value="properties" className="space-y-4">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-white">Name</Label>
+        <TabsContent value="properties" className="space-y-6 mt-6">
+          <div className="space-y-5">
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+              className="space-y-3"
+            >
+              <Label className={`${themeClasses.text} font-semibold flex items-center gap-2`}>
+                <Type className="h-4 w-4" />
+                Element Name
+              </Label>
               <Input
                 value={element.name || ""}
                 onChange={(e) => handleInputChange("name", e.target.value)}
-                className="bg-gray-800 text-white"
+                className={`${themeClasses.input} rounded-xl border-2 transition-all duration-200 focus:scale-[1.02]`}
+                placeholder="Enter element name"
               />
-            </div>
+            </motion.div>
 
-            <div className="space-y-2">
-              <Label className="text-white">Label</Label>
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              className="space-y-3"
+            >
+              <Label className={`${themeClasses.text} font-semibold`}>Display Label</Label>
               <Input
                 value={element.label}
                 onChange={(e) => handleInputChange("label", e.target.value)}
-                className="bg-gray-800 text-white"
+                className={`${themeClasses.input} rounded-xl border-2 transition-all duration-200 focus:scale-[1.02]`}
+                placeholder="Enter display label"
               />
-            </div>
+            </motion.div>
 
             {isFieldElement && (
               <>
                 {["text", "email", "password"].includes(element.type) && (
-                  <div className="space-y-2">
-                    <Label className="text-white">Input Type</Label>
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="space-y-3"
+                  >
+                    <Label className={`${themeClasses.text} font-semibold`}>Input Type</Label>
                     <Select 
                       value={element.inputType || element.type}
                       onValueChange={(value) => handleInputChange("inputType", value)}
                     >
-                      <SelectTrigger className="bg-gray-800">
+                      <SelectTrigger className={`${themeClasses.input} rounded-xl border-2`}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -116,111 +189,159 @@ const ElementSettings = ({ element, onUpdate, onClose }: ElementSettingsProps) =
                         <SelectItem value="tel">Phone</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
+                  </motion.div>
                 )}
 
-                <div className="space-y-2">
-                  <Label className="text-white">Placeholder</Label>
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="space-y-3"
+                >
+                  <Label className={`${themeClasses.text} font-semibold`}>Placeholder Text</Label>
                   <Input
                     value={element.placeholder || ""}
                     onChange={(e) => handleInputChange("placeholder", e.target.value)}
-                    className="bg-gray-800 text-white"
+                    className={`${themeClasses.input} rounded-xl border-2 transition-all duration-200 focus:scale-[1.02]`}
+                    placeholder="Enter placeholder text"
                   />
-                </div>
+                </motion.div>
               </>
             )}
 
             {(isFieldElement || isStaticElement) && (
               <>
-                <div className="space-y-2">
-                  <Label className="text-white">Tooltip</Label>
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="space-y-3"
+                >
+                  <Label className={`${themeClasses.text} font-semibold`}>Tooltip</Label>
                   <Input
                     value={element.tooltip || ""}
                     onChange={(e) => handleInputChange("tooltip", e.target.value)}
-                    className="bg-gray-800 text-white"
+                    className={`${themeClasses.input} rounded-xl border-2 transition-all duration-200 focus:scale-[1.02]`}
+                    placeholder="Enter tooltip text"
                   />
-                </div>
+                </motion.div>
 
-                <div className="space-y-2">
-                  <Label className="text-white">Description</Label>
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.6 }}
+                  className="space-y-3"
+                >
+                  <Label className={`${themeClasses.text} font-semibold`}>Description</Label>
                   <Textarea
                     value={element.description || ""}
                     onChange={(e) => handleInputChange("description", e.target.value)}
-                    className="bg-gray-800 text-white"
+                    className={`${themeClasses.input} rounded-xl border-2 transition-all duration-200 focus:scale-[1.02] min-h-[80px]`}
+                    placeholder="Enter description"
                   />
-                </div>
+                </motion.div>
               </>
             )}
 
             {hasOptions && (
-              <div className="space-y-4 mt-6 pt-6 border-t border-gray-700">
-                <Label className="text-lg text-white">Options</Label>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                className={`space-y-6 mt-8 pt-6 border-t ${themeClasses.card} rounded-xl p-4`}
+              >
+                <div className="flex items-center gap-2 mb-4">
+                  <Palette className="h-5 w-5 text-blue-500" />
+                  <Label className={`text-xl font-bold ${themeClasses.text}`}>Options Configuration</Label>
+                </div>
+                
                 {/* Add preview of the element */}
-                <div className="mb-4 p-4 bg-gray-800 rounded">
+                <div className={`mb-6 p-4 ${themeClasses.decoration} rounded-xl`}>
+                  <Label className={`${themeClasses.text} font-medium mb-3 block`}>Live Preview</Label>
                   <FormElementRenderer element={element} />
                 </div>
+                
                 <Button 
                   onClick={addOption} 
-                  variant="outline" 
-                  className="w-full bg-gray-800 text-white hover:bg-gray-700"
+                  className={`w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl py-3 font-medium shadow-lg hover:shadow-xl transition-all duration-300`}
                 >
-                  Add Option
+                  <List className="h-4 w-4 mr-2" />
+                  Add New Option
                 </Button>
-                {Array.isArray(element.options) && element.options.map((option, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <Input
-                      value={option}
-                      onChange={(e) => updateOption(index, e.target.value)}
-                      placeholder={`Option ${index + 1}`}
-                      className="bg-gray-800 text-white"
-                    />
-                    <Button 
-                      variant="destructive" 
-                      size="icon"
-                      onClick={() => removeOption(index)}
-                      className="hover:bg-red-600"
+                
+                <div className="space-y-3">
+                  {Array.isArray(element.options) && element.options.map((option, index) => (
+                    <motion.div 
+                      key={index} 
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="flex items-center gap-3 p-3 bg-white/5 rounded-xl backdrop-blur-sm"
                     >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
+                      <div className="flex-1">
+                        <Input
+                          value={option}
+                          onChange={(e) => updateOption(index, e.target.value)}
+                          placeholder={`Option ${index + 1}`}
+                          className={`${themeClasses.input} border-0 bg-transparent focus:bg-white/10 transition-all duration-200`}
+                        />
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => removeOption(index)}
+                        className="hover:bg-red-500/20 hover:text-red-500 rounded-xl transition-all duration-200"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
             )}
 
             {isStructureElement && (
-              <>
-                <div className="space-y-2">
-                  <Label className="text-white">Container Type</Label>
-                  <Select 
-                    value={element.type}
-                    onValueChange={(value) => handleInputChange("type", value)}
-                  >
-                    <SelectTrigger className="bg-gray-800">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {STRUCTURE_ELEMENTS.map((item) => (
-                        <SelectItem key={item.type} value={item.type}>
-                          {item.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </>
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="space-y-3"
+              >
+                <Label className={`${themeClasses.text} font-semibold`}>Container Type</Label>
+                <Select 
+                  value={element.type}
+                  onValueChange={(value) => handleInputChange("type", value)}
+                >
+                  <SelectTrigger className={`${themeClasses.input} rounded-xl border-2`}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {STRUCTURE_ELEMENTS.map((item) => (
+                      <SelectItem key={item.type} value={item.type}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </motion.div>
             )}
           </div>
         </TabsContent>
 
-        <TabsContent value="layout" className="space-y-4">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label className="text-white">Auto Float</Label>
+        <TabsContent value="layout" className="space-y-6 mt-6">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="space-y-4"
+          >
+            <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl backdrop-blur-sm">
+              <Label className={`${themeClasses.text} font-semibold`}>Auto Float</Label>
               <Select
                 value={element.autoFloat || "Default"}
                 onValueChange={(value) => handleInputChange("autoFloat", value)}
               >
-                <SelectTrigger className="w-[120px] bg-gray-800">
+                <SelectTrigger className={`w-[120px] ${themeClasses.input} rounded-xl border-2`}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -229,14 +350,19 @@ const ElementSettings = ({ element, onUpdate, onClose }: ElementSettingsProps) =
                 </SelectContent>
               </Select>
             </div>
-          </div>
+          </motion.div>
         </TabsContent>
 
         {isFieldElement && (
-          <TabsContent value="validation" className="space-y-4">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label className="text-white">Required</Label>
+          <TabsContent value="validation" className="space-y-6 mt-6">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="space-y-5"
+            >
+              <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl backdrop-blur-sm">
+                <Label className={`${themeClasses.text} font-semibold`}>Required Field</Label>
                 <Switch
                   checked={element.required}
                   onCheckedChange={(checked) => handleInputChange("required", checked)}
@@ -244,9 +370,9 @@ const ElementSettings = ({ element, onUpdate, onClose }: ElementSettingsProps) =
               </div>
 
               {["text", "email", "password"].includes(element.type) && (
-                <>
-                  <div className="space-y-2">
-                    <Label className="text-white">Min Length</Label>
+                <div className="space-y-4">
+                  <div className="space-y-3">
+                    <Label className={`${themeClasses.text} font-semibold`}>Minimum Length</Label>
                     <Input
                       type="number"
                       value={element.validation?.minLength || ""}
@@ -256,12 +382,13 @@ const ElementSettings = ({ element, onUpdate, onClose }: ElementSettingsProps) =
                           minLength: parseInt(e.target.value) || undefined,
                         })
                       }
-                      className="bg-gray-800 text-white"
+                      className={`${themeClasses.input} rounded-xl border-2`}
+                      placeholder="Enter minimum length"
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-white">Max Length</Label>
+                  <div className="space-y-3">
+                    <Label className={`${themeClasses.text} font-semibold`}>Maximum Length</Label>
                     <Input
                       type="number"
                       value={element.validation?.maxLength || ""}
@@ -271,20 +398,26 @@ const ElementSettings = ({ element, onUpdate, onClose }: ElementSettingsProps) =
                           maxLength: parseInt(e.target.value) || undefined,
                         })
                       }
-                      className="bg-gray-800 text-white"
+                      className={`${themeClasses.input} rounded-xl border-2`}
+                      placeholder="Enter maximum length"
                     />
                   </div>
-                </>
+                </div>
               )}
-            </div>
+            </motion.div>
           </TabsContent>
         )}
 
         {isSlider && (
-          <TabsContent value="range" className="space-y-4">
-            <div className="space-y-4">
+          <TabsContent value="range" className="space-y-6 mt-6">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="space-y-4"
+            >
               <div className="space-y-2">
-                <Label className="text-white">Min Value</Label>
+                <Label className={`${themeClasses.text} font-semibold`}>Min Value</Label>
                 <Input
                   type="number"
                   value={element.validation?.min || 0}
@@ -294,11 +427,12 @@ const ElementSettings = ({ element, onUpdate, onClose }: ElementSettingsProps) =
                       min: parseInt(e.target.value),
                     })
                   }
-                  className="bg-gray-800 text-white"
+                  className={`${themeClasses.input} rounded-xl border-2`}
+                  placeholder="Enter minimum value"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-white">Max Value</Label>
+                <Label className={`${themeClasses.text} font-semibold`}>Max Value</Label>
                 <Input
                   type="number"
                   value={element.validation?.max || 100}
@@ -308,11 +442,12 @@ const ElementSettings = ({ element, onUpdate, onClose }: ElementSettingsProps) =
                       max: parseInt(e.target.value),
                     })
                   }
-                  className="bg-gray-800 text-white"
+                  className={`${themeClasses.input} rounded-xl border-2`}
+                  placeholder="Enter maximum value"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-white">Step</Label>
+                <Label className={`${themeClasses.text} font-semibold`}>Step</Label>
                 <Input
                   type="number"
                   value={element.validation?.step || 1}
@@ -322,18 +457,24 @@ const ElementSettings = ({ element, onUpdate, onClose }: ElementSettingsProps) =
                       step: parseInt(e.target.value),
                     })
                   }
-                  className="bg-gray-800 text-white"
+                  className={`${themeClasses.input} rounded-xl border-2`}
+                  placeholder="Enter step value"
                 />
               </div>
-            </div>
+            </motion.div>
           </TabsContent>
         )}
 
         {isFileUpload && (
-          <TabsContent value="upload" className="space-y-4">
-            <div className="space-y-4">
+          <TabsContent value="upload" className="space-y-6 mt-6">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="space-y-4"
+            >
               <div className="space-y-2">
-                <Label className="text-white">Accepted File Types</Label>
+                <Label className={`${themeClasses.text} font-semibold`}>Accepted File Types</Label>
                 <Input
                   value={element.validation?.accept || ""}
                   onChange={(e) =>
@@ -343,11 +484,12 @@ const ElementSettings = ({ element, onUpdate, onClose }: ElementSettingsProps) =
                     })
                   }
                   placeholder=".jpg,.png,.pdf"
-                  className="bg-gray-800 text-white"
+                  className={`${themeClasses.input} rounded-xl border-2`}
+                  placeholder="Enter accepted file types"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-white">Max File Size (MB)</Label>
+                <Label className={`${themeClasses.text} font-semibold`}>Max File Size (MB)</Label>
                 <Input
                   type="number"
                   value={element.validation?.maxSize || ""}
@@ -357,12 +499,13 @@ const ElementSettings = ({ element, onUpdate, onClose }: ElementSettingsProps) =
                       maxSize: parseInt(e.target.value),
                     })
                   }
-                  className="bg-gray-800 text-white"
+                  className={`${themeClasses.input} rounded-xl border-2`}
+                  placeholder="Enter max file size"
                 />
               </div>
               {["multi-file-upload", "multi-image-upload", "gallery"].includes(element.type) && (
                 <div className="space-y-2">
-                  <Label className="text-white">Max Number of Files</Label>
+                  <Label className={`${themeClasses.text} font-semibold`}>Max Number of Files</Label>
                   <Input
                     type="number"
                     value={element.validation?.maxFiles || ""}
@@ -372,15 +515,16 @@ const ElementSettings = ({ element, onUpdate, onClose }: ElementSettingsProps) =
                         maxFiles: parseInt(e.target.value),
                       })
                     }
-                    className="bg-gray-800 text-white"
+                    className={`${themeClasses.input} rounded-xl border-2`}
+                    placeholder="Enter max files"
                   />
                 </div>
               )}
-            </div>
+            </motion.div>
           </TabsContent>
         )}
       </Tabs>
-    </div>
+    </motion.div>
   );
 };
 
