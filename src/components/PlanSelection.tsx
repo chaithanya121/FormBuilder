@@ -37,7 +37,6 @@ const PlanSelection = () => {
   }, []);
 
   const handlePlanSelect = (planId: string) => {
-    // Navigate to payment with selected plan
     navigate('/payment', { state: { selectedPlan: planId, billingPeriod } });
   };
 
@@ -100,11 +99,11 @@ const PlanSelection = () => {
           className="text-center mb-12"
         >
           <h1 className={`text-4xl font-bold mb-4 ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-            Choose your Plans
+            Choose Your Plan
           </h1>
           <p className={`text-lg mb-8 ${theme === 'light' ? 'text-gray-600' : 'text-gray-300'}`}>
-            Sign up in less than 30 seconds . Try out 7 days free trial<br />
-            Upgrade at anytime, no question, no hastle.
+            Sign up in less than 30 seconds. Try out 7 days free trial<br />
+            Upgrade at anytime, no question, no hassle.
           </p>
           
           <div className={`inline-flex rounded-full p-1 ${theme === 'light' 
@@ -200,7 +199,7 @@ const PlanSelection = () => {
                         : 'bg-gray-700 hover:bg-gray-600 text-white'
                     }`}
                   >
-                    Choose plan
+                    Choose Plan
                   </Button>
                 </Card>
               </motion.div>

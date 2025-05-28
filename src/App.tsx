@@ -6,6 +6,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import Features from "./pages/Features";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
 import Header from "./components/Header";
 import FormBuilder from "./components/FormBuilder";
 import Dashboard from "@/components/Dashboard";
@@ -44,6 +47,9 @@ const App = () => {
                       <Route path="/payment" element={<PaymentMethod />} />
                       <Route path="/payment-success" element={<PaymentSuccess />} />
                       <Route path="/settings" element={<EnhancedUserSettings />} />
+                      <Route path="/features" element={<Features />} />
+                      <Route path="/about" element={<About />} />
+                      <Route path="/contact" element={<Contact />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Layout>
