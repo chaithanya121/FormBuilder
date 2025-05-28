@@ -12,7 +12,6 @@ import Contact from "./pages/Contact";
 import Header from "./components/Header";
 import FormBuilder from "./components/FormBuilder";
 import Dashboard from "@/components/Dashboard";
-import MainDashboard from "@/components/Dashboard";
 import FormSubmission from "@/components/FormSubmission";
 import PlanSelection from "@/components/PlanSelection";
 import PaymentMethod from "@/components/PaymentMethod";
@@ -37,7 +36,7 @@ const App = () => {
                 <TooltipProvider delayDuration={0}>
                   <Layout>
                     <Routes>
-                      <Route path="/" element={<MainDashboard/>} />
+                      <Route path="/" element={<Dashboard/>} />
                       <Route path="/dashboard" element={<Dashboard />} />
                       <Route path="/forms" element={<Index />} />
                       <Route path="/create" element={<FormBuilder />} />

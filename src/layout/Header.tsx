@@ -29,9 +29,9 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
 
   return (
     <header className={`${theme === 'light' 
-      ? 'bg-white/90 border-gray-200/50 shadow-lg' 
-      : 'bg-gray-900/90 border-gray-800/50 shadow-2xl'
-    } border-b backdrop-blur-xl sticky top-0 z-30 transition-all duration-300`}>
+      ? 'bg-white/95 border-gray-200/50 shadow-lg backdrop-blur-xl' 
+      : 'bg-gray-900/95 border-gray-800/50 shadow-2xl backdrop-blur-xl'
+    } border-b sticky top-0 z-30 transition-all duration-300`}>
       <div className="mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-4">
           {toggleSidebar && (
@@ -40,8 +40,8 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
               size="icon" 
               onClick={handleToggleSidebar}
               className={`md:flex ${theme === 'light' 
-                ? 'hover:bg-gray-100/80' 
-                : 'hover:bg-gray-800/80'
+                ? 'hover:bg-gray-100/80 text-gray-700' 
+                : 'hover:bg-gray-800/80 text-gray-300'
               } rounded-xl transition-all duration-300`}
             >
               <Menu className="h-5 w-5" />
@@ -97,20 +97,25 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
         
         <nav className="hidden md:flex items-center gap-8">
           {[
-            { name: 'Home', path: '/' },
-            { name: 'Features', path: '/features' },
-            { name: 'About', path: '/about' },
-            { name: 'Contact', path: '/contact' }
+            { name: 'Dashboard', path: '/' },
+            { name: 'Forms', path: '/forms' },
+            { name: 'Analytics', path: '/analytics' },
+            { name: 'Settings', path: '/settings' }
           ].map((item) => (
             <Link 
               key={item.name}
               to={item.path}
               className={`relative ${theme === 'light' 
-                ? 'text-gray-600 hover:text-gray-900' 
-                : 'text-gray-300 hover:text-gray-100'
-              } font-medium transition-all duration-300 px-3 py-2 rounded-lg hover:scale-105 after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-gradient-to-r after:from-blue-600 after:to-purple-600 after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left`}
+                ? 'text-gray-700 hover:text-blue-600' 
+                : 'text-gray-300 hover:text-blue-400'
+              } font-medium transition-all duration-300 px-4 py-2 rounded-xl hover:scale-105 group`}
             >
-              {item.name}
+              <span className="relative z-10">{item.name}</span>
+              <div className={`absolute inset-0 ${theme === 'light' 
+                ? 'bg-blue-50 group-hover:bg-blue-100' 
+                : 'bg-blue-500/10 group-hover:bg-blue-500/20'
+              } rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 scale-95 group-hover:scale-100`}></div>
+              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-600 group-hover:w-3/4 transition-all duration-300"></div>
             </Link>
           ))}
         </nav>
@@ -122,7 +127,7 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
             variant="outline" 
             size="sm" 
             className={`hidden sm:flex ${theme === 'light'
-              ? 'bg-white/80 hover:bg-gray-50/80 border-gray-300/50 text-gray-700 hover:text-gray-900'
+              ? 'bg-white/80 hover:bg-blue-50 border-gray-300/50 text-gray-700 hover:text-blue-600 hover:border-blue-300'
               : 'bg-gray-800/80 hover:bg-gray-700/80 border-gray-600/50 text-gray-300 hover:text-white'
             } backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl px-6`}
           >
