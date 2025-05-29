@@ -483,9 +483,8 @@ const ElementSettings = ({ element, onUpdate, onClose }: ElementSettingsProps) =
                       accept: e.target.value,
                     })
                   }
-                  placeholder=".jpg,.png,.pdf"
                   className={`${themeClasses.input} rounded-xl border-2`}
-                  placeholder="Enter accepted file types"
+                  placeholder=".jpg,.png,.pdf"
                 />
               </div>
               <div className="space-y-2">
