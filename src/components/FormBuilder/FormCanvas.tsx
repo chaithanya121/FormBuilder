@@ -44,9 +44,14 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
     const canvasStyles = formConfig.settings.canvasStyles || {};
     const layoutSettings = formConfig.settings.layout || {};
     
+    // Check if background is a gradient
+    const isGradient = canvasStyles.backgroundColor && canvasStyles.backgroundColor.includes('gradient');
+    
     return {
-      backgroundColor: canvasStyles.backgroundColor || '#ffffff',
-      backgroundImage: canvasStyles.backgroundImage || 'none',
+      background: isGradient 
+        ? canvasStyles.backgroundColor 
+        : canvasStyles.backgroundColor || '#ffffff',
+      backgroundImage: !isGradient && canvasStyles.backgroundImage ? canvasStyles.backgroundImage : 'none',
       padding: canvasStyles.padding || '20px',
       margin: canvasStyles.margin || '10px',
       borderRadius: canvasStyles.borderRadius || '8px',
@@ -59,6 +64,7 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
+      transition: 'all 0.3s ease-in-out',
     };
   };
 
@@ -69,23 +75,31 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
       backgroundColor: canvasStyles.formBackgroundColor || '#ffffff',
       padding: '24px',
       borderRadius: '12px',
-      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-      border: '1px solid rgba(0, 0, 0, 0.1)',
+      boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+      border: '1px solid rgba(255, 255, 255, 0.2)',
+      backdropFilter: 'blur(10px)',
+      transition: 'all 0.3s ease-in-out',
     };
   };
 
   return (
     <div className="h-full flex flex-col">
       <div className="flex-1 overflow-auto p-4">
-        <div 
-          className="min-h-full flex items-center justify-center transition-all duration-300"
+        <motion.div 
+          className="min-h-full flex items-center justify-center"
           style={getCanvasStyles()}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
         >
-          <div 
-            className="w-full max-w-2xl transition-all duration-300"
+          <motion.div 
+            className="w-full max-w-2xl"
             style={getFormStyles()}
+            initial={{ scale: 0.95 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.3 }}
           >
             {/* Custom CSS Injection */}
             {formConfig.settings.canvasStyles?.customCSS && (
@@ -93,7 +107,12 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
             )}
             
             {elements.length === 0 ? (
-              <div className="text-center py-12">
+              <motion.div 
+                className="text-center py-12"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
                 <div className="text-gray-400 mb-4">
                   <svg
                     className="mx-auto h-12 w-12"
@@ -115,7 +134,7 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
                 <p className="text-gray-400">
                   Drag elements from the sidebar to begin creating your form
                 </p>
-              </div>
+              </motion.div>
             ) : (
               <div className="space-y-1">
                 {elements.map((element, index) => (
@@ -134,6 +153,8 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
                       marginBottom: formConfig.settings.layout?.questionSpacing ? 
                         `${formConfig.settings.layout.questionSpacing}px` : '12px'
                     }}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
                   >
                     <FormElementRenderer
                       element={element}
@@ -145,8 +166,8 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
                 ))}
               </div>
             )}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );

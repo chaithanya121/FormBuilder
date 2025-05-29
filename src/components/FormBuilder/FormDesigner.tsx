@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { X, Upload, Palette, Type, Layout, Paintbrush, Trash2 } from 'lucide-react';
+import { X, Upload, Palette, Type, Layout, Paintbrush, Trash2, Check, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useEnhancedTheme } from '@/components/ui/enhanced-theme';
 import { FormConfig } from './types';
@@ -29,7 +29,8 @@ const PRESET_THEMES = [
       secondary: '#64748b',
       background: '#ffffff',
       form: '#f8fafc'
-    }
+    },
+    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
   },
   {
     id: 'simplicity',
@@ -40,7 +41,8 @@ const PRESET_THEMES = [
       secondary: '#666666',
       background: '#ffffff',
       form: '#ffffff'
-    }
+    },
+    gradient: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)'
   },
   {
     id: 'clever-colorful',
@@ -49,9 +51,10 @@ const PRESET_THEMES = [
     colors: {
       primary: '#10b981',
       secondary: '#3b82f6',
-      background: '#0f172a',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       form: '#1e293b'
-    }
+    },
+    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
   },
   {
     id: 'sunset-hair',
@@ -60,9 +63,10 @@ const PRESET_THEMES = [
     colors: {
       primary: '#f59e0b',
       secondary: '#dc2626',
-      background: '#1f2937',
+      background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)',
       form: '#374151'
-    }
+    },
+    gradient: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)'
   },
   {
     id: 'vintage-star',
@@ -71,9 +75,10 @@ const PRESET_THEMES = [
     colors: {
       primary: '#8b5cf6',
       secondary: '#64748b',
-      background: '#f8fafc',
+      background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
       form: '#ffffff'
-    }
+    },
+    gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
   },
   {
     id: 'brick-wall',
@@ -82,9 +87,10 @@ const PRESET_THEMES = [
     colors: {
       primary: '#dc2626',
       secondary: '#92400e',
-      background: '#7c2d12',
+      background: 'linear-gradient(135deg, #fc466b 0%, #3f5efb 100%)',
       form: '#a16207'
-    }
+    },
+    gradient: 'linear-gradient(135deg, #fc466b 0%, #3f5efb 100%)'
   },
   {
     id: 'techy',
@@ -93,9 +99,10 @@ const PRESET_THEMES = [
     colors: {
       primary: '#06b6d4',
       secondary: '#64748b',
-      background: '#f1f5f9',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       form: '#ffffff'
-    }
+    },
+    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
   },
   {
     id: 'cool-minimal',
@@ -104,9 +111,10 @@ const PRESET_THEMES = [
     colors: {
       primary: '#0ea5e9',
       secondary: '#64748b',
-      background: '#e0f2fe',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       form: '#ffffff'
-    }
+    },
+    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
   }
 ];
 
@@ -117,7 +125,7 @@ const COLOR_PRESETS = [
 
 const FormDesigner: React.FC<FormDesignerProps> = ({ isOpen, onClose, formConfig, onUpdate }) => {
   const { theme, themeClasses } = useEnhancedTheme();
-  const [activeTab, setActiveTab] = useState('colors');
+  const [activeTab, setActiveTab] = useState('themes');
   const [selectedTheme, setSelectedTheme] = useState('default');
 
   const handleStyleUpdate = (category: string, field: string, value: any) => {
@@ -145,6 +153,7 @@ const FormDesigner: React.FC<FormDesignerProps> = ({ isOpen, onClose, formConfig
           canvasStyles: {
             ...formConfig.settings.canvasStyles,
             backgroundColor: selectedThemeData.colors.background,
+            backgroundImage: selectedThemeData.gradient === selectedThemeData.colors.background ? '' : selectedThemeData.colors.background,
             formBackgroundColor: selectedThemeData.colors.form,
             primaryColor: selectedThemeData.colors.primary,
             secondaryColor: selectedThemeData.colors.secondary
@@ -188,6 +197,12 @@ const FormDesigner: React.FC<FormDesignerProps> = ({ isOpen, onClose, formConfig
           <div className="px-6 pt-4">
             <TabsList className="bg-slate-800 border border-slate-700 p-1 rounded-xl grid grid-cols-4 w-full">
               <TabsTrigger 
+                value="themes" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white rounded-lg text-slate-300 font-medium"
+              >
+                THEMES
+              </TabsTrigger>
+              <TabsTrigger 
                 value="colors" 
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white rounded-lg text-slate-300 font-medium"
               >
@@ -200,12 +215,6 @@ const FormDesigner: React.FC<FormDesignerProps> = ({ isOpen, onClose, formConfig
                 STYLES
               </TabsTrigger>
               <TabsTrigger 
-                value="themes" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white rounded-lg text-slate-300 font-medium"
-              >
-                THEMES
-              </TabsTrigger>
-              <TabsTrigger 
                 value="layout" 
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white rounded-lg text-slate-300 font-medium"
               >
@@ -215,6 +224,115 @@ const FormDesigner: React.FC<FormDesignerProps> = ({ isOpen, onClose, formConfig
           </div>
 
           <div className="flex-1 overflow-y-auto p-6">
+            {/* Themes Tab - Now First */}
+            <TabsContent value="themes" className="space-y-6 mt-0">
+              <div className="space-y-6">
+                <div className="text-center">
+                  <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-2">
+                    Choose Your Perfect Theme
+                  </h3>
+                  <p className="text-slate-400">Transform your form with beautiful, pre-designed themes</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6">
+                  {PRESET_THEMES.map((theme, index) => (
+                    <motion.div
+                      key={theme.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      whileHover={{ scale: 1.02, y: -5 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Card
+                        className={`relative cursor-pointer overflow-hidden transition-all duration-300 group ${
+                          selectedTheme === theme.id 
+                            ? 'ring-2 ring-blue-500 shadow-xl shadow-blue-500/25' 
+                            : 'hover:shadow-lg hover:shadow-purple-500/20'
+                        }`}
+                        onClick={() => applyTheme(theme.id)}
+                        style={{
+                          background: selectedTheme === theme.id 
+                            ? 'linear-gradient(135deg, #1e293b 0%, #334155 100%)'
+                            : 'linear-gradient(135deg, #374151 0%, #4b5563 100%)',
+                          border: selectedTheme === theme.id 
+                            ? '2px solid #3b82f6' 
+                            : '1px solid #6b7280'
+                        }}
+                      >
+                        <div className="aspect-video relative overflow-hidden">
+                          <div 
+                            className="absolute inset-0 opacity-80"
+                            style={{ background: theme.gradient }}
+                          />
+                          <img
+                            src={theme.image}
+                            alt={theme.name}
+                            className="w-full h-full object-cover mix-blend-multiply"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                          
+                          {/* Theme Preview Overlay */}
+                          <div className="absolute inset-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div className="space-y-2">
+                              <div className="h-2 bg-gray-200 rounded w-3/4"></div>
+                              <div className="h-1.5 bg-gray-300 rounded w-1/2"></div>
+                              <div 
+                                className="h-6 rounded"
+                                style={{ backgroundColor: theme.colors.primary }}
+                              ></div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h4 className="font-semibold text-white text-sm">{theme.name}</h4>
+                              <div className="flex items-center gap-1 mt-1">
+                                {Object.values(theme.colors).slice(0, 3).map((color, i) => (
+                                  <div
+                                    key={i}
+                                    className="w-3 h-3 rounded-full border border-white/20"
+                                    style={{ backgroundColor: color }}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                            {selectedTheme === theme.id && (
+                              <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                className="flex items-center gap-1 bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium"
+                              >
+                                <Check className="w-3 h-3" />
+                                Active
+                              </motion.div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Sparkle effect on hover */}
+                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <Sparkles className="w-4 h-4 text-yellow-400" />
+                        </div>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+
+                <div className="text-center pt-4">
+                  <Button 
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                    onClick={() => setActiveTab('colors')}
+                  >
+                    <Palette className="w-4 h-4 mr-2" />
+                    Customize Colors
+                  </Button>
+                </div>
+              </div>
+            </TabsContent>
+
             {/* Colors Tab */}
             <TabsContent value="colors" className="space-y-6 mt-0">
               <div className="grid grid-cols-8 gap-3 mb-6">
