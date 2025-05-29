@@ -50,6 +50,21 @@ const FormElementRenderer = ({
     const canvasStyles = formConfig?.settings?.canvasStyles || {};
     const layoutSettings = formConfig?.settings?.layout || {};
     
+    // Ensure textAlign is a valid CSS value
+    const getValidTextAlign = (alignment: string): 'left' | 'right' | 'center' | 'justify' => {
+      switch (alignment) {
+        case 'right':
+          return 'right';
+        case 'center':
+          return 'center';
+        case 'justify':
+          return 'justify';
+        case 'left':
+        default:
+          return 'left';
+      }
+    };
+    
     return {
       labelStyles: {
         ...element.labelStyles,
@@ -57,8 +72,7 @@ const FormElementRenderer = ({
         fontSize: canvasStyles.fontSize ? `${canvasStyles.fontSize}px` : undefined,
         fontFamily: canvasStyles.fontFamily || undefined,
         width: layoutSettings.labelWidth ? `${layoutSettings.labelWidth}px` : undefined,
-        textAlign: layoutSettings.labelAlignment === 'right' ? 'right' : 
-                  layoutSettings.labelAlignment === 'left' ? 'left' : 'left',
+        textAlign: getValidTextAlign(layoutSettings.labelAlignment || 'left'),
       },
       fieldStyles: {
         ...element.fieldStyles,
