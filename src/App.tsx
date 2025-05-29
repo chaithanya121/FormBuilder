@@ -22,6 +22,7 @@ import Layout from "./layout/Layout";
 import { ThemeProvider } from "@/components/theme-provider";
 import { EmailVerification } from "./components/auth/EmailVerification";
 import { AnimatePresence } from "framer-motion";
+import LandingPage from "./pages/LandingPage";
 
 const queryClient = new QueryClient();
 
@@ -36,7 +37,7 @@ const App = () => {
                 <TooltipProvider delayDuration={0}>
                   <Layout>
                     <Routes>
-                      <Route path="/" element={<Dashboard/>} />
+                      <Route path="/" element={<LandingPage/>} />
                       <Route path="/dashboard" element={<Dashboard />} />
                       <Route path="/forms" element={<Index />} />
                       <Route path="/create" element={<FormBuilder />} />
