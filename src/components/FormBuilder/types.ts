@@ -62,8 +62,23 @@ export interface FormSettings {
     placeholders: "Default" | "Hide Labels" | "Custom";
     errors: "Default" | "Custom";
     messages: "Default" | "Custom";
+    labelAlignment?: "top" | "left" | "right";
+    questionSpacing?: number;
+    labelWidth?: number;
+    type?: "classic" | "card";
   };
-  canvasStyles?: React.CSSProperties;
+  canvasStyles?: React.CSSProperties & {
+    formBackgroundColor?: string;
+    fontColor?: string;
+    primaryColor?: string;
+    secondaryColor?: string;
+    inputBackground?: string;
+    formWidth?: number | string;
+    fontFamily?: string;
+    fontSize?: number | string;
+    customCSS?: string;
+    containerClass?: string;
+  };
 }
 
 export interface FormCanvasProps {
