@@ -8,50 +8,80 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { FormConfig } from './types';
 import { useEnhancedTheme } from '@/components/ui/enhanced-theme';
-import { Palette, Settings, Code, Layout } from 'lucide-react';
+import { Palette, Settings, Code, Layout, Upload } from 'lucide-react';
 
 interface FormStylesPanelProps {
   formConfig: FormConfig;
   onUpdate: (config: FormConfig) => void;
 }
 
-const PRESET_STYLES = {
-  "Light Theme": {
-    backgroundColor: "#ffffff",
+const PRESET_THEMES = {
+  "Ocean Breeze": {
+    backgroundColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
     formBackgroundColor: "#ffffff",
-    fontColor: "#000000",
-    primaryColor: "#3b82f6",
-    padding: "20px",
+    fontColor: "#2d3748",
+    primaryColor: "#3182ce",
+    secondaryColor: "#4299e1",
+    fontFamily: "Inter",
+    fontSize: 16,
+    padding: "32px",
     margin: "10px",
-    borderRadius: "8px",
-    backgroundImage: "",
+    borderRadius: "16px",
   },
-  "Dark Theme": {
-    backgroundColor: "#1a1a1a",
-    formBackgroundColor: "#2d2d2d",
-    fontColor: "#ffffff",
-    primaryColor: "#3b82f6",
-    padding: "20px",
+  "Sunset Glow": {
+    backgroundColor: "linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)",
+    formBackgroundColor: "rgba(255,255,255,0.95)",
+    fontColor: "#742a2a",
+    primaryColor: "#e53e3e",
+    secondaryColor: "#fc8181",
+    fontFamily: "Inter",
+    fontSize: 16,
+    padding: "32px",
     margin: "10px",
-    borderRadius: "8px",
-    backgroundImage: "",
+    borderRadius: "16px",
   },
-  "Gradient Background": {
-    backgroundColor: "",
-    backgroundImage: "linear-gradient(135deg, #6a11cb, #2575fc)",
-    formBackgroundColor: "rgba(255,255,255,0.9)",
-    fontColor: "#000000",
-    primaryColor: "#6a11cb",
-    padding: "20px",
+  "Forest Green": {
+    backgroundColor: "linear-gradient(135deg, #134e5e 0%, #71b280 100%)",
+    formBackgroundColor: "#ffffff",
+    fontColor: "#1a202c",
+    primaryColor: "#38a169",
+    secondaryColor: "#68d391",
+    fontFamily: "Inter",
+    fontSize: 16,
+    padding: "32px",
     margin: "10px",
-    borderRadius: "8px",
+    borderRadius: "16px",
   },
+  "Purple Rain": {
+    backgroundColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    formBackgroundColor: "rgba(255,255,255,0.95)",
+    fontColor: "#2d3748",
+    primaryColor: "#805ad5",
+    secondaryColor: "#b794f6",
+    fontFamily: "Inter",
+    fontSize: 16,
+    padding: "32px",
+    margin: "10px",
+    borderRadius: "16px",
+  },
+  "Warm Gradient": {
+    backgroundColor: "linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)",
+    formBackgroundColor: "#ffffff",
+    fontColor: "#2d3748",
+    primaryColor: "#ed8936",
+    secondaryColor: "#fbb040",
+    fontFamily: "Inter",
+    fontSize: 16,
+    padding: "32px",
+    margin: "10px",
+    borderRadius: "16px",
+  }
 };
 
 const FormStylesPanel: React.FC<FormStylesPanelProps> = ({ formConfig, onUpdate }) => {
   const { themeClasses } = useEnhancedTheme();
 
-  const handleCanvasStyleChange = (field: string, value: string) => {
+  const handleCanvasStyleChange = (field: string, value: string | number) => {
     const updatedCanvasStyles = { 
       ...formConfig.settings.canvasStyles, 
       [field]: value 
@@ -79,18 +109,31 @@ const FormStylesPanel: React.FC<FormStylesPanelProps> = ({ formConfig, onUpdate 
     });
   };
 
-  const applyPresetStyle = (presetName: string) => {
-    const presetStyles = PRESET_STYLES[presetName];
+  const applyPresetTheme = (themeName: string) => {
+    const themeStyles = PRESET_THEMES[themeName];
     onUpdate({
       ...formConfig,
       settings: {
         ...formConfig.settings,
         canvasStyles: {
           ...formConfig.settings.canvasStyles,
-          ...presetStyles,
+          ...themeStyles,
         },
       },
     });
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        handleCanvasStyleChange('backgroundImage', `url(${result})`);
+        handleCanvasStyleChange('backgroundColor', 'transparent');
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const getStyleStringValue = (style: string | number | undefined): string => {
@@ -103,200 +146,195 @@ const FormStylesPanel: React.FC<FormStylesPanelProps> = ({ formConfig, onUpdate 
 
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="canvas-styling" className="w-full">
+      <Tabs defaultValue="themes" className="w-full">
         <TabsList className={`${themeClasses.card} mb-6 p-1 rounded-xl border grid grid-cols-4 w-full`}>
           <TabsTrigger 
-            value="canvas-styling" 
+            value="themes" 
             className="data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 flex items-center gap-2"
           >
             <Palette className="h-4 w-4" />
-            Styling
+            Themes
           </TabsTrigger>
           <TabsTrigger 
-            value="layout-settings" 
+            value="colors" 
+            className="data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 flex items-center gap-2"
+          >
+            <Palette className="h-4 w-4" />
+            Colors
+          </TabsTrigger>
+          <TabsTrigger 
+            value="typography" 
             className="data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 flex items-center gap-2"
           >
             <Layout className="h-4 w-4" />
-            Layout
+            Typography
           </TabsTrigger>
           <TabsTrigger 
-            value="advanced" 
+            value="layout" 
             className="data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 flex items-center gap-2"
           >
             <Settings className="h-4 w-4" />
-            Advanced
-          </TabsTrigger>
-          <TabsTrigger 
-            value="import" 
-            className="data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 flex items-center gap-2"
-          >
-            <Code className="h-4 w-4" />
-            Import/Export
+            Layout
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="canvas-styling" className="space-y-6">
+        <TabsContent value="themes" className="space-y-6">
           <div className="space-y-4">
-            <div className="space-y-3">
-              <Label className={`${themeClasses.text} font-medium`}>Preset Styles</Label>
-              <Select onValueChange={(value) => applyPresetStyle(value)}>
-                <SelectTrigger className={`${themeClasses.input} rounded-xl border-2`}>
-                  <SelectValue placeholder="Select a preset style" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.keys(PRESET_STYLES).map((presetName) => (
-                    <SelectItem key={presetName} value={presetName}>
-                      {presetName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div>
+              <Label className={`${themeClasses.text} font-medium mb-3 block`}>Preset Themes</Label>
+              <div className="grid grid-cols-1 gap-3">
+                {Object.entries(PRESET_THEMES).map(([themeName, themeStyles]) => (
+                  <div 
+                    key={themeName}
+                    className="relative cursor-pointer rounded-lg overflow-hidden border-2 border-gray-200 hover:border-blue-400 transition-colors"
+                    onClick={() => applyPresetTheme(themeName)}
+                  >
+                    <div 
+                      className="h-16 w-full flex items-center justify-center text-white font-medium"
+                      style={{ background: themeStyles.backgroundColor }}
+                    >
+                      <div 
+                        className="px-4 py-2 rounded-lg text-sm"
+                        style={{ 
+                          backgroundColor: themeStyles.formBackgroundColor, 
+                          color: themeStyles.fontColor 
+                        }}
+                      >
+                        {themeName}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-3">
-                <Label className={`${themeClasses.text} font-medium`}>Background Color</Label>
+            <div className="space-y-3">
+              <Label className={`${themeClasses.text} font-medium`}>Custom Background</Label>
+              <div className="space-y-2">
                 <Input
                   value={formConfig.settings.canvasStyles?.backgroundColor || ""}
                   onChange={(e) => handleCanvasStyleChange("backgroundColor", e.target.value)}
-                  placeholder="e.g., #ffffff"
+                  placeholder="e.g., #ffffff or linear-gradient(...)"
                   className={`${themeClasses.input} rounded-xl border-2`}
                 />
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className={`${themeClasses.input} rounded-xl border-2`}
+                    id="background-upload"
+                  />
+                  <Label htmlFor="background-upload" className="cursor-pointer">
+                    <Button variant="outline" size="sm" asChild>
+                      <span className="flex items-center gap-2">
+                        <Upload className="h-4 w-4" />
+                        Upload
+                      </span>
+                    </Button>
+                  </Label>
+                </div>
               </div>
+            </div>
+          </div>
+        </TabsContent>
 
-              <div className="space-y-3">
-                <Label className={`${themeClasses.text} font-medium`}>Form Background</Label>
+        <TabsContent value="colors" className="space-y-6">
+          <div className="grid grid-cols-1 gap-6">
+            <div className="space-y-3">
+              <Label className={`${themeClasses.text} font-medium`}>Primary Color</Label>
+              <div className="flex items-center gap-2">
                 <Input
-                  value={formConfig.settings.canvasStyles?.formBackgroundColor || ""}
-                  onChange={(e) => handleCanvasStyleChange("formBackgroundColor", e.target.value)}
-                  placeholder="e.g., #f8fafc"
-                  className={`${themeClasses.input} rounded-xl border-2`}
-                />
-              </div>
-
-              <div className="space-y-3">
-                <Label className={`${themeClasses.text} font-medium`}>Font Color</Label>
-                <Input
-                  value={formConfig.settings.canvasStyles?.fontColor || ""}
-                  onChange={(e) => handleCanvasStyleChange("fontColor", e.target.value)}
-                  placeholder="e.g., #000000"
-                  className={`${themeClasses.input} rounded-xl border-2`}
-                />
-              </div>
-
-              <div className="space-y-3">
-                <Label className={`${themeClasses.text} font-medium`}>Primary Color</Label>
-                <Input
-                  value={formConfig.settings.canvasStyles?.primaryColor || ""}
+                  type="color"
+                  value={formConfig.settings.canvasStyles?.primaryColor || "#3b82f6"}
                   onChange={(e) => handleCanvasStyleChange("primaryColor", e.target.value)}
-                  placeholder="e.g., #3b82f6"
-                  className={`${themeClasses.input} rounded-xl border-2`}
+                  className="w-16 h-10 rounded-lg border-2"
+                />
+                <Input
+                  value={formConfig.settings.canvasStyles?.primaryColor || "#3b82f6"}
+                  onChange={(e) => handleCanvasStyleChange("primaryColor", e.target.value)}
+                  className={`${themeClasses.input} rounded-xl border-2 flex-1`}
+                  placeholder="#3b82f6"
                 />
               </div>
             </div>
 
             <div className="space-y-3">
-              <Label className={`${themeClasses.text} font-medium`}>Background Image</Label>
-              <Input
-                value={formConfig.settings.canvasStyles?.backgroundImage || ""}
-                onChange={(e) => handleCanvasStyleChange("backgroundImage", e.target.value)}
-                placeholder="e.g., https://example.com/image.jpg or linear-gradient(...)"
-                className={`${themeClasses.input} rounded-xl border-2`}
-              />
+              <Label className={`${themeClasses.text} font-medium`}>Secondary Color</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="color"
+                  value={formConfig.settings.canvasStyles?.secondaryColor || "#64748b"}
+                  onChange={(e) => handleCanvasStyleChange("secondaryColor", e.target.value)}
+                  className="w-16 h-10 rounded-lg border-2"
+                />
+                <Input
+                  value={formConfig.settings.canvasStyles?.secondaryColor || "#64748b"}
+                  onChange={(e) => handleCanvasStyleChange("secondaryColor", e.target.value)}
+                  className={`${themeClasses.input} rounded-xl border-2 flex-1`}
+                  placeholder="#64748b"
+                />
+              </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-3">
-                <Label className={`${themeClasses.text} font-medium`}>Padding</Label>
+            <div className="space-y-3">
+              <Label className={`${themeClasses.text} font-medium`}>Text Color</Label>
+              <div className="flex items-center gap-2">
                 <Input
-                  type="number"
-                  value={getStyleStringValue(formConfig.settings.canvasStyles?.padding)}
-                  onChange={(e) => handleCanvasStyleChange("padding", `${e.target.value}px`)}
-                  placeholder="e.g., 20"
-                  className={`${themeClasses.input} rounded-xl border-2`}
+                  type="color"
+                  value={formConfig.settings.canvasStyles?.fontColor || "#000000"}
+                  onChange={(e) => handleCanvasStyleChange("fontColor", e.target.value)}
+                  className="w-16 h-10 rounded-lg border-2"
+                />
+                <Input
+                  value={formConfig.settings.canvasStyles?.fontColor || "#000000"}
+                  onChange={(e) => handleCanvasStyleChange("fontColor", e.target.value)}
+                  className={`${themeClasses.input} rounded-xl border-2 flex-1`}
+                  placeholder="#000000"
                 />
               </div>
+            </div>
 
-              <div className="space-y-3">
-                <Label className={`${themeClasses.text} font-medium`}>Margin</Label>
+            <div className="space-y-3">
+              <Label className={`${themeClasses.text} font-medium`}>Form Background</Label>
+              <div className="flex items-center gap-2">
                 <Input
-                  type="number"
-                  value={getStyleStringValue(formConfig.settings.canvasStyles?.margin)}
-                  onChange={(e) => handleCanvasStyleChange("margin", `${e.target.value}px`)}
-                  placeholder="e.g., 10"
-                  className={`${themeClasses.input} rounded-xl border-2`}
+                  type="color"
+                  value={formConfig.settings.canvasStyles?.formBackgroundColor || "#ffffff"}
+                  onChange={(e) => handleCanvasStyleChange("formBackgroundColor", e.target.value)}
+                  className="w-16 h-10 rounded-lg border-2"
+                />
+                <Input
+                  value={formConfig.settings.canvasStyles?.formBackgroundColor || "#ffffff"}
+                  onChange={(e) => handleCanvasStyleChange("formBackgroundColor", e.target.value)}
+                  className={`${themeClasses.input} rounded-xl border-2 flex-1`}
+                  placeholder="#ffffff"
                 />
               </div>
+            </div>
 
-              <div className="space-y-3">
-                <Label className={`${themeClasses.text} font-medium`}>Border Radius</Label>
+            <div className="space-y-3">
+              <Label className={`${themeClasses.text} font-medium`}>Input Background</Label>
+              <div className="flex items-center gap-2">
                 <Input
-                  type="number"
-                  value={getStyleStringValue(formConfig.settings.canvasStyles?.borderRadius)}
-                  onChange={(e) => handleCanvasStyleChange("borderRadius", `${e.target.value}px`)}
-                  placeholder="e.g., 8"
-                  className={`${themeClasses.input} rounded-xl border-2`}
+                  type="color"
+                  value={formConfig.settings.canvasStyles?.inputBackground || "#ffffff"}
+                  onChange={(e) => handleCanvasStyleChange("inputBackground", e.target.value)}
+                  className="w-16 h-10 rounded-lg border-2"
+                />
+                <Input
+                  value={formConfig.settings.canvasStyles?.inputBackground || "#ffffff"}
+                  onChange={(e) => handleCanvasStyleChange("inputBackground", e.target.value)}
+                  className={`${themeClasses.input} rounded-xl border-2 flex-1`}
+                  placeholder="#ffffff"
                 />
               </div>
             </div>
           </div>
         </TabsContent>
 
-        <TabsContent value="layout-settings" className="space-y-6">
+        <TabsContent value="typography" className="space-y-6">
           <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-3">
-              <Label className={`${themeClasses.text} font-medium`}>Form Width</Label>
-              <Input
-                type="number"
-                value={formConfig.settings.canvasStyles?.formWidth || 752}
-                onChange={(e) => handleCanvasStyleChange("formWidth", e.target.value)}
-                placeholder="752"
-                className={`${themeClasses.input} rounded-xl border-2`}
-              />
-              <p className={`text-sm ${themeClasses.textMuted}`}>Resize form width in pixels</p>
-            </div>
-
-            <div className="space-y-3">
-              <Label className={`${themeClasses.text} font-medium`}>Label Alignment</Label>
-              <Select 
-                value={formConfig.settings.layout?.labelAlignment || 'top'}
-                onValueChange={(value) => handleLayoutChange('labelAlignment', value)}
-              >
-                <SelectTrigger className={`${themeClasses.input} rounded-xl border-2`}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="top">Top</SelectItem>
-                  <SelectItem value="left">Left</SelectItem>
-                  <SelectItem value="right">Right</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-3">
-              <Label className={`${themeClasses.text} font-medium`}>Question Spacing</Label>
-              <Input
-                type="number"
-                value={formConfig.settings.layout?.questionSpacing || 12}
-                onChange={(e) => handleLayoutChange('questionSpacing', parseInt(e.target.value))}
-                placeholder="12"
-                className={`${themeClasses.input} rounded-xl border-2`}
-              />
-              <p className={`text-sm ${themeClasses.textMuted}`}>Distance between questions in pixels</p>
-            </div>
-
-            <div className="space-y-3">
-              <Label className={`${themeClasses.text} font-medium`}>Label Width</Label>
-              <Input
-                type="number"
-                value={formConfig.settings.layout?.labelWidth || 230}
-                onChange={(e) => handleLayoutChange('labelWidth', parseInt(e.target.value))}
-                placeholder="230"
-                className={`${themeClasses.input} rounded-xl border-2`}
-              />
-              <p className={`text-sm ${themeClasses.textMuted}`}>Resize label width in pixels</p>
-            </div>
-
             <div className="space-y-3">
               <Label className={`${themeClasses.text} font-medium`}>Font Family</Label>
               <Select 
@@ -312,6 +350,9 @@ const FormStylesPanel: React.FC<FormStylesPanelProps> = ({ formConfig, onUpdate 
                   <SelectItem value="Helvetica">Helvetica</SelectItem>
                   <SelectItem value="Times New Roman">Times New Roman</SelectItem>
                   <SelectItem value="Georgia">Georgia</SelectItem>
+                  <SelectItem value="Roboto">Roboto</SelectItem>
+                  <SelectItem value="Open Sans">Open Sans</SelectItem>
+                  <SelectItem value="Lato">Lato</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -321,91 +362,77 @@ const FormStylesPanel: React.FC<FormStylesPanelProps> = ({ formConfig, onUpdate 
               <Input
                 type="number"
                 value={formConfig.settings.canvasStyles?.fontSize || 16}
-                onChange={(e) => handleCanvasStyleChange('fontSize', e.target.value)}
+                onChange={(e) => handleCanvasStyleChange('fontSize', parseInt(e.target.value))}
+                placeholder="16"
+                min="8"
+                max="72"
+                className={`${themeClasses.input} rounded-xl border-2`}
+              />
+              <p className={`text-sm ${themeClasses.textMuted}`}>Font size in pixels</p>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="layout" className="space-y-6">
+          <div className="grid grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <Label className={`${themeClasses.text} font-medium`}>Form Width</Label>
+              <Input
+                type="number"
+                value={formConfig.settings.canvasStyles?.formWidth || 752}
+                onChange={(e) => handleCanvasStyleChange("formWidth", parseInt(e.target.value))}
+                placeholder="752"
+                className={`${themeClasses.input} rounded-xl border-2`}
+              />
+              <p className={`text-sm ${themeClasses.textMuted}`}>Width in pixels</p>
+            </div>
+
+            <div className="space-y-3">
+              <Label className={`${themeClasses.text} font-medium`}>Question Spacing</Label>
+              <Input
+                type="number"
+                value={formConfig.settings.layout?.questionSpacing || 12}
+                onChange={(e) => handleLayoutChange('questionSpacing', parseInt(e.target.value))}
+                placeholder="12"
+                className={`${themeClasses.input} rounded-xl border-2`}
+              />
+              <p className={`text-sm ${themeClasses.textMuted}`}>Spacing between elements</p>
+            </div>
+
+            <div className="space-y-3">
+              <Label className={`${themeClasses.text} font-medium`}>Padding</Label>
+              <Input
+                type="number"
+                value={getStyleStringValue(formConfig.settings.canvasStyles?.padding)}
+                onChange={(e) => handleCanvasStyleChange("padding", `${e.target.value}px`)}
+                placeholder="32"
+                className={`${themeClasses.input} rounded-xl border-2`}
+              />
+            </div>
+
+            <div className="space-y-3">
+              <Label className={`${themeClasses.text} font-medium`}>Border Radius</Label>
+              <Input
+                type="number"
+                value={getStyleStringValue(formConfig.settings.canvasStyles?.borderRadius)}
+                onChange={(e) => handleCanvasStyleChange("borderRadius", `${e.target.value}px`)}
                 placeholder="16"
                 className={`${themeClasses.input} rounded-xl border-2`}
               />
-              <p className={`text-sm ${themeClasses.textMuted}`}>Change font size in pixels</p>
             </div>
           </div>
-        </TabsContent>
 
-        <TabsContent value="advanced" className="space-y-6">
-          <div className="space-y-4">
-            <div className="space-y-3">
-              <Label className={`${themeClasses.text} font-medium`}>Custom CSS</Label>
-              <Textarea
-                value={formConfig.settings.canvasStyles?.customCSS || ""}
-                onChange={(e) => handleCanvasStyleChange("customCSS", e.target.value)}
-                placeholder="/* Add your custom CSS here */&#10;.form-container {&#10;  /* Custom styles */&#10;}"
-                className={`${themeClasses.input} rounded-xl border-2 min-h-[120px] font-mono text-sm`}
-              />
-              <p className={`text-sm ${themeClasses.textMuted}`}>
-                Add custom CSS to override default styles and create unique designs.
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              <Label className={`${themeClasses.text} font-medium`}>Form Container Class</Label>
-              <Input
-                value={formConfig.settings.canvasStyles?.containerClass || ""}
-                onChange={(e) => handleCanvasStyleChange("containerClass", e.target.value)}
-                placeholder="e.g., custom-form-container"
-                className={`${themeClasses.input} rounded-xl border-2`}
-              />
-              <p className={`text-sm ${themeClasses.textMuted}`}>
-                Add custom CSS class to the form container.
-              </p>
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="import" className="space-y-6">
-          <div className="space-y-4">
-            <div className="space-y-3">
-              <Label className={`${themeClasses.text} font-medium`}>Import Configuration</Label>
-              <Input
-                type="file"
-                accept=".json"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                      try {
-                        const importedConfig = JSON.parse(event.target?.result as string);
-                        onUpdate(importedConfig);
-                      } catch (error) {
-                        console.error('Import failed:', error);
-                      }
-                    };
-                    reader.readAsText(file);
-                  }
-                }}
-                className={`${themeClasses.input} rounded-xl border-2`}
-              />
-            </div>
-
-            <div className="space-y-3">
-              <Label className={`${themeClasses.text} font-medium`}>Export Configuration</Label>
-              <Button
-                variant="outline"
-                className={`w-full ${themeClasses.button} rounded-xl border-2`}
-                onClick={() => {
-                  const jsonString = JSON.stringify(formConfig, null, 2);
-                  const blob = new Blob([jsonString], { type: "application/json" });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = "form-config.json";
-                  a.click();
-                  URL.revokeObjectURL(url);
-                }}
-              >
-                <Code className="h-4 w-4 mr-2" />
-                Export Configuration
-              </Button>
-            </div>
+          <div className="space-y-3">
+            <Label className={`${themeClasses.text} font-medium`}>Custom CSS</Label>
+            <Textarea
+              value={formConfig.settings.canvasStyles?.customCSS || ""}
+              onChange={(e) => handleCanvasStyleChange("customCSS", e.target.value)}
+              placeholder="/* Add your custom CSS here */&#10;.form-container {&#10;  /* Custom styles */&#10;}"
+              className={`${themeClasses.input} rounded-xl border-2 min-h-[120px] font-mono text-sm`}
+            />
+            <p className={`text-sm ${themeClasses.textMuted}`}>
+              Add custom CSS to override default styles
+            </p>
           </div>
         </TabsContent>
       </Tabs>

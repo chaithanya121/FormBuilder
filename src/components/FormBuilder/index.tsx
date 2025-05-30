@@ -1,745 +1,519 @@
-import { DragEvent, useState, useRef, useEffect } from "react";
-import { Card } from "@/components/ui/card";
-import { FormElement, FormConfig, FormElementType } from "./types";
-import FormElementLibrary from "./FormElementLibrary";
-import FormCanvas from "./FormCanvas";
-import FormPreview from "./FormPreview";
-import ElementSettings from "./ElementSettings";
-import { Button } from "@/components/ui/button";
-import { Eye, Code, Layers, ArrowLeft, Globe, Link, Palette, Download, Upload } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "../ui/select";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/tabs";
-import { useNavigate, useParams } from "react-router-dom";
-import JsonViewer from "../ui/json-viewer";
-import { formsApi, FormData } from "@/services/forms";
-import SaveSuccessDialog from "./SaveSuccessDialog";
-import PublishSuccessDialog from "./PublishSuccessDialog";
-import { useEnhancedTheme } from "@/components/ui/enhanced-theme";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { motion } from "framer-motion";
 
-const DEFAULT_CONFIG: FormConfig = {
-  name: "Create account",
-  elements: [],
-  settings: {
-    termsAndConditions: {
-      enabled: true,
-      required: true,
-      text: "I accept the Terms & Conditions & Privacy Policy",
-    },
-    submitButton: {
-      enabled: true,
-      text: "Submit",
-    },
-    preview: {
-      width: "Full",
-      nesting: true,
-    },
-    validation: {
-      liveValidation: "Default",
-    },
-    layout: {
-      size: "Default",
-      columns: {
-        default: true,
-        tablet: false,
-        desktop: false,
-      },
-      labels: "Default",
-      placeholders: "Default",
-      errors: "Default",
-      messages: "Default",
-    },
-  },
-};
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import FormElementLibrary from './FormElementLibrary';
+import EnhancedFormCanvas from './EnhancedFormCanvas';
+import FormPropertiesPanel from './FormPropertiesPanel';
+import FormDesigner from './FormDesigner';
+import ThemeCreator from './ThemeCreator';
+import AdvancedElementSettings from './AdvancedElementSettings';
+import TooltipWrapper from './TooltipWrapper';
+import { FormConfig, FormElement } from './types';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Settings, Eye, Save, Upload, Download, Play, 
+  Palette, Layers, Grid, Code, Sparkles, Wand2,
+  HelpCircle, Info, Lightbulb, Zap, Target
+} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const PRESET_STYLES = {
-  "Light Theme": {
-    backgroundColor: "#ffffff",
-    color: "#000000",
-    padding: "20px",
-    margin: "10px",
-    borderRadius: "8px",
-    backgroundImage: "",
-  },
-  "Dark Theme": {
-    backgroundColor: "#1a1a1a",
-    color: "#ffffff",
-    padding: "20px",
-    margin: "10px",
-    borderRadius: "8px",
-    backgroundImage: "",
-  },
-  "Gradient Background": {
-    backgroundColor: "",
-    backgroundImage: "linear-gradient(135deg, #6a11cb, #2575fc)",
-    color: "#ffffff",
-    padding: "20px",
-    margin: "10px",
-    borderRadius: "8px",
-  },
-};
-
-const FormBuilder = () => {
-  const { theme, themeClasses } = useEnhancedTheme();
-  const [formConfig, setFormConfig] = useState<FormConfig>(DEFAULT_CONFIG);
-  const [previewMode, setPreviewMode] = useState(false);
-  const [selectedElement, setSelectedElement] = useState<FormElement | undefined>();
-  const [showSaveDialog, setShowSaveDialog] = useState(false);
-  const [showPublishDialog, setShowPublishDialog] = useState(false);
-  const [savedFormId, setSavedFormId] = useState<string | undefined>();
+const FormBuilder: React.FC = () => {
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const { id } = useParams();
-  const [formId, setFormId] = useState<string | undefined>(undefined);
-  const formInitialized = useRef(false);
-
-  useEffect(() => {
-    if (id && !formInitialized.current) {
-      formInitialized.current = true;
-      const loadForm = async () => {
-        try {
-          console.log('Attempting to load form with primary_id:', id);
-          const formToEdit = await formsApi.getFormById(id);
-          if (formToEdit && 'config' in formToEdit && formToEdit.config) {
-            setFormConfig(formToEdit.config);
-            setIsPublished(formToEdit.published || false);
-            setFormId(formToEdit.primary_id);
-            toast({
-              title: "Form Loaded",
-              description: `Editing form: ${formToEdit.name}`,
-            });
-          } else {
-            console.log('Form not found, creating new form');
-            toast({
-              title: "Form Not Found",
-              description: "Creating a new form instead",
-              variant: "destructive"
-            });
-          }
-        } catch (error) {
-          console.error('Error loading form:', error);
-          toast({
-            title: "Error Loading Form",
-            description: "Creating a new form instead",
-            variant: "destructive"
-          });
-        }
-      };
-      loadForm();
+  
+  const [formConfig, setFormConfig] = useState<FormConfig>({
+    name: "Untitled Form",
+    elements: [],
+    settings: {
+      preview: { width: "Full", nesting: false },
+      validation: { liveValidation: "Default" },
+      layout: {
+        size: "Default",
+        columns: { default: true, tablet: true, desktop: true },
+        labels: "Default",
+        placeholders: "Default", 
+        errors: "Default",
+        messages: "Default",
+        questionSpacing: 24
+      },
+      canvasStyles: {
+        backgroundColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        formBackgroundColor: "#ffffff",
+        fontColor: "#321f16",
+        primaryColor: "#3b82f6",
+        fontFamily: "Inter",
+        fontSize: 16,
+        formWidth: 752,
+        borderRadius: "12px",
+        padding: "32px"
+      },
+      submitButton: {
+        text: "Submit Form",
+        position: "bottom"
+      },
+      termsAndConditions: {
+        enabled: false,
+        required: false,
+        text: "I accept the Terms & Conditions"
+      }
     }
-  }, [id, toast]);
+  });
 
-  const [isPublished, setIsPublished] = useState(false);
+  const [selectedElement, setSelectedElement] = useState<FormElement | null>(null);
+  const [activePanel, setActivePanel] = useState<'elements' | 'configuration' | 'designer'>('elements');
+  const [isDesignerOpen, setIsDesignerOpen] = useState(false);
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
+  const [showThemeCreator, setShowThemeCreator] = useState(false);
+  const [customThemes, setCustomThemes] = useState<any[]>([]);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
-  const handleDragStart = (e: DragEvent<HTMLDivElement>, elementType: string) => {
-    e.dataTransfer.setData("elementType", elementType);
-  };
+  // Save form to localStorage
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      localStorage.setItem('formBuilder_current', JSON.stringify(formConfig));
+      localStorage.setItem('currentFormId', 'current');
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [formConfig]);
 
-  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const elementType = e.dataTransfer.getData("elementType");
-    const newElement: FormElement = {
-      id: `element-${Date.now()}`,
-      type: elementType as FormElementType,
-      label: `New ${elementType}`,
-      required: false,
-      placeholder: `Enter ${elementType}`,
-      nestedData: false,
-      description: "",
-      name: elementType.toLowerCase(),
-      options: [],
-    };
+  // Load saved form
+  useEffect(() => {
+    const saved = localStorage.getItem('formBuilder_current');
+    if (saved) {
+      try {
+        const parsedConfig = JSON.parse(saved);
+        setFormConfig(parsedConfig);
+      } catch (error) {
+        console.error('Failed to load saved form:', error);
+      }
+    }
 
-    setFormConfig((prev) => ({
-      ...prev,
-      elements: [...prev.elements, newElement],
-    }));
-
-    toast({
-      title: "Element Added",
-      description: `Added new ${elementType} element to the form`,
-    });
-  };
-
-  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-  };
+    // Load custom themes
+    const savedThemes = localStorage.getItem('formBuilder_customThemes');
+    if (savedThemes) {
+      try {
+        setCustomThemes(JSON.parse(savedThemes));
+      } catch (error) {
+        console.error('Failed to load custom themes:', error);
+      }
+    }
+  }, []);
 
   const handleElementSelect = (element: FormElement) => {
     setSelectedElement(element);
+    setActivePanel('configuration');
   };
 
   const handleElementUpdate = (updatedElement: FormElement) => {
-    setFormConfig((prev) => ({
+    setFormConfig(prev => ({
       ...prev,
-      elements: prev.elements.map((el) =>
+      elements: prev.elements.map(el => 
         el.id === updatedElement.id ? updatedElement : el
-      ),
+      )
     }));
-
     setSelectedElement(updatedElement);
   };
 
-  const handleCanvasStyleChange = (field: string, value: string) => {
-    const updatedCanvasStyles = { ...formConfig.settings.canvasStyles, [field]: value };
-    setFormConfig((prev) => ({
-      ...prev,
-      settings: {
-        ...prev.settings,
-        canvasStyles: updatedCanvasStyles,
-      },
-    }));
-  };
-
-  const getStyleStringValue = (style: string | number | undefined): string => {
-    if (style === undefined) return '';
-    
-    if (typeof style === 'string') {
-      return style.replace('px', '');
+  const handleDeleteElement = () => {
+    if (selectedElement) {
+      setFormConfig(prev => ({
+        ...prev,
+        elements: prev.elements.filter(el => el.id !== selectedElement.id)
+      }));
+      setSelectedElement(null);
     }
-    
-    return String(style);
   };
 
-  const applyPresetStyle = (presetName: string) => {
-    const presetStyles = PRESET_STYLES[presetName];
-    setFormConfig((prev) => ({
-      ...prev,
-      settings: {
-        ...prev.settings,
-        canvasStyles: {
-          ...prev.settings.canvasStyles,
-          ...presetStyles,
-        },
-      },
-    }));
-    
+  const handleDuplicateElement = () => {
+    if (selectedElement) {
+      const duplicatedElement = {
+        ...selectedElement,
+        id: Date.now().toString(),
+        label: `${selectedElement.label} (Copy)`
+      };
+      setFormConfig(prev => ({
+        ...prev,
+        elements: [...prev.elements, duplicatedElement]
+      }));
+    }
+  };
+
+  const handlePreview = () => {
+    localStorage.setItem('previewFormConfig', JSON.stringify(formConfig));
+    window.open('/preview', '_blank');
+  };
+
+  const handleSave = () => {
+    const formId = `form_${Date.now()}`;
+    localStorage.setItem(`formBuilder_${formId}`, JSON.stringify(formConfig));
     toast({
-      title: "Style Applied",
-      description: `Applied ${presetName} style to the form`,
+      title: "Form Saved Successfully!",
+      description: `Your form "${formConfig.name}" has been saved.`,
     });
   };
 
-  const handleSaveAndPublish = async () => {
-    try {
-      let currentFormId = id;
-      
-      if (id) {
-        // Update existing form
-        const currentForm = await formsApi.getFormById(id);
-        if (currentForm && 'primary_id' in currentForm && currentForm.primary_id) {
-          const formToUpdate: FormData = {
-            primary_id: currentForm.primary_id,
-            name: formConfig.name,
-            createdAt: currentForm.createdAt,
-            last_modified: new Date().toISOString(),
-            submissions: currentForm.submissions || 0,
-            published: false,
-            config: formConfig
-          };
-          await formsApi.updateForm(formToUpdate);
+  const handleExport = () => {
+    const dataStr = JSON.stringify(formConfig, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${formConfig.name.toLowerCase().replace(/\s+/g, '-')}-config.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImport = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const importedConfig = JSON.parse(event.target?.result as string);
+            setFormConfig(importedConfig);
+            toast({
+              title: "Import Successful",
+              description: "Form configuration has been imported.",
+            });
+          } catch (error) {
+            toast({
+              title: "Import Failed", 
+              description: "Invalid JSON file format.",
+              variant: "destructive"
+            });
+          }
+        };
+        reader.readAsText(file);
+      }
+    };
+    input.click();
+  };
+
+  const handleSaveCustomTheme = (theme: any) => {
+    const updatedThemes = [...customThemes, theme];
+    setCustomThemes(updatedThemes);
+    localStorage.setItem('formBuilder_customThemes', JSON.stringify(updatedThemes));
+    setShowThemeCreator(false);
+  };
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+    const updatedConfig = {
+      ...formConfig,
+      settings: {
+        ...formConfig.settings,
+        canvasStyles: {
+          ...formConfig.settings.canvasStyles,
+          backgroundColor: !isDarkMode 
+            ? "linear-gradient(135deg, #1f2937 0%, #111827 100%)"
+            : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          formBackgroundColor: !isDarkMode ? "#374151" : "#ffffff",
+          fontColor: !isDarkMode ? "#f9fafb" : "#1a1a1a"
         }
-      } else {
-        // Create new form
-        const formObject = {
-          name: formConfig.name,
-          published: false,
-          config: formConfig
-        };
-        const newForm = await formsApi.createForm(formObject);
-        currentFormId = newForm.primary_id;
-        setFormId(newForm.primary_id);
       }
-      
-      setSavedFormId(currentFormId);
-      setShowSaveDialog(true);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save form. " + (error as Error).message,
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handlePublishForm = async () => {
-    try {
-      const formIdToPublish = savedFormId || id;
-      if (!formIdToPublish) return;
-
-      const currentForm = await formsApi.getFormById(formIdToPublish);
-      if (currentForm && 'primary_id' in currentForm && currentForm.primary_id) {
-        const formToUpdate: FormData = {
-          primary_id: currentForm.primary_id,
-          name: currentForm.name,
-          createdAt: currentForm.createdAt,
-          last_modified: new Date().toISOString(),
-          submissions: currentForm.submissions || 0,
-          published: true,
-          config: formConfig
-        };
-        await formsApi.updateForm(formToUpdate);
-      }
-      
-      setShowSaveDialog(false);
-      setShowPublishDialog(true);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to publish form. " + (error as Error).message,
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleCloseDialogs = () => {
-    setShowSaveDialog(false);
-    setShowPublishDialog(false);
-    navigate('/');
+    };
+    setFormConfig(updatedConfig);
   };
 
   return (
-    <div className={`min-h-screen ${themeClasses.pageBackground} relative overflow-hidden`}>
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className={`absolute top-20 right-20 w-96 h-96 ${themeClasses.decorationSecondary} rounded-full blur-3xl opacity-30`}></div>
-        <div className={`absolute bottom-20 left-20 w-80 h-80 ${themeClasses.decoration} rounded-full blur-3xl opacity-20`}></div>
-        <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 ${themeClasses.decorationSecondary} rounded-full blur-3xl opacity-10`}></div>
-      </div>
-
+    <div className={`h-screen flex flex-col ${isDarkMode ? 'dark' : ''}`}>
       {/* Enhanced Header */}
-      <header className={`${themeClasses.card} border-b backdrop-blur-xl sticky top-0 z-50 shadow-2xl transition-all duration-300`}>
-        <div className="container mx-auto px-6">
-          <div className="flex items-center justify-between h-20">
-            <div className="flex items-center gap-6">
-              <motion.button 
-                onClick={() => navigate('/')}
-                whileHover={{ scale: 1.05, x: -2 }}
-                whileTap={{ scale: 0.95 }}
-                className={`${themeClasses.text} hover:text-blue-500 flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-300 hover:bg-white/10`}
-              >
-                <ArrowLeft className="h-5 w-5" />
-                <span className="font-medium">Back to Dashboard</span>
-              </motion.button>
-              
-              <motion.div 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5 }}
-                className="flex items-center gap-3"
-              >
-                <div className="relative">
-                  <motion.div 
-                    whileHover={{ rotate: 180, scale: 1.1 }}
-                    transition={{ duration: 0.3 }}
-                    className="p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl shadow-xl"
-                  >
-                    <Layers className="h-7 w-7 text-white" />
-                  </motion.div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500 rounded-2xl blur opacity-30"></div>
-                </div>
-                <div className="flex flex-col">
-                  <span className={`text-2xl font-bold ${themeClasses.heading} tracking-tight`}>
-                    Form Builder Pro
-                  </span>
-                  <span className={`text-sm ${themeClasses.textMuted} -mt-1`}>
-                    Advanced Form Creation Studio
-                  </span>
-                </div>
-              </motion.div>
-            </div>
-            
+      <div className="bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-white/5 backdrop-blur-sm">
-                <Palette className={`h-4 w-4 ${themeClasses.text}`} />
-                <span className={`text-sm font-medium ${themeClasses.text}`}>Theme</span>
-                <ThemeToggle variant="switch" />
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
+                  <Grid className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    Form Builder Pro
+                  </h1>
+                  <p className="text-sm text-gray-600">
+                    {formConfig.elements.length} elements • Advanced Builder
+                  </p>
+                </div>
               </div>
               
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
+              <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                v2.0 Pro
+              </Badge>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-3">
+              <TooltipWrapper content="Save your form to local storage">
+                <Button variant="outline" size="sm" onClick={handleSave}>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save
+                </Button>
+              </TooltipWrapper>
+
+              <TooltipWrapper content="Import form configuration from JSON">
+                <Button variant="outline" size="sm" onClick={handleImport}>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import
+                </Button>
+              </TooltipWrapper>
+
+              <TooltipWrapper content="Export form configuration as JSON">
+                <Button variant="outline" size="sm" onClick={handleExport}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Export
+                </Button>
+              </TooltipWrapper>
+
+              <TooltipWrapper content="Preview your form in a new tab">
+                <Button onClick={handlePreview} className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+                  <Eye className="h-4 w-4 mr-2" />
+                  Preview
+                </Button>
+              </TooltipWrapper>
+            </div>
+          </div>
+
+          {/* Secondary Navigation */}
+          <div className="flex items-center justify-between mt-4">
+            <Tabs value={activePanel} onValueChange={(value: any) => setActivePanel(value)}>
+              <TabsList className="bg-gray-100">
+                <TooltipWrapper content="Drag and drop form elements">
+                  <TabsTrigger value="elements" className="data-[state=active]:bg-white">
+                    <Layers className="h-4 w-4 mr-2" />
+                    Elements
+                  </TabsTrigger>
+                </TooltipWrapper>
+                <TooltipWrapper content="Configure form and element settings">
+                  <TabsTrigger value="configuration" className="data-[state=active]:bg-white">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Configuration
+                  </TabsTrigger>
+                </TooltipWrapper>
+                <TooltipWrapper content="Advanced form designer with themes">
+                  <TabsTrigger value="designer" className="data-[state=active]:bg-white">
+                    <Palette className="h-4 w-4 mr-2" />
+                    Designer
+                  </TabsTrigger>
+                </TooltipWrapper>
+              </TabsList>
+            </Tabs>
+
+            <div className="flex items-center gap-2">
+              <TooltipWrapper content="Create custom themes for your forms">
                 <Button 
                   variant="outline" 
-                  onClick={() => setPreviewMode(!previewMode)} 
-                  className={`gap-2 ${themeClasses.button} border-2 px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300`}
+                  size="sm" 
+                  onClick={() => setShowThemeCreator(true)}
                 >
-                  {previewMode ? <Code className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  {previewMode ? "Edit Mode" : "Preview Mode"}
+                  <Wand2 className="h-4 w-4 mr-1" />
+                  Theme Creator
                 </Button>
-              </motion.div>
-              
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
+              </TooltipWrapper>
+
+              <TooltipWrapper content={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}>
                 <Button 
-                  onClick={handleSaveAndPublish} 
-                  className="gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-xl hover:shadow-2xl transition-all duration-300 rounded-xl px-8 py-3 font-semibold"
+                  variant="outline" 
+                  size="sm" 
+                  onClick={toggleDarkMode}
                 >
-                  <Globe className="h-4 w-4" />
-                  Save & Publish
+                  {isDarkMode ? '☀️' : '🌙'}
                 </Button>
-              </motion.div>
+              </TooltipWrapper>
+
+              {selectedElement && (
+                <TooltipWrapper content="Advanced element configuration">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setShowAdvancedSettings(true)}
+                  >
+                    <Zap className="h-4 w-4 mr-1" />
+                    Advanced
+                  </Button>
+                </TooltipWrapper>
+              )}
             </div>
           </div>
         </div>
-      </header>
-
-      <div className="container mx-auto p-6 relative z-10">
-        {/* Form Title Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="mb-8"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <h1 className={`text-4xl font-bold ${themeClasses.heading}`}>
-                {formConfig.name}
-              </h1>
-              <div className={`px-4 py-2 rounded-full ${themeClasses.decoration} backdrop-blur-sm`}>
-                <span className={`text-sm font-medium ${themeClasses.text}`}>
-                  {formConfig.elements.length} elements
-                </span>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" className={`gap-2 ${themeClasses.button} rounded-xl`}>
-                <Download className="h-4 w-4" />
-                Export
-              </Button>
-              <Button variant="outline" size="sm" className={`gap-2 ${themeClasses.button} rounded-xl`}>
-                <Upload className="h-4 w-4" />
-                Import
-              </Button>
-            </div>
-          </div>
-          <p className={`mt-2 ${themeClasses.textMuted} text-lg`}>
-            Create beautiful, interactive forms with our advanced drag-and-drop builder
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="grid grid-cols-12 gap-6"
-        >
-          {!previewMode ? (
-            <>
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="col-span-3"
-              >
-                <Card className={`${themeClasses.card} ${themeClasses.cardHover} backdrop-blur-xl border-2 p-6 h-[calc(100vh-12rem)] overflow-hidden transition-all duration-300`}>
-                  <div className="h-full flex flex-col">
-                    <div className="mb-6">
-                      <h3 className={`text-lg font-semibold ${themeClasses.text} mb-2`}>
-                        Element Library
-                      </h3>
-                      <p className={`text-sm ${themeClasses.textMuted}`}>
-                        Drag elements to build your form
-                      </p>
-                    </div>
-                    <div className="flex-1 overflow-y-auto">
-                      <FormElementLibrary onDragStart={handleDragStart} />
-                    </div>
-                  </div>
-                </Card>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                className="col-span-6"
-              >
-                <Card
-                  className={`${themeClasses.card} ${themeClasses.cardHover} backdrop-blur-xl border-2 p-6 h-[calc(100vh-12rem)] transition-all duration-300 relative overflow-hidden`}
-                  onDrop={handleDrop}
-                  onDragOver={handleDragOver}
-                >
-                  <div className="absolute top-4 left-6 right-6 flex items-center justify-between z-10">
-                    <h3 className={`text-lg font-semibold ${themeClasses.text}`}>
-                      Form Canvas
-                    </h3>
-                    <div className={`px-3 py-1 rounded-full ${themeClasses.decoration} backdrop-blur-sm`}>
-                      <span className={`text-xs font-medium ${themeClasses.text}`}>
-                        Live Preview
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div className="pt-12 h-full overflow-y-auto">
-                    <FormCanvas
-                      elements={formConfig.elements}
-                      setFormConfig={setFormConfig}
-                      onSelectElement={handleElementSelect}
-                      selectedElement={selectedElement}
-                      formConfig={formConfig}
-                      onUpdate={handleElementUpdate}
-                    />
-                  </div>
-                </Card>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                className="col-span-3"
-              >
-                <Card className={`${themeClasses.card} ${themeClasses.cardHover} backdrop-blur-xl border-2 p-6 h-[calc(100vh-12rem)] overflow-hidden transition-all duration-300`}>
-                  {selectedElement ? (
-                    <div className="h-full">
-                      <div className="mb-4 pb-4 border-b border-opacity-20">
-                        <h3 className={`text-lg font-semibold ${themeClasses.text}`}>
-                          Element Settings
-                        </h3>
-                        <p className={`text-sm ${themeClasses.textMuted}`}>
-                          Customize {selectedElement.type}
-                        </p>
-                      </div>
-                      <div className="overflow-y-auto flex-1">
-                        <ElementSettings
-                          key={selectedElement.id}
-                          element={selectedElement}
-                          onUpdate={handleElementUpdate}
-                          onClose={() => setSelectedElement(undefined)}
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="h-full flex flex-col">
-                      <div className="mb-6">
-                        <h3 className={`text-lg font-semibold ${themeClasses.text} mb-2`}>
-                          Form Settings
-                        </h3>
-                        <p className={`text-sm ${themeClasses.textMuted}`}>
-                          Customize your form appearance
-                        </p>
-                      </div>
-                      
-                      <div className="flex-1 overflow-y-auto">
-                        <Tabs defaultValue="canvas-styling" className="w-full">
-                          <TabsList className={`${themeClasses.card} mb-6 p-1 rounded-xl border`}>
-                            <TabsTrigger 
-                              value="canvas-styling" 
-                              className={`data-[state=active]:${themeClasses.accent} data-[state=active]:text-white rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200`}
-                            >
-                              Styling
-                            </TabsTrigger>
-                            <TabsTrigger 
-                              value="import" 
-                              className={`data-[state=active]:${themeClasses.accent} data-[state=active]:text-white rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200`}
-                            >
-                              Import/Export
-                            </TabsTrigger>
-                          </TabsList>
-
-                          <TabsContent value="canvas-styling" className="space-y-6">
-                            {/* ... keep existing canvas styling content with enhanced styling */}
-                            <div className="space-y-4">
-                              <div className="space-y-3">
-                                <Label className={`${themeClasses.text} font-medium`}>Preset Styles</Label>
-                                <Select onValueChange={(value) => applyPresetStyle(value)}>
-                                  <SelectTrigger className={`${themeClasses.input} rounded-xl border-2`}>
-                                    <SelectValue placeholder="Select a preset style" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {Object.keys(PRESET_STYLES).map((presetName) => (
-                                      <SelectItem key={presetName} value={presetName}>
-                                        {presetName}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-
-                              <div className="space-y-4">
-                                <div className="space-y-3">
-                                  <Label className={`${themeClasses.text} font-medium`}>Background Color</Label>
-                                  <Input
-                                    value={formConfig.settings.canvasStyles?.backgroundColor || ""}
-                                    onChange={(e) => handleCanvasStyleChange("backgroundColor", e.target.value)}
-                                    placeholder="e.g., #ffffff"
-                                    className={`${themeClasses.input} rounded-xl border-2`}
-                                  />
-                                </div>
-                                <div className="space-y-3">
-                                  <Label className={`${themeClasses.text} font-medium`}>Background Image</Label>
-                                  <Input
-                                    value={formConfig.settings.canvasStyles?.backgroundImage || ""}
-                                    onChange={(e) => handleCanvasStyleChange("backgroundImage", e.target.value)}
-                                    placeholder="e.g., https://example.com/image.jpg"
-                                    className={`${themeClasses.input} rounded-xl border-2`}
-                                  />
-                                </div>
-                                <div className="space-y-3">
-                                  <Label className={`${themeClasses.text} font-medium`}>Padding</Label>
-                                  <Input
-                                    type="number"
-                                    value={getStyleStringValue(formConfig.settings.canvasStyles?.padding)}
-                                    onChange={(e) => handleCanvasStyleChange("padding", `${e.target.value}px`)}
-                                    placeholder="e.g., 10"
-                                    className={`${themeClasses.input} rounded-xl border-2`}
-                                  />
-                                </div>
-                                <div className="space-y-3">
-                                  <Label className={`${themeClasses.text} font-medium`}>Margin</Label>
-                                  <Input
-                                    type="number"
-                                    value={getStyleStringValue(formConfig.settings.canvasStyles?.margin)}
-                                    onChange={(e) => handleCanvasStyleChange("margin", `${e.target.value}px`)}
-                                    placeholder="e.g., 10"
-                                    className={`${themeClasses.input} rounded-xl border-2`}
-                                  />
-                                </div>
-                                <div className="space-y-3">
-                                  <Label className={`${themeClasses.text} font-medium`}>Border Radius</Label>
-                                  <Input
-                                    type="number"
-                                    value={getStyleStringValue(formConfig.settings.canvasStyles?.borderRadius)}
-                                    onChange={(e) => handleCanvasStyleChange("borderRadius", `${e.target.value}px`)}
-                                    placeholder="e.g., 5"
-                                    className={`${themeClasses.input} rounded-xl border-2`}
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          </TabsContent>
-
-                          <TabsContent value="import" className="space-y-6">
-                            {/* ... keep existing import/export content with enhanced styling */}
-                            <div className="space-y-4">
-                              <div className="space-y-3">
-                                <Label className={`${themeClasses.text} font-medium`}>Import JSON</Label>
-                                <Input
-                                  type="file"
-                                  accept=".json"
-                                  onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                      const reader = new FileReader();
-                                      reader.onload = (event) => {
-                                        try {
-                                          const importedConfig = JSON.parse(event.target?.result as string);
-                                          setFormConfig(importedConfig);
-                                          toast({
-                                            title: "Import Successful",
-                                            description: "Form configuration has been imported.",
-                                          });
-                                        } catch (error) {
-                                          toast({
-                                            title: "Import Failed",
-                                            description: "Invalid JSON file.",
-                                            variant: "destructive",
-                                          });
-                                        }
-                                      };
-                                      reader.readAsText(file);
-                                    }
-                                  }}
-                                  className={`${themeClasses.input} rounded-xl border-2`}
-                                />
-                              </div>
-                              <div className="space-y-3">
-                                <Label className={`${themeClasses.text} font-medium`}>Export JSON</Label>
-                                <Button
-                                  variant="outline"
-                                  className={`w-full ${themeClasses.button} rounded-xl border-2`}
-                                  onClick={() => {
-                                    const jsonString = JSON.stringify(formConfig, null, 2);
-                                    const blob = new Blob([jsonString], { type: "application/json" });
-                                    const url = URL.createObjectURL(blob);
-                                    const a = document.createElement("a");
-                                    a.href = url;
-                                    a.download = "form-config.json";
-                                    a.click();
-                                    URL.revokeObjectURL(url);
-                                  }}
-                                >
-                                  Export Configuration
-                                </Button>
-                              </div>
-                            </div>
-                          </TabsContent>
-                        </Tabs>
-                      </div>
-                    </div>
-                  )}
-                </Card>
-              </motion.div>
-            </>
-          ) : (
-            <>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="col-span-8"
-              >
-                <Card 
-                  className={`${themeClasses.card} backdrop-blur-xl border-2 p-6 transition-all duration-300`}
-                  style={{
-                    backgroundColor: formConfig.settings.canvasStyles?.backgroundColor || '',
-                    backgroundImage: formConfig.settings.canvasStyles?.backgroundImage || '',
-                    padding: formConfig.settings.canvasStyles?.padding || '',
-                    margin: formConfig.settings.canvasStyles?.margin || '',
-                    borderRadius: formConfig.settings.canvasStyles?.borderRadius || '',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    height: 'auto',
-                  }}
-                >
-                  <FormPreview formConfig={formConfig} />
-                </Card>
-              </motion.div>
-              
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="col-span-4"
-              >
-                <Card className={`${themeClasses.card} backdrop-blur-xl border-2 p-6 transition-all duration-300`}>
-                  <div className="mb-4">
-                    <h3 className={`text-lg font-semibold ${themeClasses.text} mb-2`}>
-                      Form Configuration
-                    </h3>
-                    <p className={`text-sm ${themeClasses.textMuted}`}>
-                      Live JSON preview of your form
-                    </p>
-                  </div>
-                  <JsonViewer initialJson={JSON.stringify(formConfig, null, 2)} editJson={false}/>
-                </Card>
-              </motion.div>
-            </>
-          )}
-        </motion.div>
       </div>
 
-      <SaveSuccessDialog 
-        open={showSaveDialog}
-        onPublish={handlePublishForm}
-        onClose={handleCloseDialogs}
-      />
+      {/* Main Content Area */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Sidebar */}
+        <div className="w-80 border-r border-gray-200 bg-white flex flex-col">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activePanel}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.2 }}
+              className="flex-1 overflow-hidden"
+            >
+              {activePanel === 'elements' && (
+                <FormElementLibrary 
+                  onDragStart={() => {}}
+                />
+              )}
+              
+              {activePanel === 'configuration' && (
+                <FormPropertiesPanel
+                  formConfig={formConfig}
+                  selectedElement={selectedElement}
+                  onFormConfigUpdate={setFormConfig}
+                  onElementUpdate={handleElementUpdate}
+                  onElementDelete={handleDeleteElement}
+                  onElementDuplicate={handleDuplicateElement}
+                />
+              )}
+              
+              {activePanel === 'designer' && (
+                <FormDesigner
+                  isOpen={true}
+                  onClose={() => {}}
+                  formConfig={formConfig}
+                  onUpdate={setFormConfig}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
-      <PublishSuccessDialog 
-        open={showPublishDialog}
-        formId={savedFormId || id || ''}
-        onClose={handleCloseDialogs}
-      />
+        {/* Center Canvas Area */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <EnhancedFormCanvas
+            elements={formConfig.elements}
+            setFormConfig={setFormConfig}
+            onSelectElement={handleElementSelect}
+            selectedElement={selectedElement}
+            formConfig={formConfig}
+            onUpdate={setFormConfig}
+          />
+        </div>
+
+        {/* Right Info Panel */}
+        <div className="w-80 border-l border-gray-200 bg-gradient-to-b from-gray-50 to-white p-6 overflow-y-auto">
+          <div className="space-y-6">
+            {/* Form Info */}
+            <Card className="p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Info className="h-4 w-4 text-blue-500" />
+                <h3 className="font-semibold">Form Information</h3>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Elements:</span>
+                  <Badge variant="outline">{formConfig.elements.length}</Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Required:</span>
+                  <Badge variant="outline">
+                    {formConfig.elements.filter(el => el.required).length}
+                  </Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Form Width:</span>
+                  <Badge variant="outline">
+                    {formConfig.settings.canvasStyles?.formWidth || 752}px
+                  </Badge>
+                </div>
+              </div>
+            </Card>
+
+            {/* Quick Actions */}
+            <Card className="p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Target className="h-4 w-4 text-green-500" />
+                <h3 className="font-semibold">Quick Actions</h3>
+              </div>
+              <div className="space-y-2">
+                <Button variant="outline" size="sm" className="w-full justify-start">
+                  <Code className="h-3 w-3 mr-2" />
+                  View Code
+                </Button>
+                <Button variant="outline" size="sm" className="w-full justify-start">
+                  <Play className="h-3 w-3 mr-2" />
+                  Test Form
+                </Button>
+                <Button variant="outline" size="sm" className="w-full justify-start">
+                  <Sparkles className="h-3 w-3 mr-2" />
+                  AI Enhance
+                </Button>
+              </div>
+            </Card>
+
+            {/* Tips */}
+            <Card className="p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Lightbulb className="h-4 w-4 text-yellow-500" />
+                <h3 className="font-semibold">Pro Tips</h3>
+              </div>
+              <div className="space-y-2 text-sm text-gray-600">
+                <p>💡 Use containers to organize related fields</p>
+                <p>🎨 Try the Theme Creator for custom designs</p>
+                <p>⚡ Advanced settings unlock more features</p>
+                <p>👀 Preview your form before publishing</p>
+              </div>
+            </Card>
+          </div>
+        </div>
+      </div>
+
+      {/* Modals */}
+      <AnimatePresence>
+        {showThemeCreator && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowThemeCreator(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="max-w-6xl w-full max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <ThemeCreator
+                onSaveTheme={handleSaveCustomTheme}
+                existingThemes={customThemes}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+
+        {showAdvancedSettings && selectedElement && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowAdvancedSettings(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <AdvancedElementSettings
+                element={selectedElement}
+                onUpdate={handleElementUpdate}
+                onClose={() => setShowAdvancedSettings(false)}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

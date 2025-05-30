@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -57,6 +58,7 @@ import { Progress } from "@/components/ui/progress";
 import { motion } from 'framer-motion';
 import { formsApi, FormData } from '@/services/api/forms';
 import { useTheme } from '@/components/theme-provider';
+
 const Dashboard = () => {
   const [forms, setForms] = useState<FormData[]>([]);
   const [stats, setStats] = useState({
@@ -135,11 +137,10 @@ const Dashboard = () => {
               text: "I accept the Terms & Conditions & Privacy Policy",
             },
             submitButton: {
-              enabled: true,
               text: "Submit",
             },
             preview: {
-              width: "Contained" as const,
+              width: "Full" as const,
               nesting: true,
             },
             validation: {

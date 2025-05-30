@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ import {
   Clock,
   TrendingUp,
   Calendar,
+  Wrench,
   Star,
   Zap,
   Target,
@@ -25,12 +27,11 @@ import {
   Activity,
   Eye,
   Download,
-  Share2,
-  Wrench
+  Share2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const Dashboard = () => {
+const MainDashboard = () => {
   const { theme } = useTheme();
 
   const stats = [
@@ -435,4 +436,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default MainDashboard;

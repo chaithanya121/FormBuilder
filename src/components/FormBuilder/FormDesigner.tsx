@@ -7,9 +7,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { X, Upload, Palette, Type, Layout, Paintbrush, Trash2, Check, Sparkles } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { useEnhancedTheme } from '@/components/ui/enhanced-theme';
+import { Switch } from '@/components/ui/switch';
+import { Slider } from '@/components/ui/slider';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Palette, Type, Layout, Paintbrush, Check, Sparkles, Settings, Upload, Download, 
+  Brush, Eye, Monitor, Smartphone, Tablet, Image as ImageIcon, X, Moon, Sun,
+  Zap, Layers, Grid, AlignLeft, RotateCcw, Copy, Wand2, Star, Heart
+} from 'lucide-react';
 import { FormConfig } from './types';
 
 interface FormDesignerProps {
@@ -21,112 +27,154 @@ interface FormDesignerProps {
 
 const PRESET_THEMES = [
   {
-    id: 'default',
-    name: 'Default Theme',
-    image: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=300&h=200&fit=crop',
-    colors: {
-      primary: '#3b82f6',
-      secondary: '#64748b',
-      background: '#ffffff',
-      form: '#f8fafc'
-    },
-    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-  },
-  {
-    id: 'simplicity',
-    name: 'Simplicity',
-    image: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=300&h=200&fit=crop',
+    id: 'modern-minimal',
+    name: 'Modern Minimal',
+    preview: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
     colors: {
       primary: '#000000',
       secondary: '#666666',
       background: '#ffffff',
-      form: '#ffffff'
+      form: '#ffffff',
+      text: '#1a1a1a'
     },
-    gradient: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)'
+    gradient: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+    category: 'minimal',
+    popular: true
   },
   {
-    id: 'clever-colorful',
-    name: 'Clever Colorful',
-    image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=300&h=200&fit=crop',
+    id: 'ocean-breeze',
+    name: 'Ocean Breeze',
+    preview: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     colors: {
-      primary: '#10b981',
-      secondary: '#3b82f6',
+      primary: '#0ea5e9',
+      secondary: '#06b6d4',
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      form: '#1e293b'
+      form: '#ffffff',
+      text: '#1e40af'
     },
-    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    category: 'gradient',
+    popular: true
   },
   {
-    id: 'sunset-hair',
-    name: 'Sunset Hair',
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop',
+    id: 'sunset-glow',
+    name: 'Sunset Glow',
+    preview: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
     colors: {
       primary: '#f59e0b',
       secondary: '#dc2626',
       background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)',
-      form: '#374151'
+      form: '#ffffff',
+      text: '#dc2626'
     },
-    gradient: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)'
+    gradient: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)',
+    category: 'warm',
+    popular: true
   },
   {
-    id: 'vintage-star',
-    name: 'Vintage Star',
-    image: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=300&h=200&fit=crop',
+    id: 'forest-calm',
+    name: 'Forest Calm',
+    preview: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+    colors: {
+      primary: '#10b981',
+      secondary: '#059669',
+      background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+      form: '#ffffff',
+      text: '#065f46'
+    },
+    gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+    category: 'nature'
+  },
+  {
+    id: 'dark-mode',
+    name: 'Dark Professional',
+    preview: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
+    colors: {
+      primary: '#3b82f6',
+      secondary: '#6366f1',
+      background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
+      form: '#374151',
+      text: '#f9fafb'
+    },
+    gradient: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
+    category: 'dark',
+    popular: true
+  },
+  {
+    id: 'corporate-blue',
+    name: 'Corporate Blue',
+    preview: 'linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%)',
+    colors: {
+      primary: '#2563eb',
+      secondary: '#1d4ed8',
+      background: 'linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%)',
+      form: '#ffffff',
+      text: '#1e40af'
+    },
+    gradient: 'linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%)',
+    category: 'professional'
+  },
+  {
+    id: 'purple-dreams',
+    name: 'Purple Dreams',
+    preview: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
     colors: {
       primary: '#8b5cf6',
-      secondary: '#64748b',
-      background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-      form: '#ffffff'
+      secondary: '#ec4899',
+      background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
+      form: '#ffffff',
+      text: '#7c3aed'
     },
-    gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
+    gradient: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
+    category: 'creative'
   },
   {
-    id: 'brick-wall',
-    name: 'Brick Wall',
-    image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=300&h=200&fit=crop',
+    id: 'emerald-fresh',
+    name: 'Emerald Fresh',
+    preview: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
     colors: {
-      primary: '#dc2626',
-      secondary: '#92400e',
-      background: 'linear-gradient(135deg, #fc466b 0%, #3f5efb 100%)',
-      form: '#a16207'
+      primary: '#10b981',
+      secondary: '#34d399',
+      background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
+      form: '#ffffff',
+      text: '#065f46'
     },
-    gradient: 'linear-gradient(135deg, #fc466b 0%, #3f5efb 100%)'
-  },
-  {
-    id: 'techy',
-    name: 'Techy',
-    image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=300&h=200&fit=crop',
-    colors: {
-      primary: '#06b6d4',
-      secondary: '#64748b',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      form: '#ffffff'
-    },
-    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-  },
-  {
-    id: 'cool-minimal',
-    name: 'Cool and Minimal',
-    image: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=300&h=200&fit=crop',
-    colors: {
-      primary: '#0ea5e9',
-      secondary: '#64748b',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      form: '#ffffff'
-    },
-    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    gradient: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
+    category: 'nature'
   }
 ];
 
-const COLOR_PRESETS = [
-  '#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', 
-  '#ef4444', '#10b981', '#06b6d4', '#64748b'
+const COLOR_PALETTES = [
+  { name: 'Blues', colors: ['#1e40af', '#3b82f6', '#60a5fa', '#93c5fd', '#dbeafe'] },
+  { name: 'Greens', colors: ['#065f46', '#10b981', '#34d399', '#6ee7b7', '#d1fae5'] },
+  { name: 'Purples', colors: ['#581c87', '#8b5cf6', '#a78bfa', '#c4b5fd', '#ede9fe'] },
+  { name: 'Reds', colors: ['#991b1b', '#ef4444', '#f87171', '#fca5a5', '#fee2e2'] },
+  { name: 'Oranges', colors: ['#c2410c', '#f97316', '#fb923c', '#fdba74', '#fed7aa'] },
+  { name: 'Grays', colors: ['#111827', '#374151', '#6b7280', '#9ca3af', '#f3f4f6'] }
+];
+
+const FONT_FAMILIES = [
+  { value: 'Inter', label: 'Inter (Recommended)', category: 'Sans-serif' },
+  { value: 'Arial', label: 'Arial', category: 'Sans-serif' },
+  { value: 'Helvetica', label: 'Helvetica', category: 'Sans-serif' },
+  { value: 'Georgia', label: 'Georgia', category: 'Serif' },
+  { value: 'Times New Roman', label: 'Times New Roman', category: 'Serif' },
+  { value: 'Roboto', label: 'Roboto', category: 'Sans-serif' },
+  { value: 'Open Sans', label: 'Open Sans', category: 'Sans-serif' },
+  { value: 'Lato', label: 'Lato', category: 'Sans-serif' },
+  { value: 'Montserrat', label: 'Montserrat', category: 'Sans-serif' },
+  { value: 'Poppins', label: 'Poppins', category: 'Sans-serif' },
+  { value: 'Source Sans Pro', label: 'Source Sans Pro', category: 'Sans-serif' },
+  { value: 'Playfair Display', label: 'Playfair Display', category: 'Serif' },
+  { value: 'Merriweather', label: 'Merriweather', category: 'Serif' }
 ];
 
 const FormDesigner: React.FC<FormDesignerProps> = ({ isOpen, onClose, formConfig, onUpdate }) => {
-  const { theme, themeClasses } = useEnhancedTheme();
   const [activeTab, setActiveTab] = useState('themes');
-  const [selectedTheme, setSelectedTheme] = useState('default');
+  const [selectedTheme, setSelectedTheme] = useState('modern-minimal');
+  const [previewMode, setPreviewMode] = useState('desktop');
+  const [darkMode, setDarkMode] = useState(false);
+  const [customColor, setCustomColor] = useState('#3b82f6');
 
   const handleStyleUpdate = (category: string, field: string, value: any) => {
     const updatedConfig = {
@@ -152,11 +200,12 @@ const FormDesigner: React.FC<FormDesignerProps> = ({ isOpen, onClose, formConfig
           ...formConfig.settings,
           canvasStyles: {
             ...formConfig.settings.canvasStyles,
-            backgroundColor: selectedThemeData.colors.background,
-            backgroundImage: selectedThemeData.gradient === selectedThemeData.colors.background ? '' : selectedThemeData.colors.background,
+            backgroundColor: selectedThemeData.gradient,
+            backgroundImage: '',
             formBackgroundColor: selectedThemeData.colors.form,
             primaryColor: selectedThemeData.colors.primary,
-            secondaryColor: selectedThemeData.colors.secondary
+            secondaryColor: selectedThemeData.colors.secondary,
+            fontColor: selectedThemeData.colors.text
           }
         }
       };
@@ -164,552 +213,541 @@ const FormDesigner: React.FC<FormDesignerProps> = ({ isOpen, onClose, formConfig
     }
   };
 
-  if (!isOpen) return null;
+  const generateRandomTheme = () => {
+    const colors = COLOR_PALETTES[Math.floor(Math.random() * COLOR_PALETTES.length)].colors;
+    const primaryColor = colors[1];
+    const secondaryColor = colors[2];
+    const backgroundColor = `linear-gradient(135deg, ${colors[0]} 0%, ${colors[1]} 100%)`;
+    
+    const updatedConfig = {
+      ...formConfig,
+      settings: {
+        ...formConfig.settings,
+        canvasStyles: {
+          ...formConfig.settings.canvasStyles,
+          backgroundColor: backgroundColor,
+          primaryColor: primaryColor,
+          secondaryColor: secondaryColor,
+          fontColor: darkMode ? '#ffffff' : '#1a1a1a',
+          formBackgroundColor: darkMode ? '#374151' : '#ffffff'
+        }
+      }
+    };
+    onUpdate(updatedConfig);
+  };
+
+  const resetToDefault = () => {
+    applyTheme('modern-minimal');
+  };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center"
-    >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        className="w-[900px] h-[750px] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl border border-slate-700 shadow-2xl overflow-hidden"
-      >
-        {/* Header with Gradient */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-700 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl">
-              <Paintbrush className="h-5 w-5 text-white" />
-            </div>
-            <h2 className="text-xl font-bold text-white">Form Designer</h2>
+    <div className="h-full flex flex-col bg-white">
+      {/* Header with Preview Mode */}
+      <div className="p-4 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Wand2 className="w-5 h-5 text-blue-600" />
+            <h4 className="font-semibold text-slate-900">Form Designer</h4>
+            <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+              Pro
+            </Badge>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="text-white hover:bg-white/20">
-            <X className="h-5 w-5" />
-          </Button>
+          
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={generateRandomTheme}>
+              <Sparkles className="w-3 w-3 mr-1" />
+              Random
+            </Button>
+            <Button size="sm" variant="outline" onClick={resetToDefault}>
+              <RotateCcw className="w-3 h-3 mr-1" />
+              Reset
+            </Button>
+          </div>
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant={previewMode === 'mobile' ? 'default' : 'outline'}
+              onClick={() => setPreviewMode('mobile')}
+              className="w-9 h-9 p-0"
+            >
+              <Smartphone className="h-4 w-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant={previewMode === 'tablet' ? 'default' : 'outline'}
+              onClick={() => setPreviewMode('tablet')}
+              className="w-9 h-9 p-0"
+            >
+              <Tablet className="h-4 w-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant={previewMode === 'desktop' ? 'default' : 'outline'}
+              onClick={() => setPreviewMode('desktop')}
+              className="w-9 h-9 p-0"
+            >
+              <Monitor className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Sun className="w-4 h-4 text-yellow-500" />
+            <Switch
+              checked={darkMode}
+              onCheckedChange={setDarkMode}
+              className="data-[state=checked]:bg-blue-600"
+            />
+            <Moon className="w-4 h-4 text-blue-600" />
+          </div>
+        </div>
+      </div>
+
+      {/* Enhanced Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
+        <div className="px-4 pt-4 border-b border-slate-200 flex-shrink-0">
+          <TabsList className="grid w-full grid-cols-4 bg-slate-100 h-10">
+            <TabsTrigger value="themes" className="text-xs data-[state=active]:bg-white">
+              <Sparkles className="h-3 w-3 mr-1" />
+              Themes
+            </TabsTrigger>
+            <TabsTrigger value="colors" className="text-xs data-[state=active]:bg-white">
+              <Palette className="h-3 w-3 mr-1" />
+              Colors
+            </TabsTrigger>
+            <TabsTrigger value="typography" className="text-xs data-[state=active]:bg-white">
+              <Type className="h-3 w-3 mr-1" />
+              Typography
+            </TabsTrigger>
+            <TabsTrigger value="layout" className="text-xs data-[state=active]:bg-white">
+              <Layout className="h-3 w-3 mr-1" />
+              Layout
+            </TabsTrigger>
+          </TabsList>
         </div>
 
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-          <div className="px-6 pt-4">
-            <TabsList className="bg-slate-800 border border-slate-700 p-1 rounded-xl grid grid-cols-4 w-full">
-              <TabsTrigger 
-                value="themes" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white rounded-lg text-slate-300 font-medium"
-              >
-                THEMES
-              </TabsTrigger>
-              <TabsTrigger 
-                value="colors" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white rounded-lg text-slate-300 font-medium"
-              >
-                COLORS
-              </TabsTrigger>
-              <TabsTrigger 
-                value="styles" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white rounded-lg text-slate-300 font-medium"
-              >
-                STYLES
-              </TabsTrigger>
-              <TabsTrigger 
-                value="layout" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white rounded-lg text-slate-300 font-medium"
-              >
-                LAYOUT
-              </TabsTrigger>
-            </TabsList>
-          </div>
+        <div className="flex-1 overflow-y-auto">
+          {/* Enhanced Themes Tab */}
+          <TabsContent value="themes" className="p-4 space-y-4 mt-0 h-full">
+            <div className="text-center mb-6">
+              <h3 className="font-semibold text-slate-900 mb-2">Professional Themes</h3>
+              <p className="text-slate-600 text-sm">Choose from our collection of modern themes</p>
+            </div>
 
-          <div className="flex-1 overflow-y-auto p-6">
-            {/* Themes Tab - Now First */}
-            <TabsContent value="themes" className="space-y-6 mt-0">
-              <div className="space-y-6">
-                <div className="text-center">
-                  <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-2">
-                    Choose Your Perfect Theme
-                  </h3>
-                  <p className="text-slate-400">Transform your form with beautiful, pre-designed themes</p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-6">
-                  {PRESET_THEMES.map((theme, index) => (
-                    <motion.div
-                      key={theme.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      whileHover={{ scale: 1.02, y: -5 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <Card
-                        className={`relative cursor-pointer overflow-hidden transition-all duration-300 group ${
-                          selectedTheme === theme.id 
-                            ? 'ring-2 ring-blue-500 shadow-xl shadow-blue-500/25' 
-                            : 'hover:shadow-lg hover:shadow-purple-500/20'
-                        }`}
-                        onClick={() => applyTheme(theme.id)}
-                        style={{
-                          background: selectedTheme === theme.id 
-                            ? 'linear-gradient(135deg, #1e293b 0%, #334155 100%)'
-                            : 'linear-gradient(135deg, #374151 0%, #4b5563 100%)',
-                          border: selectedTheme === theme.id 
-                            ? '2px solid #3b82f6' 
-                            : '1px solid #6b7280'
-                        }}
-                      >
-                        <div className="aspect-video relative overflow-hidden">
-                          <div 
-                            className="absolute inset-0 opacity-80"
-                            style={{ background: theme.gradient }}
-                          />
-                          <img
-                            src={theme.image}
-                            alt={theme.name}
-                            className="w-full h-full object-cover mix-blend-multiply"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                          
-                          {/* Theme Preview Overlay */}
-                          <div className="absolute inset-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <div className="space-y-2">
-                              <div className="h-2 bg-gray-200 rounded w-3/4"></div>
-                              <div className="h-1.5 bg-gray-300 rounded w-1/2"></div>
-                              <div 
-                                className="h-6 rounded"
-                                style={{ backgroundColor: theme.colors.primary }}
-                              ></div>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="p-4">
+            {/* Popular Themes */}
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <Star className="w-4 h-4 text-yellow-500" />
+                <h4 className="font-medium text-slate-800">Popular</h4>
+              </div>
+              <div className="grid grid-cols-1 gap-3">
+                {PRESET_THEMES.filter(theme => theme.popular).map((theme) => (
+                  <Card
+                    key={theme.id}
+                    className={`cursor-pointer overflow-hidden transition-all duration-200 ${
+                      selectedTheme === theme.id 
+                        ? 'ring-2 ring-blue-500 shadow-lg bg-blue-50' 
+                        : 'hover:shadow-md hover:scale-[1.01] border-gray-200'
+                    }`}
+                    onClick={() => applyTheme(theme.id)}
+                  >
+                    <div className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div 
+                          className="w-12 h-12 rounded-lg border-2 border-white shadow-sm flex-shrink-0"
+                          style={{ background: theme.preview }}
+                        />
+                        <div className="flex-1">
                           <div className="flex items-center justify-between">
-                            <div>
-                              <h4 className="font-semibold text-white text-sm">{theme.name}</h4>
-                              <div className="flex items-center gap-1 mt-1">
-                                {Object.values(theme.colors).slice(0, 3).map((color, i) => (
-                                  <div
-                                    key={i}
-                                    className="w-3 h-3 rounded-full border border-white/20"
-                                    style={{ backgroundColor: color }}
-                                  />
-                                ))}
-                              </div>
-                            </div>
+                            <h4 className="font-medium text-slate-900 text-sm">{theme.name}</h4>
                             {selectedTheme === theme.id && (
-                              <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                className="flex items-center gap-1 bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium"
-                              >
+                              <div className="flex items-center gap-1 bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium">
                                 <Check className="w-3 h-3" />
                                 Active
-                              </motion.div>
+                              </div>
                             )}
                           </div>
+                          <Badge variant="outline" className="text-xs mt-1 capitalize">
+                            {theme.category}
+                          </Badge>
                         </div>
-
-                        {/* Sparkle effect on hover */}
-                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <Sparkles className="w-4 h-4 text-yellow-400" />
-                        </div>
-                      </Card>
-                    </motion.div>
-                  ))}
-                </div>
-
-                <div className="text-center pt-4">
-                  <Button 
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-                    onClick={() => setActiveTab('colors')}
-                  >
-                    <Palette className="w-4 h-4 mr-2" />
-                    Customize Colors
-                  </Button>
-                </div>
-              </div>
-            </TabsContent>
-
-            {/* Colors Tab */}
-            <TabsContent value="colors" className="space-y-6 mt-0">
-              <div className="grid grid-cols-8 gap-3 mb-6">
-                {COLOR_PRESETS.map((color, index) => (
-                  <motion.button
-                    key={index}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="w-12 h-12 rounded-xl border-2 border-slate-600 shadow-lg transition-all duration-200 hover:shadow-xl"
-                    style={{ 
-                      background: `linear-gradient(135deg, ${color}, ${color}dd)`,
-                    }}
-                    onClick={() => handleStyleUpdate('canvasStyles', 'primaryColor', color)}
-                  />
+                      </div>
+                    </div>
+                  </Card>
                 ))}
               </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <Label className="text-slate-200 font-semibold">Page Color</Label>
-                  <div className="flex items-center gap-3">
-                    <Input
-                      value={formConfig.settings.canvasStyles?.backgroundColor || '#5a4b44'}
-                      onChange={(e) => handleStyleUpdate('canvasStyles', 'backgroundColor', e.target.value)}
-                      className="flex-1 bg-slate-800 border-slate-600 text-white"
-                      placeholder="#5a4b44"
-                    />
-                    <div 
-                      className="w-12 h-10 rounded-lg border border-slate-600"
-                      style={{ backgroundColor: formConfig.settings.canvasStyles?.backgroundColor || '#5a4b44' }}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <Label className="text-slate-200 font-semibold">Page Image</Label>
-                  <div className="space-y-2">
-                    <div className="w-full h-24 bg-slate-800 rounded-lg border border-slate-600 flex items-center justify-center overflow-hidden">
-                      {formConfig.settings.canvasStyles?.backgroundImage ? (
-                        <div className="relative w-full h-full">
-                          <img 
-                            src={formConfig.settings.canvasStyles.backgroundImage} 
-                            alt="Background" 
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                          <button
-                            onClick={() => handleStyleUpdate('canvasStyles', 'backgroundImage', '')}
-                            className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white p-1 rounded"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
+            {/* All Themes */}
+            <div>
+              <h4 className="font-medium text-slate-800 mb-3">All Themes</h4>
+              <div className="grid grid-cols-2 gap-3">
+                {PRESET_THEMES.map((theme) => (
+                  <Card
+                    key={theme.id}
+                    className={`cursor-pointer overflow-hidden transition-all duration-200 ${
+                      selectedTheme === theme.id 
+                        ? 'ring-2 ring-blue-500 shadow-lg' 
+                        : 'hover:shadow-md hover:scale-[1.02]'
+                    }`}
+                    onClick={() => applyTheme(theme.id)}
+                  >
+                    <div className="aspect-video relative overflow-hidden">
+                      <div 
+                        className="absolute inset-0"
+                        style={{ background: theme.preview }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                      
+                      {/* Theme Preview */}
+                      <div className="absolute inset-3 bg-white/95 backdrop-blur-sm rounded-lg p-2 shadow-lg">
+                        <div className="space-y-1">
+                          <div className="h-1.5 bg-slate-200 rounded w-3/4"></div>
+                          <div className="h-1 bg-slate-300 rounded w-1/2"></div>
+                          <div 
+                            className="h-4 rounded shadow-sm"
+                            style={{ backgroundColor: theme.colors.primary }}
+                          ></div>
                         </div>
-                      ) : (
-                        <Upload className="h-8 w-8 text-slate-400" />
-                      )}
+                      </div>
+                      
+                      {/* Category Badge */}
+                      <Badge 
+                        className="absolute top-2 right-2 text-xs capitalize bg-white/90 text-gray-700"
+                        variant="secondary"
+                      >
+                        {theme.category}
+                      </Badge>
                     </div>
-                    <Input
-                      placeholder="Enter image URL"
-                      value={formConfig.settings.canvasStyles?.backgroundImage || ''}
-                      onChange={(e) => handleStyleUpdate('canvasStyles', 'backgroundImage', e.target.value)}
-                      className="bg-slate-800 border-slate-600 text-white"
-                    />
-                    {formConfig.settings.canvasStyles?.backgroundImage && (
-                      <p className="text-orange-400 text-xs">jobapp.530.jpg - Remove Image</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <Label className="text-slate-200 font-semibold">Form Color</Label>
-                  <div className="flex items-center gap-3">
-                    <Input
-                      value={formConfig.settings.canvasStyles?.formBackgroundColor || '#efe8d4'}
-                      onChange={(e) => handleStyleUpdate('canvasStyles', 'formBackgroundColor', e.target.value)}
-                      className="flex-1 bg-slate-800 border-slate-600 text-white"
-                      placeholder="#efe8d4"
-                    />
-                    <div 
-                      className="w-12 h-10 rounded-lg border border-slate-600"
-                      style={{ backgroundColor: formConfig.settings.canvasStyles?.formBackgroundColor || '#efe8d4' }}
-                    />
-                  </div>
-                  <p className="text-sm text-slate-400">Change form background color</p>
-                </div>
-
-                <div className="space-y-3">
-                  <Label className="text-slate-200 font-semibold">Form Image</Label>
-                  <Button variant="outline" className="w-full bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700">
-                    <Upload className="h-4 w-4 mr-2" />
-                    CHOOSE A FILE
-                  </Button>
-                </div>
-
-                <div className="space-y-3">
-                  <Label className="text-slate-200 font-semibold">Font Color</Label>
-                  <div className="flex items-center gap-3">
-                    <Input
-                      value={formConfig.settings.canvasStyles?.fontColor || '#321f16'}
-                      onChange={(e) => handleStyleUpdate('canvasStyles', 'fontColor', e.target.value)}
-                      className="flex-1 bg-slate-800 border-slate-600 text-white"
-                      placeholder="#321f16"
-                    />
-                    <div 
-                      className="w-12 h-10 rounded-lg border border-slate-600"
-                      style={{ backgroundColor: formConfig.settings.canvasStyles?.fontColor || '#321f16' }}
-                    />
-                  </div>
-                  <p className="text-sm text-slate-400">Change font color</p>
-                </div>
-
-                <div className="space-y-3">
-                  <Label className="text-slate-200 font-semibold">Input Background</Label>
-                  <div className="flex items-center gap-3">
-                    <Input
-                      value={formConfig.settings.canvasStyles?.inputBackground || '#ffffff'}
-                      onChange={(e) => handleStyleUpdate('canvasStyles', 'inputBackground', e.target.value)}
-                      className="flex-1 bg-slate-800 border-slate-600 text-white"
-                      placeholder="#ffffff"
-                    />
-                    <div 
-                      className="w-12 h-10 rounded-lg border border-slate-600"
-                      style={{ backgroundColor: formConfig.settings.canvasStyles?.inputBackground || '#ffffff' }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-4">
-                <Button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 rounded-xl">
-                  ADVANCED DESIGNER
-                </Button>
-              </div>
-            </TabsContent>
-
-            {/* Styles Tab */}
-            <TabsContent value="styles" className="space-y-6 mt-0">
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <Label className="text-slate-200 font-semibold">Form Width</Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      value={formConfig.settings.canvasStyles?.formWidth || 752}
-                      onChange={(e) => handleStyleUpdate('canvasStyles', 'formWidth', parseInt(e.target.value))}
-                      className="flex-1 bg-slate-800 border-slate-600 text-white"
-                    />
-                    <span className="text-slate-400 text-sm font-medium px-2">PX</span>
-                  </div>
-                  <p className="text-sm text-slate-400">Resize form width</p>
-                </div>
-
-                <div className="space-y-3">
-                  <Label className="text-slate-200 font-semibold">Label Alignment</Label>
-                  <Select 
-                    value={formConfig.settings.layout?.labelAlignment || 'top'}
-                    onValueChange={(value) => handleStyleUpdate('layout', 'labelAlignment', value)}
-                  >
-                    <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-600">
-                      <SelectItem value="top" className="text-white">Top</SelectItem>
-                      <SelectItem value="left" className="text-white">Left</SelectItem>
-                      <SelectItem value="right" className="text-white">Right</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-sm text-slate-400">Align questions and answers</p>
-                </div>
-
-                <div className="space-y-3">
-                  <Label className="text-slate-200 font-semibold">Question Spacing</Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      value={formConfig.settings.layout?.questionSpacing || 12}
-                      onChange={(e) => handleStyleUpdate('layout', 'questionSpacing', parseInt(e.target.value))}
-                      className="flex-1 bg-slate-800 border-slate-600 text-white"
-                    />
-                    <span className="text-slate-400 text-sm font-medium px-2">PX</span>
-                  </div>
-                  <p className="text-sm text-slate-400">Distance between questions</p>
-                </div>
-
-                <div className="space-y-3">
-                  <Label className="text-slate-200 font-semibold">Label Width</Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      value={formConfig.settings.layout?.labelWidth || 230}
-                      onChange={(e) => handleStyleUpdate('layout', 'labelWidth', parseInt(e.target.value))}
-                      className="flex-1 bg-slate-800 border-slate-600 text-white"
-                    />
-                    <span className="text-slate-400 text-sm font-medium px-2">PX</span>
-                  </div>
-                  <p className="text-sm text-slate-400">Resize label width</p>
-                </div>
-
-                <div className="space-y-3">
-                  <Label className="text-slate-200 font-semibold">Font</Label>
-                  <Select 
-                    value={formConfig.settings.canvasStyles?.fontFamily || 'Inter'}
-                    onValueChange={(value) => handleStyleUpdate('canvasStyles', 'fontFamily', value)}
-                  >
-                    <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-600">
-                      <SelectItem value="Inter" className="text-white">Inter</SelectItem>
-                      <SelectItem value="Arial" className="text-white">Arial</SelectItem>
-                      <SelectItem value="Helvetica" className="text-white">Helvetica</SelectItem>
-                      <SelectItem value="Times New Roman" className="text-white">Times New Roman</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-sm text-slate-400">Change font style</p>
-                </div>
-
-                <div className="space-y-3">
-                  <Label className="text-slate-200 font-semibold">Font Size</Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      value={formConfig.settings.canvasStyles?.fontSize || 16}
-                      onChange={(e) => handleStyleUpdate('canvasStyles', 'fontSize', parseInt(e.target.value))}
-                      className="flex-1 bg-slate-800 border-slate-600 text-white"
-                    />
-                    <span className="text-slate-400 text-sm font-medium px-2">PX</span>
-                  </div>
-                  <p className="text-sm text-slate-400">Change font size</p>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="space-y-3">
-                  <Label className="text-slate-200 font-semibold">Button Style</Label>
-                  <Button variant="outline" className="w-full bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700">
-                    <Palette className="h-4 w-4 mr-2" />
-                    CHOOSE STYLE
-                  </Button>
-                </div>
-
-                <div className="space-y-3">
-                  <Label className="text-slate-200 font-semibold">Inject Custom CSS</Label>
-                  <div className="bg-slate-900 rounded-lg border border-slate-700 h-32 relative">
-                    <div className="absolute top-2 left-3 text-green-400 text-sm font-mono">1</div>
-                    <Textarea
-                      value={formConfig.settings.canvasStyles?.customCSS || ''}
-                      onChange={(e) => handleStyleUpdate('canvasStyles', 'customCSS', e.target.value)}
-                      placeholder="/* Add your custom CSS here */"
-                      className="w-full h-full bg-transparent border-0 text-green-400 font-mono text-sm pl-8 pt-6 resize-none focus:ring-0"
-                    />
-                  </div>
-                  <p className="text-sm text-slate-400">
-                    Add custom CSS codes to your form. CSS codes let you customize every aspect of your form design.
-                    <a href="#" className="text-blue-400 hover:underline ml-1">Learn more.</a>
-                  </p>
-                </div>
-              </div>
-
-              <div className="pt-4">
-                <Button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 rounded-xl">
-                  ADVANCED DESIGNER
-                </Button>
-              </div>
-            </TabsContent>
-
-            {/* Themes Tab */}
-            <TabsContent value="themes" className="space-y-6 mt-0">
-              <div className="space-y-4">
-                <div className="space-y-3">
-                  <Label className="text-slate-200 font-semibold">Featured Themes</Label>
-                  <Select value={selectedTheme} onValueChange={setSelectedTheme}>
-                    <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-600">
-                      {PRESET_THEMES.map((theme) => (
-                        <SelectItem key={theme.id} value={theme.id} className="text-white">
-                          {theme.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  {PRESET_THEMES.map((theme) => (
-                    <motion.div
-                      key={theme.id}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <Card
-                        className={`relative cursor-pointer overflow-hidden transition-all duration-300 bg-slate-800 border-slate-600 ${
-                          selectedTheme === theme.id ? 'ring-2 ring-blue-500' : ''
-                        }`}
-                        onClick={() => applyTheme(theme.id)}
-                      >
-                        <div className="aspect-video">
-                          <img
-                            src={theme.image}
-                            alt={theme.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white p-3">
-                          <h4 className="font-medium text-sm">{theme.name}</h4>
-                        </div>
+                    
+                    <div className="p-3">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-medium text-slate-900 text-sm">{theme.name}</h4>
                         {selectedTheme === theme.id && (
-                          <div className="absolute top-2 right-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-2 py-1 rounded text-xs font-medium">
-                            Current Theme
-                          </div>
+                          <Check className="w-4 h-4 text-blue-600" />
                         )}
-                      </Card>
-                    </motion.div>
-                  ))}
-                </div>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
               </div>
-            </TabsContent>
+            </div>
+          </TabsContent>
 
-            {/* Layout Tab */}
-            <TabsContent value="layout" className="space-y-6 mt-0">
-              <div className="space-y-6">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-slate-200">Form Layout</h3>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <Card 
-                        className={`p-6 cursor-pointer transition-all duration-300 bg-slate-800 border-slate-600 hover:bg-slate-700 ${
-                          formConfig.settings.layout?.type === 'classic' ? 'ring-2 ring-blue-500' : ''
-                        }`}
-                        onClick={() => handleStyleUpdate('layout', 'type', 'classic')}
-                      >
-                        <div className="space-y-3">
-                          <div className="w-full h-20 bg-gradient-to-r from-blue-500 to-blue-600 rounded flex items-center justify-center">
-                            <div className="w-16 h-12 bg-white rounded shadow"></div>
-                          </div>
-                          <div className="text-center">
-                            <h4 className="font-semibold text-slate-200">Classic Form</h4>
-                            <p className="text-sm text-slate-400">All questions on one page</p>
-                          </div>
-                        </div>
-                      </Card>
-                    </motion.div>
+          {/* Enhanced Colors Tab */}
+          <TabsContent value="colors" className="p-4 space-y-6 mt-0 h-full">
+            {/* Color Palettes */}
+            <div>
+              <Label className="text-sm font-medium text-slate-700 mb-3 block">Color Palettes</Label>
+              <div className="space-y-3">
+                {COLOR_PALETTES.map((palette, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <span className="text-xs text-slate-600 w-16">{palette.name}</span>
+                    <div className="flex gap-1 flex-1">
+                      {palette.colors.map((color, colorIndex) => (
+                        <button
+                          key={colorIndex}
+                          className="w-8 h-8 rounded-lg border-2 border-white shadow-sm transition-all duration-200 hover:scale-110 hover:border-slate-300"
+                          style={{ backgroundColor: color }}
+                          onClick={() => handleStyleUpdate('canvasStyles', 'primaryColor', color)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-                    <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <Card 
-                        className={`p-6 cursor-pointer transition-all duration-300 bg-slate-800 border-slate-600 hover:bg-slate-700 ${
-                          formConfig.settings.layout?.type === 'card' ? 'ring-2 ring-blue-500' : ''
-                        }`}
-                        onClick={() => handleStyleUpdate('layout', 'type', 'card')}
-                      >
-                        <div className="space-y-3">
-                          <div className="w-full h-20 bg-slate-700 rounded flex items-center justify-center">
-                            <div className="w-16 h-12 bg-white rounded shadow border-b-4 border-green-500"></div>
-                          </div>
-                          <div className="text-center">
-                            <h4 className="font-semibold text-slate-200">Card Form</h4>
-                            <p className="text-sm text-slate-400">Single question per page</p>
-                          </div>
-                        </div>
-                      </Card>
-                    </motion.div>
+            <Separator />
+
+            {/* Custom Color Picker */}
+            <div>
+              <Label className="text-sm font-medium text-slate-700 mb-3 block">Custom Colors</Label>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-xs text-slate-600">Primary Color</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <input
+                      type="color"
+                      value={formConfig.settings.canvasStyles?.primaryColor || '#3b82f6'}
+                      onChange={(e) => handleStyleUpdate('canvasStyles', 'primaryColor', e.target.value)}
+                      className="w-10 h-8 rounded border border-slate-300 cursor-pointer"
+                    />
+                    <Input
+                      value={formConfig.settings.canvasStyles?.primaryColor || '#3b82f6'}
+                      onChange={(e) => handleStyleUpdate('canvasStyles', 'primaryColor', e.target.value)}
+                      className="flex-1 text-xs font-mono"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <Label className="text-xs text-slate-600">Secondary Color</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <input
+                      type="color"
+                      value={formConfig.settings.canvasStyles?.secondaryColor || '#64748b'}
+                      onChange={(e) => handleStyleUpdate('canvasStyles', 'secondaryColor', e.target.value)}
+                      className="w-10 h-8 rounded border border-slate-300 cursor-pointer"
+                    />
+                    <Input
+                      value={formConfig.settings.canvasStyles?.secondaryColor || '#64748b'}
+                      onChange={(e) => handleStyleUpdate('canvasStyles', 'secondaryColor', e.target.value)}
+                      className="flex-1 text-xs font-mono"
+                    />
                   </div>
                 </div>
               </div>
-            </TabsContent>
-          </div>
-        </Tabs>
-      </motion.div>
-    </motion.div>
+            </div>
+
+            <Separator />
+
+            {/* Background Settings */}
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium text-slate-700">Page Background</Label>
+                <Input
+                  value={formConfig.settings.canvasStyles?.backgroundColor || ''}
+                  onChange={(e) => handleStyleUpdate('canvasStyles', 'backgroundColor', e.target.value)}
+                  className="mt-2"
+                  placeholder="Enter color, gradient, or CSS background"
+                />
+                <p className="text-xs text-slate-500 mt-1">Use hex colors, gradients, or CSS background properties</p>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-slate-700">Form Background</Label>
+                <div className="flex items-center gap-2 mt-2">
+                  <input
+                    type="color"
+                    value={formConfig.settings.canvasStyles?.formBackgroundColor || '#ffffff'}
+                    onChange={(e) => handleStyleUpdate('canvasStyles', 'formBackgroundColor', e.target.value)}
+                    className="w-10 h-8 rounded border border-slate-300 cursor-pointer"
+                  />
+                  <Input
+                    value={formConfig.settings.canvasStyles?.formBackgroundColor || '#ffffff'}
+                    onChange={(e) => handleStyleUpdate('canvasStyles', 'formBackgroundColor', e.target.value)}
+                    className="flex-1"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-slate-700">Text Color</Label>
+                <div className="flex items-center gap-2 mt-2">
+                  <input
+                    type="color"
+                    value={formConfig.settings.canvasStyles?.fontColor || '#000000'}
+                    onChange={(e) => handleStyleUpdate('canvasStyles', 'fontColor', e.target.value)}
+                    className="w-10 h-8 rounded border border-slate-300 cursor-pointer"
+                  />
+                  <Input
+                    value={formConfig.settings.canvasStyles?.fontColor || '#000000'}
+                    onChange={(e) => handleStyleUpdate('canvasStyles', 'fontColor', e.target.value)}
+                    className="flex-1"
+                  />
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Enhanced Typography Tab */}
+          <TabsContent value="typography" className="p-4 space-y-6 mt-0 h-full">
+            <div>
+              <Label className="text-sm font-medium text-slate-700">Font Family</Label>
+              <Select 
+                value={formConfig.settings.canvasStyles?.fontFamily || 'Inter'}
+                onValueChange={(value) => handleStyleUpdate('canvasStyles', 'fontFamily', value)}
+              >
+                <SelectTrigger className="mt-2">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  {FONT_FAMILIES.map((font) => (
+                    <SelectItem key={font.value} value={font.value}>
+                      <div className="flex items-center justify-between w-full">
+                        <span style={{ fontFamily: font.value }}>{font.label}</span>
+                        <Badge variant="outline" className="ml-2 text-xs">
+                          {font.category}
+                        </Badge>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="text-sm font-medium text-slate-700 mb-3 block">
+                Font Size: {formConfig.settings.canvasStyles?.fontSize || 16}px
+              </Label>
+              <Slider
+                value={[formConfig.settings.canvasStyles?.fontSize || 16]}
+                onValueChange={(value) => handleStyleUpdate('canvasStyles', 'fontSize', value[0])}
+                min={12}
+                max={28}
+                step={1}
+                className="mt-2"
+              />
+              <div className="flex justify-between text-xs text-slate-500 mt-1">
+                <span>12px</span>
+                <span>28px</span>
+              </div>
+            </div>
+
+            <Separator />
+
+            <div>
+              <Label className="text-sm font-medium text-slate-700 mb-3 block">
+                Form Width: {formConfig.settings.canvasStyles?.formWidth || 752}px
+              </Label>
+              <Slider
+                value={[formConfig.settings.canvasStyles?.formWidth || 752]}
+                onValueChange={(value) => handleStyleUpdate('canvasStyles', 'formWidth', value[0])}
+                min={320}
+                max={1200}
+                step={10}
+                className="mt-2"
+              />
+              <div className="flex justify-between text-xs text-slate-500 mt-1">
+                <span>320px</span>
+                <span>1200px</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-sm font-medium text-slate-700">Padding</Label>
+                <Input
+                  value={formConfig.settings.canvasStyles?.padding || '32px'}
+                  onChange={(e) => handleStyleUpdate('canvasStyles', 'padding', e.target.value)}
+                  className="mt-2"
+                  placeholder="32px"
+                />
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-slate-700">Border Radius</Label>
+                <Input
+                  value={formConfig.settings.canvasStyles?.borderRadius || '16px'}
+                  onChange={(e) => handleStyleUpdate('canvasStyles', 'borderRadius', e.target.value)}
+                  className="mt-2"
+                  placeholder="16px"
+                />
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Enhanced Layout Tab */}
+          <TabsContent value="layout" className="p-4 space-y-6 mt-0 h-full">
+            <div>
+              <Label className="text-sm font-medium text-slate-700">Form Width Mode</Label>
+              <Select 
+                value={typeof formConfig.settings.preview?.width === 'number' ? formConfig.settings.preview.width.toString() : (formConfig.settings.preview?.width || 'Full')}
+                onValueChange={(value) => {
+                  const widthValue = value === 'Full' ? 'Full' : parseInt(value);
+                  handleStyleUpdate('preview', 'width', widthValue);
+                }}
+              >
+                <SelectTrigger className="mt-2">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="400">Small (400px)</SelectItem>
+                  <SelectItem value="600">Medium (600px)</SelectItem>
+                  <SelectItem value="800">Large (800px)</SelectItem>
+                  <SelectItem value="1000">Extra Large (1000px)</SelectItem>
+                  <SelectItem value="Full">Full Width</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-sm font-medium text-slate-700">Responsive Design</Label>
+                <p className="text-xs text-slate-500">Enable responsive breakpoints</p>
+              </div>
+              <Switch
+                checked={formConfig.settings.preview?.nesting || false}
+                onCheckedChange={(checked) => handleStyleUpdate('preview', 'nesting', checked)}
+              />
+            </div>
+
+            <Separator />
+
+            <div>
+              <Label className="text-sm font-medium text-slate-700">Label Alignment</Label>
+              <Select 
+                value={formConfig.settings.layout?.labelAlignment || 'top'}
+                onValueChange={(value) => handleStyleUpdate('layout', 'labelAlignment', value)}
+              >
+                <SelectTrigger className="mt-2">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="top">Top</SelectItem>
+                  <SelectItem value="left">Left</SelectItem>
+                  <SelectItem value="right">Right</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="text-sm font-medium text-slate-700 mb-3 block">
+                Question Spacing: {formConfig.settings.layout?.questionSpacing || 12}px
+              </Label>
+              <Slider
+                value={[formConfig.settings.layout?.questionSpacing || 12]}
+                onValueChange={(value) => handleStyleUpdate('layout', 'questionSpacing', value[0])}
+                min={0}
+                max={48}
+                step={4}
+                className="mt-2"
+              />
+            </div>
+
+            {formConfig.settings.layout?.labelAlignment === 'left' && (
+              <div>
+                <Label className="text-sm font-medium text-slate-700 mb-3 block">
+                  Label Width: {formConfig.settings.layout?.labelWidth || 230}px
+                </Label>
+                <Slider
+                  value={[formConfig.settings.layout?.labelWidth || 230]}
+                  onValueChange={(value) => handleStyleUpdate('layout', 'labelWidth', value[0])}
+                  min={100}
+                  max={400}
+                  step={10}
+                  className="mt-2"
+                />
+              </div>
+            )}
+
+            <Separator />
+
+            <div>
+              <Label className="text-sm font-medium text-slate-700">Custom CSS</Label>
+              <Textarea
+                value={formConfig.settings.canvasStyles?.customCSS || ''}
+                onChange={(e) => handleStyleUpdate('canvasStyles', 'customCSS', e.target.value)}
+                className="mt-2 font-mono text-sm"
+                placeholder="/* Add your custom CSS here */
+.form-container {
+  /* Custom styles */
+}
+
+.form-input {
+  /* Input styles */
+}"
+                rows={8}
+              />
+              <p className="text-xs text-slate-500 mt-1">Add custom CSS to override default styles</p>
+            </div>
+          </TabsContent>
+        </div>
+      </Tabs>
+    </div>
   );
 };
 

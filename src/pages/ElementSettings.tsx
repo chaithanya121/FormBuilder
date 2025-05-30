@@ -6,26 +6,29 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { X, Type, Mail, Lock, Calendar, CheckSquare, Check, List, Upload, Radio, Grid, Table2, 
-  ToggleLeft, Sliders, Image, Images, FileWarning, AlertTriangle, Heading1, Heading2, Heading3, 
-  Heading4, AlignLeft, Quote, Link2, SeparatorHorizontal, Code, Rows, LayoutGrid, Container, 
-  Columns2, Columns3, Columns4, ListTree, Settings, Palette, Layers } from "lucide-react";
+import { X, Settings, Layers, LayoutGrid, CheckSquare, Palette, Trash2 } from "lucide-react";
 import FormElementRenderer from "@/components/FormElementRenderer";
-import { useEnhancedTheme } from "@/components/ui/enhanced-theme";
-import { motion } from "framer-motion";
 
-const ElementSettings = ({ element, onUpdate, onClose }: ElementSettingsProps) => {
-  const { theme, themeClasses } = useEnhancedTheme();
-
+const ElementSettings = ({ element, onUpdate, onClose, onDelete }: ElementSettingsProps & { onDelete: () => void }) => {
   const handleInputChange = (field: string, value: any) => {
     onUpdate({ ...element, [field]: value });
+  };
+
+  const handleStyleChange = (styleType: 'fieldStyles' | 'labelStyles', field: string, value: any) => {
+    const updatedElement = {
+      ...element,
+      [styleType]: {
+        ...element[styleType],
+        [field]: value
+      }
+    };
+    onUpdate(updatedElement);
   };
 
   const handleOptionsChange = (options: string[]) => {
     const updatedElement = { 
       ...element, 
       options,
-      // Initialize the value to the first option if it's a new element
       value: element.value || (options.length > 0 ? options[0] : undefined)
     };
     onUpdate(updatedElement);
@@ -51,318 +54,132 @@ const ElementSettings = ({ element, onUpdate, onClose }: ElementSettingsProps) =
     handleOptionsChange(currentOptions);
   };
 
-  const isFieldElement = FIELD_ELEMENTS.some(item => item.type === element.type);
-  const isStaticElement = STATIC_ELEMENTS.some(item => item.type === element.type);
-  const isStructureElement = STRUCTURE_ELEMENTS.some(item => item.type === element.type);
   const hasOptions = ["select", "multiselect", "radio-group", "checkbox-group", "radio-blocks", "checkbox-tabs"].includes(element.type);
-  const isSlider = ["slider", "range-slider", "vertical-slider"].includes(element.type);
-  const isFileUpload = ["file-upload", "multi-file-upload", "image-upload", "multi-image-upload", "gallery"].includes(element.type);
-
-  console.log("Current element:", element);
-  console.log("Has options:", hasOptions);
-  console.log("Current options:", element.options);
+  const isFieldElement = ["text", "email", "password", "textarea", "select", "checkbox", "radio"].includes(element.type);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className={`space-y-6 p-6 ${themeClasses.card} rounded-2xl border-2 backdrop-blur-sm`}
-    >
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className={`p-2 ${themeClasses.accent} rounded-xl`}>
-            <Settings className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <h3 className={`text-xl font-bold ${themeClasses.text} capitalize`}>
-              {element.type.replace('-', ' ')} Settings
-            </h3>
-            <p className={`text-sm ${themeClasses.textMuted}`}>
-              Customize this element's properties
-            </p>
-          </div>
-        </div>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={onClose}
-          className={`${themeClasses.button} hover:bg-red-500/10 hover:text-red-500 rounded-xl`}
-        >
-          <X className="h-5 w-5" />
-        </Button>
-      </div>
-
-      <Tabs defaultValue="properties" className="w-full">
-        <TabsList className={`${themeClasses.card} p-1 rounded-xl border grid w-full ${isFieldElement ? 'grid-cols-4' : 'grid-cols-2'}`}>
-          <TabsTrigger 
-            value="properties" 
-            className={`data-[state=active]:${themeClasses.accent} data-[state=active]:text-white rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 flex items-center gap-2`}
-          >
-            <Layers className="h-4 w-4" />
-            Properties
-          </TabsTrigger>
-          <TabsTrigger 
-            value="layout" 
-            className={`data-[state=active]:${themeClasses.accent} data-[state=active]:text-white rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 flex items-center gap-2`}
-          >
-            <LayoutGrid className="h-4 w-4" />
-            Layout
-          </TabsTrigger>
-          {isFieldElement && (
-            <TabsTrigger 
-              value="validation" 
-              className={`data-[state=active]:${themeClasses.accent} data-[state=active]:text-white rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 flex items-center gap-2`}
-            >
-              <CheckSquare className="h-4 w-4" />
+    <div className="h-full flex flex-col">
+      {/* Tabs Navigation */}
+      <Tabs defaultValue="general" className="flex-1 flex flex-col">
+        <div className="px-4 pt-4">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="general" className="flex items-center gap-1 text-xs">
+              <Layers className="h-3 w-3" />
+              General
+            </TabsTrigger>
+            <TabsTrigger value="validation" className="flex items-center gap-1 text-xs">
+              <CheckSquare className="h-3 w-3" />
               Validation
             </TabsTrigger>
-          )}
-          {(isSlider || isFileUpload) && (
-            <TabsTrigger 
-              value={isSlider ? "range" : "upload"} 
-              className={`data-[state=active]:${themeClasses.accent} data-[state=active]:text-white rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 flex items-center gap-2`}
-            >
-              {isSlider ? <Sliders className="h-4 w-4" /> : <Upload className="h-4 w-4" />}
-              {isSlider ? "Range" : "Upload"}
+            <TabsTrigger value="style" className="flex items-center gap-1 text-xs">
+              <Palette className="h-3 w-3" />
+              Style
             </TabsTrigger>
-          )}
-        </TabsList>
+            <TabsTrigger value="layout" className="flex items-center gap-1 text-xs">
+              <LayoutGrid className="h-3 w-3" />
+              Layout
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-        <TabsContent value="properties" className="space-y-6 mt-6">
-          <div className="space-y-5">
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 }}
-              className="space-y-3"
-            >
-              <Label className={`${themeClasses.text} font-semibold flex items-center gap-2`}>
-                <Type className="h-4 w-4" />
-                Element Name
-              </Label>
-              <Input
-                value={element.name || ""}
-                onChange={(e) => handleInputChange("name", e.target.value)}
-                className={`${themeClasses.input} rounded-xl border-2 transition-all duration-200 focus:scale-[1.02]`}
-                placeholder="Enter element name"
-              />
-            </motion.div>
+        <div className="flex-1 overflow-y-auto p-4">
+          <TabsContent value="general" className="space-y-4 mt-0">
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Element Name</Label>
+                <Input
+                  value={element.name || ""}
+                  onChange={(e) => handleInputChange("name", e.target.value)}
+                  className="mt-1"
+                  placeholder="Enter element name"
+                />
+              </div>
 
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-              className="space-y-3"
-            >
-              <Label className={`${themeClasses.text} font-semibold`}>Display Label</Label>
-              <Input
-                value={element.label}
-                onChange={(e) => handleInputChange("label", e.target.value)}
-                className={`${themeClasses.input} rounded-xl border-2 transition-all duration-200 focus:scale-[1.02]`}
-                placeholder="Enter display label"
-              />
-            </motion.div>
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Display Label</Label>
+                <Input
+                  value={element.label}
+                  onChange={(e) => handleInputChange("label", e.target.value)}
+                  className="mt-1"
+                  placeholder="Enter display label"
+                />
+              </div>
 
-            {isFieldElement && (
-              <>
-                {["text", "email", "password"].includes(element.type) && (
-                  <motion.div
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="space-y-3"
-                  >
-                    <Label className={`${themeClasses.text} font-semibold`}>Input Type</Label>
-                    <Select 
-                      value={element.inputType || element.type}
-                      onValueChange={(value) => handleInputChange("inputType", value)}
-                    >
-                      <SelectTrigger className={`${themeClasses.input} rounded-xl border-2`}>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="text">Text</SelectItem>
-                        <SelectItem value="email">Email</SelectItem>
-                        <SelectItem value="password">Password</SelectItem>
-                        <SelectItem value="number">Number</SelectItem>
-                        <SelectItem value="tel">Phone</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </motion.div>
-                )}
-
-                <motion.div
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="space-y-3"
-                >
-                  <Label className={`${themeClasses.text} font-semibold`}>Placeholder Text</Label>
+              {isFieldElement && (
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Placeholder Text</Label>
                   <Input
                     value={element.placeholder || ""}
                     onChange={(e) => handleInputChange("placeholder", e.target.value)}
-                    className={`${themeClasses.input} rounded-xl border-2 transition-all duration-200 focus:scale-[1.02]`}
+                    className="mt-1"
                     placeholder="Enter placeholder text"
                   />
-                </motion.div>
-              </>
-            )}
-
-            {(isFieldElement || isStaticElement) && (
-              <>
-                <motion.div
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.5 }}
-                  className="space-y-3"
-                >
-                  <Label className={`${themeClasses.text} font-semibold`}>Tooltip</Label>
-                  <Input
-                    value={element.tooltip || ""}
-                    onChange={(e) => handleInputChange("tooltip", e.target.value)}
-                    className={`${themeClasses.input} rounded-xl border-2 transition-all duration-200 focus:scale-[1.02]`}
-                    placeholder="Enter tooltip text"
-                  />
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.6 }}
-                  className="space-y-3"
-                >
-                  <Label className={`${themeClasses.text} font-semibold`}>Description</Label>
-                  <Textarea
-                    value={element.description || ""}
-                    onChange={(e) => handleInputChange("description", e.target.value)}
-                    className={`${themeClasses.input} rounded-xl border-2 transition-all duration-200 focus:scale-[1.02] min-h-[80px]`}
-                    placeholder="Enter description"
-                  />
-                </motion.div>
-              </>
-            )}
-
-            {hasOptions && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7 }}
-                className={`space-y-6 mt-8 pt-6 border-t ${themeClasses.card} rounded-xl p-4`}
-              >
-                <div className="flex items-center gap-2 mb-4">
-                  <Palette className="h-5 w-5 text-blue-500" />
-                  <Label className={`text-xl font-bold ${themeClasses.text}`}>Options Configuration</Label>
                 </div>
-                
-                {/* Add preview of the element */}
-                <div className={`mb-6 p-4 ${themeClasses.decoration} rounded-xl`}>
-                  <Label className={`${themeClasses.text} font-medium mb-3 block`}>Live Preview</Label>
-                  <FormElementRenderer element={element} />
-                </div>
-                
-                <Button 
-                  onClick={addOption} 
-                  className={`w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl py-3 font-medium shadow-lg hover:shadow-xl transition-all duration-300`}
-                >
-                  <List className="h-4 w-4 mr-2" />
-                  Add New Option
-                </Button>
-                
-                <div className="space-y-3">
-                  {Array.isArray(element.options) && element.options.map((option, index) => (
-                    <motion.div 
-                      key={index} 
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="flex items-center gap-3 p-3 bg-white/5 rounded-xl backdrop-blur-sm"
-                    >
-                      <div className="flex-1">
+              )}
+
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Description</Label>
+                <Textarea
+                  value={element.description || ""}
+                  onChange={(e) => handleInputChange("description", e.target.value)}
+                  className="mt-1"
+                  placeholder="Enter description"
+                />
+              </div>
+
+              {hasOptions && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium text-gray-700">Options</Label>
+                    <Button onClick={addOption} size="sm">Add Option</Button>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    {Array.isArray(element.options) && element.options.map((option, index) => (
+                      <div key={index} className="flex items-center gap-2">
                         <Input
                           value={option}
                           onChange={(e) => updateOption(index, e.target.value)}
                           placeholder={`Option ${index + 1}`}
-                          className={`${themeClasses.input} border-0 bg-transparent focus:bg-white/10 transition-all duration-200`}
+                          className="flex-1"
                         />
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={() => removeOption(index)}
+                          className="text-red-600 hover:bg-red-50"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
                       </div>
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        onClick={() => removeOption(index)}
-                        className="hover:bg-red-500/20 hover:text-red-500 rounded-xl transition-all duration-200"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-            {isStructureElement && (
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
-                className="space-y-3"
-              >
-                <Label className={`${themeClasses.text} font-semibold`}>Container Type</Label>
-                <Select 
-                  value={element.type}
-                  onValueChange={(value) => handleInputChange("type", value)}
-                >
-                  <SelectTrigger className={`${themeClasses.input} rounded-xl border-2`}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {STRUCTURE_ELEMENTS.map((item) => (
-                      <SelectItem key={item.type} value={item.type}>
-                        {item.label}
-                      </SelectItem>
                     ))}
-                  </SelectContent>
-                </Select>
-              </motion.div>
-            )}
-          </div>
-        </TabsContent>
+                  </div>
 
-        <TabsContent value="layout" className="space-y-6 mt-6">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="space-y-4"
-          >
-            <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl backdrop-blur-sm">
-              <Label className={`${themeClasses.text} font-semibold`}>Auto Float</Label>
-              <Select
-                value={element.autoFloat || "Default"}
-                onValueChange={(value) => handleInputChange("autoFloat", value)}
-              >
-                <SelectTrigger className={`w-[120px] ${themeClasses.input} rounded-xl border-2`}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Default">Default</SelectItem>
-                  <SelectItem value="Off">Off</SelectItem>
-                </SelectContent>
-              </Select>
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <Label className="text-sm font-medium text-gray-700 mb-2 block">Preview</Label>
+                    <FormElementRenderer element={element} />
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-4 border-t">
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  onClick={onDelete}
+                  className="flex items-center gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete Element
+                </Button>
+              </div>
             </div>
-          </motion.div>
-        </TabsContent>
+          </TabsContent>
 
-        {isFieldElement && (
-          <TabsContent value="validation" className="space-y-6 mt-6">
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="space-y-5"
-            >
-              <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl backdrop-blur-sm">
-                <Label className={`${themeClasses.text} font-semibold`}>Required Field</Label>
+          <TabsContent value="validation" className="space-y-4 mt-0">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium text-gray-700">Required Field</Label>
                 <Switch
                   checked={element.required}
                   onCheckedChange={(checked) => handleInputChange("required", checked)}
@@ -370,9 +187,9 @@ const ElementSettings = ({ element, onUpdate, onClose }: ElementSettingsProps) =
               </div>
 
               {["text", "email", "password"].includes(element.type) && (
-                <div className="space-y-4">
-                  <div className="space-y-3">
-                    <Label className={`${themeClasses.text} font-semibold`}>Minimum Length</Label>
+                <>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Minimum Length</Label>
                     <Input
                       type="number"
                       value={element.validation?.minLength || ""}
@@ -382,13 +199,13 @@ const ElementSettings = ({ element, onUpdate, onClose }: ElementSettingsProps) =
                           minLength: parseInt(e.target.value) || undefined,
                         })
                       }
-                      className={`${themeClasses.input} rounded-xl border-2`}
+                      className="mt-1"
                       placeholder="Enter minimum length"
                     />
                   </div>
 
-                  <div className="space-y-3">
-                    <Label className={`${themeClasses.text} font-semibold`}>Maximum Length</Label>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Maximum Length</Label>
                     <Input
                       type="number"
                       value={element.validation?.maxLength || ""}
@@ -398,188 +215,122 @@ const ElementSettings = ({ element, onUpdate, onClose }: ElementSettingsProps) =
                           maxLength: parseInt(e.target.value) || undefined,
                         })
                       }
-                      className={`${themeClasses.input} rounded-xl border-2`}
+                      className="mt-1"
                       placeholder="Enter maximum length"
                     />
                   </div>
-                </div>
+                </>
               )}
-            </motion.div>
+            </div>
           </TabsContent>
-        )}
 
-        {isSlider && (
-          <TabsContent value="range" className="space-y-6 mt-6">
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="space-y-4"
-            >
-              <div className="space-y-2">
-                <Label className={`${themeClasses.text} font-semibold`}>Min Value</Label>
-                <Input
-                  type="number"
-                  value={element.validation?.min || 0}
-                  onChange={(e) =>
-                    handleInputChange("validation", {
-                      ...element.validation,
-                      min: parseInt(e.target.value),
-                    })
-                  }
-                  className={`${themeClasses.input} rounded-xl border-2`}
-                  placeholder="Enter minimum value"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className={`${themeClasses.text} font-semibold`}>Max Value</Label>
-                <Input
-                  type="number"
-                  value={element.validation?.max || 100}
-                  onChange={(e) =>
-                    handleInputChange("validation", {
-                      ...element.validation,
-                      max: parseInt(e.target.value),
-                    })
-                  }
-                  className={`${themeClasses.input} rounded-xl border-2`}
-                  placeholder="Enter maximum value"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className={`${themeClasses.text} font-semibold`}>Step</Label>
-                <Input
-                  type="number"
-                  value={element.validation?.step || 1}
-                  onChange={(e) =>
-                    handleInputChange("validation", {
-                      ...element.validation,
-                      step: parseInt(e.target.value),
-                    })
-                  }
-                  className={`${themeClasses.input} rounded-xl border-2`}
-                  placeholder="Enter step value"
-                />
-              </div>
-            </motion.div>
-          </TabsContent>
-        )}
+          <TabsContent value="style" className="space-y-4 mt-0">
+            <div className="space-y-6">
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900 mb-3">Element Styling</h4>
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">CSS Class</Label>
+                    <Input
+                      value={element.fieldStyles?.className || ""}
+                      onChange={(e) => handleStyleChange("fieldStyles", "className", e.target.value)}
+                      className="mt-1"
+                      placeholder="custom-class"
+                    />
+                  </div>
 
-        {isFileUpload && (
-          <TabsContent value="upload" className="space-y-6 mt-6">
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="space-y-4"
-            >
-              <div className="space-y-2">
-                <Label className={`${themeClasses.text} font-semibold`}>Accepted File Types</Label>
-                <Input
-                  value={element.validation?.accept || ""}
-                  onChange={(e) =>
-                    handleInputChange("validation", {
-                      ...element.validation,
-                      accept: e.target.value,
-                    })
-                  }
-                  className={`${themeClasses.input} rounded-xl border-2`}
-                  placeholder=".jpg,.png,.pdf"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className={`${themeClasses.text} font-semibold`}>Max File Size (MB)</Label>
-                <Input
-                  type="number"
-                  value={element.validation?.maxSize || ""}
-                  onChange={(e) =>
-                    handleInputChange("validation", {
-                      ...element.validation,
-                      maxSize: parseInt(e.target.value),
-                    })
-                  }
-                  className={`${themeClasses.input} rounded-xl border-2`}
-                  placeholder="Enter max file size"
-                />
-              </div>
-              {["multi-file-upload", "multi-image-upload", "gallery"].includes(element.type) && (
-                <div className="space-y-2">
-                  <Label className={`${themeClasses.text} font-semibold`}>Max Number of Files</Label>
-                  <Input
-                    type="number"
-                    value={element.validation?.maxFiles || ""}
-                    onChange={(e) =>
-                      handleInputChange("validation", {
-                        ...element.validation,
-                        maxFiles: parseInt(e.target.value),
-                      })
-                    }
-                    className={`${themeClasses.input} rounded-xl border-2`}
-                    placeholder="Enter max files"
-                  />
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Custom CSS</Label>
+                    <Textarea
+                      value={element.fieldStyles?.customCSS || ""}
+                      onChange={(e) => handleStyleChange("fieldStyles", "customCSS", e.target.value)}
+                      className="mt-1 font-mono text-sm"
+                      placeholder="color: red; font-weight: bold;"
+                      rows={4}
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Width</Label>
+                    <Select 
+                      value={element.fieldStyles?.width || "full"}
+                      onValueChange={(value) => handleStyleChange("fieldStyles", "width", value)}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="quarter">Quarter Width</SelectItem>
+                        <SelectItem value="half">Half Width</SelectItem>
+                        <SelectItem value="three-quarter">Three Quarter Width</SelectItem>
+                        <SelectItem value="full">Full Width</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-              )}
-            </motion.div>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900 mb-3">Label Styling</h4>
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Label CSS Class</Label>
+                    <Input
+                      value={element.labelStyles?.className || ""}
+                      onChange={(e) => handleStyleChange("labelStyles", "className", e.target.value)}
+                      className="mt-1"
+                      placeholder="custom-label-class"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Label Custom CSS</Label>
+                    <Textarea
+                      value={element.labelStyles?.customCSS || ""}
+                      onChange={(e) => handleStyleChange("labelStyles", "customCSS", e.target.value)}
+                      className="mt-1 font-mono text-sm"
+                      placeholder="font-size: 18px; color: blue;"
+                      rows={3}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           </TabsContent>
-        )}
+
+          <TabsContent value="layout" className="space-y-4 mt-0">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium text-gray-700">Auto Float</Label>
+                <Select
+                  value={element.autoFloat || "Default"}
+                  onValueChange={(value) => handleInputChange("autoFloat", value)}
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Default">Default</SelectItem>
+                    <SelectItem value="Off">Off</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium text-gray-700">In Row Layout</Label>
+                <Switch
+                  checked={element.layout?.inRow || false}
+                  onCheckedChange={(checked) => 
+                    handleInputChange("layout", { ...element.layout, inRow: checked })
+                  }
+                />
+              </div>
+            </div>
+          </TabsContent>
+        </div>
       </Tabs>
-    </motion.div>
+    </div>
   );
 };
-
-const FIELD_ELEMENTS = [
-  { type: "text", icon: Type, label: "Text Input", description: "Single line text input" },
-  { type: "email", icon: Mail, label: "Email Input", description: "Text field that expects an email" },
-  { type: "password", icon: Lock, label: "Password", description: "Text field that expects a password" },
-  { type: "date", icon: Calendar, label: "Date Picker", description: "Date picker input" },
-  { type: "checkbox", icon: CheckSquare, label: "Checkbox", description: "Plain checkbox input" },
-  { type: "radio", icon: Check, label: "Radio Button", description: "Plain radio input" },
-  { type: "select", icon: List, label: "Select", description: "Select input" },
-  { type: "file", icon: Upload, label: "File Upload", description: "File upload input" },
-  { type: "textarea", icon: Type, label: "Textarea", description: "Single line or multiline text area" },
-  { type: 'checkbox-group', icon: CheckSquare, label: 'Checkbox group', description: 'Plain checkbox options' },
-  { type: 'checkbox-blocks', icon: CheckSquare, label: 'Checkbox blocks', description: 'Checkbox options as blocks' },
-  { type: 'checkbox-tabs', icon: CheckSquare, label: 'Checkbox tabs', description: 'Checkbox options masked as tabs' },
-  { type: 'radio-group', icon: Radio, label: 'Radio group', description: 'Plain radio options' },
-  { type: 'radio-blocks', icon: Radio, label: 'Radio blocks', description: 'Radio options as blocks' },
-  { type: 'radio-tabs', icon: Radio, label: 'Radio tabs', description: 'Radio options masked as tabs' },
-  { type: 'matrix', icon: Grid, label: 'Matrix', description: 'A matrix of input fields' },
-  { type: 'matrix-table', icon: Table2, label: 'Matrix table', description: 'Spreadsheet like table of text inputs' },
-  { type: 'toggle', icon: ToggleLeft, label: 'Toggle', description: 'Toggle / switch button' },
-  { type: 'file-upload', icon: Upload, label: 'File upload', description: 'File upload input' },
-  { type: 'multi-file-upload', icon: Upload, label: 'Multi-file upload', description: 'Multi-file upload input' },
-  { type: 'image-upload', icon: Image, label: 'Image upload', description: 'File upload with image only' },
-  { type: 'multi-image-upload', icon: Images, label: 'Multi-image upload', description: 'Multi-file upload with images only' },
-  { type: 'gallery', icon: Images, label: 'Gallery', description: 'Multi-image upload with gallery view' },
-  { type: 'captcha', icon: FileWarning, label: 'Captcha', description: 'Prevents submission by robots' },
-  { type: 'hidden-input', icon: Lock, label: 'Hidden input', description: 'Single line or multiline text area' },
-];
-
-const STATIC_ELEMENTS = [
-  { type: 'danger-button', icon: AlertTriangle, label: 'Danger button', description: 'Button with danger color' },
-  { type: 'h1', icon: Heading1, label: 'H1 header', description: 'HTML <h1> tag' },
-  { type: 'h2', icon: Heading2, label: 'H2 header', description: 'HTML <h2> tag' },
-  { type: 'h3', icon: Heading3, label: 'H3 header', description: 'HTML <h3> tag' },
-  { type: 'h4', icon: Heading4, label: 'H4 header', description: 'HTML <h4> tag' },
-  { type: 'paragraph', icon: AlignLeft, label: 'Paragraph', description: 'HTML <p> tag' },
-  { type: 'quote', icon: Quote, label: 'Quote', description: 'HTML <quote> tag' },
-  { type: 'image', icon: Image, label: 'Image', description: 'HTML <img> tag' },
-  { type: 'link', icon: Link2, label: 'Link', description: 'HTML <a> tag' },
-  { type: 'divider', icon: SeparatorHorizontal, label: 'Divider', description: 'HTML <hr> tag' },
-  { type: 'static-html', icon: Code, label: 'Static HTML', description: 'Plain HTML element' },
-];
-
-const STRUCTURE_ELEMENTS = [
-  { type: 'tabs', icon: Rows, label: 'Tabs', description: 'Break forms into tabs' },
-  { type: 'steps', icon: List, label: 'Steps', description: 'Break forms into steps' },
-  { type: 'grid', icon: LayoutGrid, label: 'Grid', description: 'Create complex layouts' },
-  { type: 'table', icon: Table2, label: 'Table', description: 'Organize data in rows and columns' },
-  { type: 'container', icon: Container, label: 'Container', description: 'A container to group elements' },
-  { type: '2-columns', icon: Columns2, label: '2 columns', description: 'Two columns next to each other' },
-  { type: '3-columns', icon: Columns3, label: '3 columns', description: 'Three columns next to each other' },
-  { type: '4-columns', icon: Columns4, label: '4 columns', description: 'Four columns next to each other' },
-  { type: 'list', icon: List, label: 'List', description: 'Repeatable single element' },
-  { type: 'nested-list', icon: ListTree, label: 'Nested list', description: 'Repeatable elements in an object' },
-];
 
 export default ElementSettings;

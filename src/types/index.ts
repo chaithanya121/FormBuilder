@@ -1,4 +1,3 @@
-
 export type FormElementType = 
   | "text" | "email" | "password" | "date" | "file" | "textarea" | "checkbox" 
   | "radio" | "select" | "h1" | "h2" | "h3" | "h4" | "p" | "divider" | "container"
@@ -43,6 +42,11 @@ export interface FormElement {
   inputType?: string;
   fieldStyles?: Record<string, any>;
   labelStyles?: Record<string, any>;
+  layout?: {
+    inRow?: boolean;
+    rowId?: string;
+    rowPosition?: number;
+  };
 }
 
 export interface FormConfig {

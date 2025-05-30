@@ -1,84 +1,150 @@
+export type FormElementType = 
+  | "text" | "email" | "password" | "number" | "textarea" | "select" | "radio" | "checkbox" 
+  | "date" | "time" | "file" | "checkbox-group" | "heading" | "paragraph" | "divider" | "container"
+  | "2-columns" | "3-columns" | "4-columns" | "image" | "video" | "button" | "spacer" | "html" | "url" | "tel" 
+  | "color" | "range" | "rating" | "signature" | "location" | "payment" | "toggle" | "slider" | "star-rating" 
+  | "scale-rating" | "radio-blocks" | "checkbox-blocks" | "gallery" | "spinner" | "range-slider" | "vertical-slider" 
+  | "hidden-input" | "form_submit" | "danger-button" | "info-button" | "code-block" | "table" | "list" | "tabs" 
+  | "accordion" | "progress" | "timer" | "calendar" | "map" | "chart" | "social-share" | "embed" | "markdown";
 
-import React from "react";
+export interface FormElement {
+  id: string;
+  type: 'text' | 'email' | 'password' | 'number' | 'textarea' | 'select' | 'radio' | 'checkbox' | 'date' | 'time' | 'file' | 'checkbox-group' | 'heading' | 'paragraph' | 'divider' | 'container' | '2-columns' | '3-columns' | '4-columns' | 'image' | 'video' | 'button' | 'spacer' | 'html' | 'url' | 'tel' 
+  | 'color' | 'range' | 'rating' | 'signature' | 'location' | 'payment' | 'toggle' | 'slider' | 'star-rating' 
+  | 'scale-rating' | 'radio-blocks' | 'checkbox-blocks' | 'gallery' | 'spinner' | 'range-slider' | 'vertical-slider' 
+  | 'hidden-input' | 'form_submit' | 'danger-button' | 'info-button' | 'code-block' | 'table' | 'list' | 'tabs' 
+  | 'accordion' | 'progress' | 'timer' | 'calendar' | 'map' | 'chart' | 'social-share' | 'embed' | 'markdown';
+  label: string;
+  placeholder?: string;
+  required?: boolean;
+  options?: string[];
+  value?: any;
+  containerId?: string;
+  validation?: ValidationRule;
+  customCSS?: string;
+  customClasses?: string;
+  customAttributes?: Record<string, any>;
+  helpText?: string;
+  defaultValue?: any;
+  disabled?: boolean;
+  hidden?: boolean;
+  readOnly?: boolean;
+  autoFocus?: boolean;
+  spellCheck?: boolean;
+  tabIndex?: number;
+  conditionalLogic?: string;
+  ariaLabel?: string;
+  ariaDescription?: string;
+  role?: string;
+  dataAttributes?: string;
+  customScript?: string;
+  stylePreset?: string;
+  width?: string;
+  animation?: string;
+  name?: string;
+}
 
-export type FormElementType =
-  | "text"
-  | "email"
-  | "password"
-  | "textarea"
-  | "select"
-  | "checkbox"
-  | "radio"
-  | "address"
-  | "street-address"
-  | "street-address-line2"
-  | "city"
-  | "state-province"
-  | "postal-code"
-  | "name"
-  | "first-name"
-  | "last-name"
-  | "appointment"
-  | "rating"
-  | "captcha"
-  | "date"
-  | "h1"
-  | "h2"
-  | "h3"
-  | "p"
-  | "form_submit";
+export interface ValidationRule {
+  [key: string]: {
+    enabled: boolean;
+    value?: any;
+    message?: string;
+  };
+}
+
+export interface CustomTheme {
+  id: string;
+  name: string;
+  category: string;
+  preview: string;
+  colors: {
+    primary: string;
+    secondary: string;
+    background: string;
+    form: string;
+    text: string;
+    accent: string;
+  };
+  typography: {
+    fontFamily: string;
+    fontSize: number;
+    fontWeight: number;
+    lineHeight: number;
+  };
+  layout: {
+    borderRadius: number;
+    padding: number;
+    spacing: number;
+    shadow: string;
+  };
+  effects: {
+    animations: boolean;
+    gradients: boolean;
+    blurEffects: boolean;
+    darkMode: boolean;
+  };
+  created: string;
+  rating?: number;
+  popular?: boolean;
+}
 
 export interface FormConfig {
   name: string;
   elements: FormElement[];
-  settings: FormSettings;
+  settings: {
+    preview: {
+      width: "Full" | number;
+      nesting: boolean;
+    };
+    validation: {
+      liveValidation: "Default" | "On" | "Off";
+    };
+    layout: {
+      size: "Default" | "Small" | "Medium" | "Large";
+      columns: {
+        default: boolean;
+        tablet: boolean;
+        desktop: boolean;
+      };
+      labels: "Default" | "On" | "Off";
+      placeholders: "Default" | "On" | "Off";
+      errors: "Default" | "On" | "Off";
+      messages: "Default" | "On" | "Off";
+      labelAlignment?: "top" | "left" | "right";
+      questionSpacing?: number;
+      labelWidth?: number;
+      type?: "classic" | "card";
+    };
+    canvasStyles?: {
+      backgroundColor?: string;
+      backgroundImage?: string;
+      padding?: string;
+      margin?: string;
+      borderRadius?: string;
+      formBackgroundColor?: string;
+      fontColor?: string;
+      primaryColor?: string;
+      secondaryColor?: string;
+      fontFamily?: string;
+      fontSize?: number;
+      formWidth?: number;
+      customCSS?: string;
+      containerClass?: string;
+      inputBackground?: string;
+    };
+    termsAndConditions?: {
+      enabled: boolean;
+      required: boolean;
+      text: string;
+    };
+    submitButton?: {
+      text: string;
+    };
+  };
 }
 
-export interface FormSettings {
-  termsAndConditions?: {
-    enabled: boolean;
-    required: boolean;
-    text: string;
-  };
-  submitButton?: {
-    enabled: boolean;
-    text: string;
-  };
-  preview: {
-    width: "Full" | "Contained";
-    nesting: boolean;
-  };
-  validation: {
-    liveValidation: "Default" | "Custom";
-  };
-  layout: {
-    size: "Default" | "Small" | "Large";
-    columns: {
-      default: boolean;
-      tablet: boolean;
-      desktop: boolean;
-    };
-    labels: "Default" | "Floating" | "Hidden";
-    placeholders: "Default" | "Hide Labels" | "Custom";
-    errors: "Default" | "Custom";
-    messages: "Default" | "Custom";
-    labelAlignment?: "top" | "left" | "right";
-    questionSpacing?: number;
-    labelWidth?: number;
-    type?: "classic" | "card";
-  };
-  canvasStyles?: React.CSSProperties & {
-    formBackgroundColor?: string;
-    fontColor?: string;
-    primaryColor?: string;
-    secondaryColor?: string;
-    inputBackground?: string;
-    formWidth?: number | string;
-    fontFamily?: string;
-    fontSize?: number | string;
-    customCSS?: string;
-    containerClass?: string;
-  };
+export interface DragStartProps {
+  onDragStart: (e: React.DragEvent<HTMLDivElement>, elementType: string) => void;
 }
 
 export interface FormCanvasProps {
@@ -87,64 +153,16 @@ export interface FormCanvasProps {
   onSelectElement: (element: FormElement) => void;
   selectedElement?: FormElement;
   formConfig: FormConfig;
-  onUpdate: (element: FormElement) => void;
+  onUpdate: (config: FormConfig) => void;
 }
 
-// Export types
-export interface FormElement {
-  id: string;
-  type: FormElementType;
-  label: string;
-  name?: string;
-  placeholder?: string;
-  description?: string;
-  required?: boolean;
-  nestedData?: boolean;
-  options?: string[];
-  value?: string;
-  labelStyles?: React.CSSProperties;
-  fieldStyles?: React.CSSProperties;
-  layout?: {
-    inRow?: boolean;
-    rowPosition?: number;
-    rowId?: string;
-  };
-  validation?: {
-    minLength?: number;
-    maxLength?: number;
-    min?: number;
-    max?: number;
-    step?: number;
-    accept?: string;
-    maxSize?: number;
-    maxFiles?: number;
-  };
-  tooltip?: string;
-  inputType?: string;
-  submitData?: boolean;
+export interface FormPreviewProps {
+  formConfig: FormConfig;
 }
 
-export interface FormElementProps {
-  element: FormElement;
-  value: any;
-  onChange: (value: any) => void;
-  error?: string;
-}
-
-// Add missing interfaces
 export interface ElementSettingsProps {
   element: FormElement;
-  onUpdate: (element: FormElement) => void;
+  onUpdate: (updatedElement: FormElement) => void;
   onClose: () => void;
-}
-
-export interface DragStartProps {
-  onDragStart: (e: React.DragEvent<HTMLDivElement>, elementType: string) => void;
-}
-
-export interface FormElementRendererProps {
-  element: FormElement;
-  value?: any;
-  onChange?: (value: any) => void;
-  error?: string;
+  onDelete: () => void;
 }
