@@ -26,7 +26,1534 @@ import {
   Eye,
   Download,
   Share2,
-  Wrench
+  Search,
+  Filter,
+  Database,
+  Shield,
+  Globe,
+  Smartphone,
+  Code,
+  Webhook,
+  Mail,
+  Bell,
+  Camera,
+  Video,
+  Mic,
+  MessageSquare,
+  Heart,
+  Bookmark,
+  Tag,
+  Archive,
+  RefreshCw,
+  BarChart2,
+  PieChart,
+  LineChart,
+  Layers,
+  Grid,
+  List,
+  Map,
+  Calculator,
+  CreditCard,
+  ShoppingCart,
+  Calendar as CalendarIcon,
+  Clock as ClockIcon,
+  User,
+  UserPlus,
+  UserCheck,
+  Link2,
+  Copy,
+  Scissors,
+  Paperclip,
+  Image,
+  FileImage,
+  FileVideo,
+  FileAudio,
+  FileSpreadsheet,
+  FilePdf,
+  Cloud,
+  CloudUpload,
+  CloudDownload,
+  Monitor,
+  Tablet,
+  Headphones,
+  Volume2,
+  Wifi,
+  Lock,
+  Unlock,
+  Key,
+  QrCode,
+  Scan,
+  Printer,
+  Save,
+  FolderOpen,
+  Folder,
+  HardDrive,
+  Server,
+  Cpu,
+  Memory,
+  Gauge,
+  Thermometer,
+  Battery,
+  Plug,
+  Radio,
+  Router,
+  MousePointer,
+  Keyboard,
+  GamepadIcon,
+  Joystick,
+  Power,
+  RotateCcw,
+  RotateCw,
+  ZoomIn,
+  ZoomOut,
+  Move,
+  Maximize,
+  Minimize,
+  CornerDownLeft,
+  CornerDownRight,
+  ArrowUp,
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  ChevronUp,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsUp,
+  ChevronsDown,
+  ChevronsLeft,
+  ChevronsRight,
+  ExternalLink,
+  MoreHorizontal,
+  MoreVertical,
+  Menu,
+  X,
+  Check,
+  AlertCircle,
+  AlertTriangle,
+  Info,
+  HelpCircle,
+  QuestionMark,
+  Lightbulb,
+  Flame,
+  Sparkles,
+  Sun,
+  Moon,
+  CloudRain,
+  CloudSnow,
+  Wind,
+  Umbrella,
+  TreePine,
+  Flower,
+  Leaf,
+  Apple,
+  Coffee,
+  Home,
+  Building,
+  Car,
+  Plane,
+  Train,
+  Bike,
+  Bus,
+  Truck,
+  Ship,
+  Anchor,
+  Compass,
+  MapPin,
+  Navigation,
+  Route,
+  Flag,
+  Trophy,
+  Medal,
+  Crown,
+  Gem,
+  Diamond,
+  Coins,
+  DollarSign,
+  Euro,
+  PoundSterling,
+  Yen,
+  Bitcoin,
+  Briefcase,
+  GraduationCap,
+  BookOpen,
+  Book,
+  Library,
+  School,
+  University,
+  Presentation,
+  Projector,
+  Microscope,
+  FlaskConical,
+  TestTube,
+  Dna,
+  Atom,
+  Molecule,
+  Beaker,
+  Stethoscope,
+  Pill,
+  Syringe,
+  Bandage,
+  FirstAid,
+  Cross,
+  Activity as ActivityIcon,
+  HeartHandshake,
+  Baby,
+  Footprints,
+  Shirt,
+  ShirtIcon,
+  Glasses,
+  Watch,
+  Ring,
+  Necklace,
+  Crown as CrownIcon,
+  Chef,
+  Utensils,
+  Pizza,
+  IceCream,
+  Cake,
+  Candy,
+  Grape,
+  Cherry,
+  Strawberry,
+  Banana,
+  Carrot,
+  Broccoli,
+  Corn,
+  Wheat,
+  Milk,
+  Egg,
+  Fish,
+  Beef,
+  Drumstick,
+  Soup,
+  Wine,
+  Beer,
+  Martini,
+  Cocktail,
+  TeaCup,
+  Mug,
+  Bottle,
+  Can,
+  Package,
+  Gift,
+  PartyPopper,
+  Balloon,
+  Cake as CakeIcon,
+  Music,
+  Radio as RadioIcon,
+  Disc,
+  Cassette,
+  Vinyl,
+  Guitar,
+  Piano,
+  Drums,
+  Violin,
+  Trumpet,
+  Saxophone,
+  Microphone,
+  Headset,
+  Speaker,
+  Volume,
+  VolumeX,
+  Volume1,
+  FastForward,
+  Rewind,
+  Play,
+  Pause,
+  Stop,
+  SkipBack,
+  SkipForward,
+  Repeat,
+  Shuffle,
+  PlayCircle,
+  PauseCircle,
+  StopCircle,
+  Film,
+  Clapperboard,
+  VideoCamera,
+  CameraIcon,
+  ImageIcon,
+  Palette as PaletteIcon,
+  Brush,
+  Paintbrush,
+  Pen,
+  PenTool,
+  Pencil,
+  Eraser,
+  Ruler,
+  Triangle,
+  Square,
+  CircleIcon,
+  Hexagon,
+  Octagon,
+  Pentagon,
+  Star as StarIcon,
+  Heart as HeartIcon,
+  Smile,
+  Frown,
+  Meh,
+  Laugh,
+  Angry,
+  Surprised,
+  Confused,
+  Sleepy,
+  Dizzy,
+  Expressionless,
+  Neutral,
+  Wink,
+  Kiss,
+  Thumbsup,
+  Thumbsdown,
+  Clap,
+  Wave,
+  Handshake,
+  Pray,
+  Muscle,
+  Ear,
+  Nose,
+  Mouth,
+  Tooth,
+  Tongue,
+  Eyes,
+  Brain,
+  Lungs,
+  Liver,
+  Kidney,
+  Stomach,
+  Bone,
+  Skull,
+  Fingerprint,
+  Footprint,
+  Pawprint,
+  Feather,
+  Egg as EggIcon,
+  Snail,
+  Ant,
+  Bee,
+  Butterfly,
+  Spider,
+  Bug,
+  Worm,
+  Cat,
+  Dog,
+  Rabbit,
+  Squirrel,
+  Hedgehog,
+  Deer,
+  Horse,
+  Cow,
+  Pig,
+  Sheep,
+  Goat,
+  Chicken,
+  Duck,
+  Turkey,
+  Eagle,
+  Dove,
+  Penguin,
+  Flamingo,
+  Parrot,
+  Owl,
+  Swan,
+  Peacock,
+  Rooster,
+  Bat,
+  Mouse,
+  Rat,
+  Hamster,
+  Monkey,
+  Gorilla,
+  Elephant,
+  Rhino,
+  Hippo,
+  Giraffe,
+  Lion,
+  Tiger,
+  Leopard,
+  Wolf,
+  Fox,
+  Bear,
+  Panda,
+  Koala,
+  Sloth,
+  Otter,
+  Seal,
+  Whale,
+  Dolphin,
+  Shark,
+  Fish as FishIcon,
+  Octopus,
+  Jellyfish,
+  Crab,
+  Lobster,
+  Shrimp,
+  Oyster,
+  Turtle,
+  Lizard,
+  Snake,
+  Crocodile,
+  Frog,
+  Toad,
+  Salamander,
+  Dragon,
+  Unicorn,
+  Phoenix,
+  Alien,
+  Robot,
+  Ghost,
+  Zombie,
+  Vampire,
+  Witch,
+  Wizard,
+  Fairy,
+  Angel,
+  Devil,
+  Demon,
+  Skull as SkullIcon,
+  Crossbones,
+  Poison,
+  Radioactive,
+  Biohazard,
+  Warning,
+  Danger,
+  Caution,
+  NoEntry,
+  Prohibited,
+  Construction,
+  Hammer,
+  Wrench,
+  Screwdriver,
+  Pliers,
+  Saw,
+  Drill,
+  Nail,
+  Screw,
+  Bolt,
+  Nut,
+  Gear,
+  Cog,
+  Spring,
+  Magnet,
+  Battery as BatteryIcon,
+  Lightbulb as LightbulbIcon,
+  Flashlight,
+  Candle,
+  Fire,
+  Fireplace,
+  Chimney,
+  Smoke,
+  Steam,
+  Droplet,
+  Droplets,
+  Snowflake,
+  Icicle,
+  Thermometer as ThermometerIcon,
+  Barometer,
+  Hygrometer,
+  Anemometer,
+  Weathervane,
+  Windsock,
+  Rainbow,
+  Aurora,
+  Meteor,
+  Comet,
+  Planet,
+  Earth,
+  Moon as MoonIcon,
+  Sun as SunIcon,
+  Star as StarIconAlt,
+  Galaxy,
+  Constellation,
+  Telescope,
+  Satellite,
+  Rocket,
+  Ufo,
+  Space,
+  Astronaut,
+  SpaceShuttle,
+  SpaceStation,
+  BlackHole,
+  Wormhole,
+  Portal,
+  Dimension,
+  Timeline,
+  History,
+  Future,
+  Present,
+  Past,
+  Chronometer,
+  Stopwatch,
+  Timer,
+  Alarm,
+  Bell as BellIcon,
+  Chime,
+  Gong,
+  Horn,
+  Whistle,
+  Siren,
+  Megaphone,
+  Loudspeaker,
+  Microphone as MicrophoneIcon,
+  RecordingStudio,
+  SoundWave,
+  Equalizer,
+  MixingDesk,
+  Turntable,
+  Amplifier,
+  Synthesizer,
+  Metronome,
+  TuningFork,
+  PitchPipe,
+  Kazoo,
+  Harmonica,
+  Accordion,
+  Bagpipes,
+  Didgeridoo,
+  Ocarina,
+  Recorder,
+  Flute,
+  Clarinet,
+  Oboe,
+  Bassoon,
+  Piccolo,
+  Tuba,
+  FrenchHorn,
+  Trombone,
+  Cornet,
+  Bugle,
+  Euphonium,
+  Sousaphone,
+  Xylophone,
+  Marimba,
+  Vibraphone,
+  Glockenspiel,
+  Chimes,
+  Triangle as TriangleIcon,
+  Cymbal,
+  Gong as GongIcon,
+  TamTam,
+  Cowbell,
+  Woodblock,
+  Claves,
+  Castanets,
+  Maracas,
+  Shaker,
+  Tambourine,
+  Bongos,
+  Congas,
+  Djembe,
+  Tabla,
+  Timpani,
+  SnareDrum,
+  BassDrum,
+  TomTom,
+  KickDrum,
+  HiHat,
+  CrashCymbal,
+  RideCymbal,
+  SplashCymbal,
+  ChinaCymbal,
+  Drumstick as DrumstickIcon,
+  Mallet,
+  Brush as BrushIcon,
+  Rod,
+  Stick,
+  Baton,
+  Conductor,
+  Orchestra,
+  Band,
+  Choir,
+  Singer,
+  Vocalist,
+  Performer,
+  Artist,
+  Musician,
+  Composer,
+  Producer,
+  Engineer,
+  Technician,
+  Roadie,
+  Manager,
+  Agent,
+  Promoter,
+  Venue,
+  Stage,
+  Spotlight,
+  Microphone as MicIcon,
+  Monitor as MonitorIcon,
+  Speaker as SpeakerIcon,
+  Subwoofer,
+  Cabinet,
+  Rack,
+  Mixer,
+  Console,
+  Interface,
+  Preamp,
+  Compressor,
+  Limiter,
+  Gate,
+  Expander,
+  Reverb,
+  Delay,
+  Echo,
+  Chorus,
+  Flanger,
+  Phaser,
+  Tremolo,
+  Vibrato,
+  Distortion,
+  Overdrive,
+  Fuzz,
+  Wah,
+  Filter as FilterIcon,
+  Equalizer as EqualizerIcon,
+  Spectrum,
+  Analyzer,
+  Oscilloscope,
+  Generator,
+  Sampler,
+  Sequencer,
+  Looper,
+  Recorder as RecorderIcon,
+  Player,
+  Transport,
+  Timeline as TimelineIcon,
+  Track,
+  Channel,
+  Bus,
+  Aux,
+  Send,
+  Return,
+  Insert,
+  Patch,
+  Cable,
+  Jack,
+  Plug as PlugIcon,
+  Socket,
+  Adapter,
+  Converter,
+  Splitter,
+  Merger,
+  Switch,
+  Selector,
+  Router as RouterIcon,
+  Hub,
+  Gateway,
+  Bridge,
+  Repeater,
+  Extender,
+  Booster,
+  Isolator,
+  Transformer,
+  Balancer,
+  Unbalancer,
+  Attenuator,
+  Pad,
+  Load,
+  Dummy,
+  Terminator,
+  Resistor,
+  Capacitor,
+  Inductor,
+  Diode,
+  Transistor,
+  Integrated,
+  Circuit,
+  Board,
+  Chip,
+  Processor,
+  Memory as MemoryIcon,
+  Storage,
+  Drive,
+  Disk,
+  Tape,
+  Cartridge,
+  Floppy,
+  Cd,
+  Dvd,
+  BluRay,
+  Usb,
+  SdCard,
+  MicroSd,
+  CompactFlash,
+  MemoryStick,
+  SmartMedia,
+  XdCard,
+  MultiMedia,
+  SecureDigital,
+  ExpressCard,
+  Pcmcia,
+  CardBus,
+  ExpressBus,
+  Thunderbolt,
+  Firewire,
+  Ethernet,
+  Wifi as WifiIcon,
+  Bluetooth,
+  Infrared,
+  Nfc,
+  Rfid,
+  Gps,
+  Glonass,
+  Galileo,
+  Compass as CompassIcon,
+  Gyroscope,
+  Accelerometer,
+  Magnetometer,
+  Barometer as BarometerIcon,
+  Altimeter,
+  Speedometer,
+  Odometer,
+  Tachometer,
+  Voltmeter,
+  Ammeter,
+  Ohmmeter,
+  Multimeter,
+  Oscilloscope as OscilloscopeIcon,
+  SignalGenerator,
+  FunctionGenerator,
+  PulseGenerator,
+  NoiseGenerator,
+  SweepGenerator,
+  ArbitraryWaveform,
+  DigitalMultimeter,
+  PowerSupply,
+  LoadBank,
+  ElectronicLoad,
+  BatteryTester,
+  Capacitor as CapacitorIcon,
+  InductorTester,
+  TransistorTester,
+  DiodeTester,
+  IcTester,
+  LogicAnalyzer,
+  ProtocolAnalyzer,
+  SpectrumAnalyzer,
+  NetworkAnalyzer,
+  AntennaAnalyzer,
+  CableAnalyzer,
+  TimeAnalyzer,
+  PhaseAnalyzer,
+  ModulationAnalyzer,
+  DistortionAnalyzer,
+  HarmonicAnalyzer,
+  IntermodAnalyzer,
+  NoiseAnalyzer,
+  JitterAnalyzer,
+  EyeAnalyzer,
+  ConstellationAnalyzer,
+  ErrorAnalyzer,
+  BitErrorAnalyzer,
+  FrameErrorAnalyzer,
+  PacketAnalyzer,
+  FlowAnalyzer,
+  ThroughputAnalyzer,
+  LatencyAnalyzer,
+  BandwidthAnalyzer,
+  QualityAnalyzer,
+  PerformanceAnalyzer,
+  StressAnalyzer,
+  LoadAnalyzer,
+  CapacityAnalyzer,
+  UtilizationAnalyzer,
+  EfficiencyAnalyzer,
+  ReliabilityAnalyzer,
+  AvailabilityAnalyzer,
+  SecurityAnalyzer,
+  VulnerabilityAnalyzer,
+  ThreatAnalyzer,
+  RiskAnalyzer,
+  ComplianceAnalyzer,
+  AuditAnalyzer,
+  ForensicAnalyzer,
+  MalwareAnalyzer,
+  VirusAnalyzer,
+  SpywareAnalyzer,
+  AdwareAnalyzer,
+  RansomwareAnalyzer,
+  TrojanAnalyzer,
+  WormAnalyzer,
+  RootkitAnalyzer,
+  BackdoorAnalyzer,
+  BotnetAnalyzer,
+  PhishingAnalyzer,
+  SpoofingAnalyzer,
+  SniffingAnalyzer,
+  IntrusionAnalyzer,
+  AnomalyAnalyzer,
+  BehaviorAnalyzer,
+  PatternAnalyzer,
+  TrendAnalyzer,
+  ForecastAnalyzer,
+  PredictiveAnalyzer,
+  MachineLearning,
+  ArtificialIntelligence,
+  NeuralNetwork,
+  DeepLearning,
+  DataMining,
+  BigData,
+  Analytics,
+  Statistics,
+  Mathematics,
+  Algorithm,
+  Programming,
+  Coding,
+  Development,
+  Software,
+  Application,
+  System,
+  Platform,
+  Framework,
+  Library,
+  Module,
+  Component,
+  Widget,
+  Plugin,
+  Extension,
+  Addon,
+  Package,
+  Bundle,
+  Suite,
+  Collection,
+  Toolkit,
+  Utility,
+  Tool,
+  Instrument,
+  Device,
+  Equipment,
+  Apparatus,
+  Machine,
+  Engine,
+  Motor,
+  Generator as GeneratorIcon,
+  Alternator,
+  Dynamo,
+  Turbine,
+  Compressor as CompressorIcon,
+  Pump,
+  Fan,
+  Blower,
+  Ventilator,
+  AirConditioner,
+  Heater,
+  Boiler,
+  Furnace,
+  Radiator,
+  Thermostat,
+  HumidityController,
+  AirPurifier,
+  WaterFilter,
+  WaterPurifier,
+  WaterSoftener,
+  WaterHeater,
+  WaterCooler,
+  Refrigerator,
+  Freezer,
+  IceMaker,
+  Dishwasher,
+  WashingMachine,
+  Dryer,
+  Iron,
+  VacuumCleaner,
+  AirFreshener,
+  Dehumidifier,
+  Humidifier,
+  OilDiffuser,
+  CandleWarmer,
+  IncenseHolder,
+  AromatherapyDiffuser,
+  EssentialOilDiffuser,
+  UltrasonicDiffuser,
+  NebulizingDiffuser,
+  HeatDiffuser,
+  EvaporativeDiffuser,
+  ReedDiffuser,
+  PlugInDiffuser,
+  CarDiffuser,
+  PortableDiffuser,
+  WirelessDiffuser,
+  SmartDiffuser,
+  VoiceControlled,
+  AppControlled,
+  RemoteControlled,
+  TimerControlled,
+  SensorControlled,
+  AutomaticShutoff,
+  ColorChanging,
+  LedLighting,
+  DimmableLighting,
+  AdjustableBrightness,
+  VariableIntensity,
+  CustomizableSettings,
+  PresetModes,
+  SleepMode,
+  RelaxationMode,
+  EnergyMode,
+  FocusMode,
+  MeditationMode,
+  YogaMode,
+  StudyMode,
+  WorkMode,
+  PartyMode,
+  RomanticMode,
+  KidsMode,
+  PetMode,
+  GuestMode,
+  VacationMode,
+  SecurityMode,
+  NightMode,
+  DayMode,
+  SunriseMode,
+  SunsetMode,
+  DuskMode,
+  DawnMode,
+  TwilightMode,
+  MidnightMode,
+  NoonMode,
+  MorningMode,
+  AfternoonMode,
+  EveningMode,
+  AutumnMode,
+  WinterMode,
+  SpringMode,
+  SummerMode,
+  HolidayMode,
+  ChristmasMode,
+  NewYearMode,
+  ValentineMode,
+  EasterMode,
+  HalloweenMode,
+  ThanksgivingMode,
+  BirthdayMode,
+  AnniversaryMode,
+  WeddingMode,
+  GraduationMode,
+  CelebrationMode,
+  MemorialMode,
+  RemembranceMode,
+  TributeMode,
+  HonorMode,
+  RespectMode,
+  GratitudeMode,
+  AppreciationMode,
+  LoveMode,
+  FriendshipMode,
+  FamilyMode,
+  CommunityMode,
+  UnityMode,
+  HarmonyMode,
+  PeaceMode,
+  TranquilityMode,
+  SerenityMode,
+  CalmMode,
+  QuietMode,
+  SilenceMode,
+  StillnessMode,
+  MotionlessMode,
+  StaticMode,
+  StableMode,
+  SteadyMode,
+  ConsistentMode,
+  ReliableMode,
+  DependableMode,
+  TrustworthyMode,
+  FaithfulMode,
+  LoyalMode,
+  DevotedMode,
+  CommittedMode,
+  DedicatedMode,
+  PassionateMode,
+  EnthusiasticMode,
+  EagerMode,
+  ExcitedMode,
+  ThrilledMode,
+  DelightedMode,
+  JoyfulMode,
+  HappyMode,
+  CheerfulMode,
+  OptimisticMode,
+  PositiveMode,
+  UpliftingMode,
+  InspiringMode,
+  MotivatingMode,
+  EncouragingMode,
+  SupportiveMode,
+  NurturingMode,
+  CaringMode,
+  GentleMode,
+  TenderMode,
+  SoftMode,
+  SmoothMode,
+  FlowingMode,
+  GracefulMode,
+  ElegantMode,
+  RefinedMode,
+  SophisticatedMode,
+  ClassicMode,
+  TimelessMode,
+  EndlessMode,
+  InfiniteMode,
+  EternalMode,
+  EverlastingMode,
+  PermanentMode,
+  LastingMode,
+  EndurableMode,
+  DurableMode,
+  StrongMode,
+  PowerfulMode,
+  MightyMode,
+  ForcefulMode,
+  IntenseMode,
+  VigorousMode,
+  EnergeticMode,
+  DynamicMode,
+  ActiveMode,
+  LivelyMode,
+  VibrантMode,
+  BrilliantMode,
+  RadiantMode,
+  LuminousMode,
+  GlowingMode,
+  ShiningMode,
+  SparklingMode,
+  GlitteringMode,
+  ShimmeringMode,
+  Gleaming,
+  Glistening,
+  Glittering as GlitteringAlt,
+  Dazzling,
+  Blinding,
+  Flashing as FlashingAlt,
+  Strobing,
+  Pulsing as PulsingAlt,
+  Throbbing as ThrobbingAlt,
+  Beating as BeatingAlt,
+  Pumping,
+  Circulating,
+  Flowing as FlowingAlt,
+  Streaming,
+  Pouring,
+  Dripping,
+  Leaking,
+  Seeping,
+  Oozing,
+  Bubbling,
+  Fizzing,
+  Foaming,
+  Frothing,
+  Churning,
+  Swirling,
+  Whirling,
+  Spinning as SpinningAlt,
+  Rotating as RotatingAlt,
+  Revolving,
+  Orbiting,
+  Circling as CirclingAlt,
+  Looping as LoopingAlt,
+  Cycling,
+  Repeating,
+  Recurring,
+  Returning,
+  Coming,
+  Going,
+  Leaving,
+  Departing,
+  Exiting,
+  Entering,
+  Arriving,
+  Approaching,
+  Nearing,
+  Closing as ClosingAlt,
+  Opening as OpeningAlt,
+  Revealing,
+  Exposing,
+  Uncovering,
+  Unveiling,
+  Disclosing,
+  Showing as ShowingAlt,
+  Displaying as DisplayingAlt,
+  Presenting as PresentingAlt,
+  Demonstrating as DemonstratingAlt,
+  Exhibiting,
+  Featuring,
+  Highlighting,
+  Emphasizing,
+  Stressing,
+  Accentuating,
+  Underlining,
+  Marking,
+  Labeling,
+  Tagging,
+  Naming,
+  Titling,
+  Calling,
+  Addressing,
+  Referring,
+  Mentioning,
+  Citing,
+  Quoting,
+  Repeating as RepeatingAlt,
+  Echoing as EchoingAlt,
+  Mimicking,
+  Imitating,
+  Copying as CopyingAlt,
+  Replicating as ReplicatingAlt,
+  Duplicating as DuplicatingAlt,
+  Reproducing as ReproducingAlt,
+  Regenerating as RegeneratingAlt,
+  Recreating as RecreatingAlt,
+  Rebuilding as RebuildingAlt,
+  Reconstructing as ReconstructingAlt,
+  Restoring as RestoringAlt,
+  Renovating as RenovatingAlt,
+  Refreshing as RefreshingAlt,
+  Renewing as RenewingAlt,
+  Reviving as RevivingAlt,
+  Rejuvenating as RejuvenatingAlt,
+  Healing as HealingAlt,
+  Recovering as RecoveringAlt,
+  Mending as MendingAlt,
+  Repairing as RepairingAlt,
+  Fixing as FixingAlt,
+  Correcting,
+  Adjusting as AdjustingAlt,
+  Modifying as ModifyingAlt,
+  Changing as ChangingAlt,
+  Altering,
+  Transforming as TransformingAlt,
+  Converting,
+  Translating,
+  Interpreting,
+  Understanding,
+  Comprehending,
+  Grasping as GraspingAlt,
+  Realizing,
+  Recognizing as RecognizingAlt,
+  Acknowledging,
+  Accepting,
+  Embracing,
+  Welcoming,
+  Greeting,
+  Saluting,
+  Honoring,
+  Respecting,
+  Admiring,
+  Appreciating as AppreciatingAlt,
+  Valuing,
+  Treasuring,
+  Cherishing,
+  Loving as LovingAlt,
+  Caring as CaringAlt,
+  Nurturing as NurturingAlt,
+  Supporting as SupportingAlt,
+  Helping as HelpingAlt,
+  Assisting as AssistingAlt,
+  Aiding as AidingAlt,
+  Serving,
+  Providing,
+  Supplying,
+  Delivering,
+  Offering,
+  Giving,
+  Donating,
+  Contributing,
+  Participating,
+  Engaging as EngagingAlt,
+  Involving,
+  Including as IncludingAlt,
+  Incorporating as IncorporatingAlt,
+  Integrating as IntegratingAlt,
+  Combining as CombiningAlt,
+  Merging as MergingAlt,
+  Blending as BlendingAlt,
+  Mixing as MixingAlt,
+  Stirring,
+  Shaking,
+  Vibrating as VibratingAlt,
+  Trembling,
+  Quivering,
+  Shivering,
+  Shuddering,
+  Convulsing,
+  Twitching,
+  Jerking,
+  Jolting,
+  Shocking,
+  Stunning,
+  Startling,
+  Surprising as SurprisingAlt,
+  Amazing,
+  Astonishing,
+  Astounding,
+  Incredible,
+  Unbelievable,
+  Extraordinary as ExtraordinaryAlt,
+  Remarkable as RemarkableAlt,
+  Outstanding as OutstandingAlt,
+  Exceptional as ExceptionalAlt,
+  Superior as SuperiorAlt,
+  Excellent,
+  Perfect as PerfectAlt,
+  Flawless as FlawlessAlt,
+  Impeccable as ImpeccableAlt,
+  Pristine,
+  Spotless,
+  Immaculate,
+  Pure as PureAlt,
+  Clean,
+  Fresh,
+  New,
+  Novel,
+  Original,
+  Unique as UniqueAlt,
+  Special as SpecialAlt,
+  Rare as RareAlt,
+  Precious,
+  Valuable,
+  Priceless,
+  Invaluable,
+  Worthwhile,
+  Beneficial,
+  Useful,
+  Helpful as HelpfulAlt,
+  Practical,
+  Functional,
+  Effective as EffectiveAlt,
+  Efficient as EfficientAlt,
+  Productive as ProductiveAlt,
+  Successful as SuccessfulAlt,
+  Triumphant as TriumphantAlt,
+  Victorious as VictoriousAlt,
+  Winning as WinningAlt,
+  Champion as ChampionAlt,
+  Leading,
+  First,
+  Top,
+  Best,
+  Greatest,
+  Finest,
+  Supreme as SupremeAlt,
+  Ultimate as UltimateAlt,
+  Maximum,
+  Peak,
+  Pinnacle,
+  Summit as SummitAlt,
+  Height,
+  Apex,
+  Zenith,
+  Crown as CrownAltAlt,
+  Climax,
+  Culmination,
+  Completion,
+  Fulfillment,
+  Achievement as AchievementAlt,
+  Accomplishment as AccomplishmentAlt,
+  Attainment,
+  Realization,
+  Materialization,
+  Manifestation,
+  Expression,
+  Representation,
+  Embodiment,
+  Incarnation,
+  Personification,
+  Symbol,
+  Sign,
+  Mark,
+  Indication,
+  Signal,
+  Clue,
+  Hint,
+  Suggestion,
+  Implication,
+  Inference,
+  Conclusion,
+  Result,
+  Outcome,
+  Consequence,
+  Effect,
+  Impact,
+  Influence,
+  Power as PowerAlt,
+  Force,
+  Strength,
+  Might,
+  Energy as EnergyAlt,
+  Vigor,
+  Vitality,
+  Life,
+  Spirit,
+  Soul,
+  Heart as HeartAltAlt,
+  Mind,
+  Thought,
+  Idea,
+  Concept,
+  Notion,
+  Theory,
+  Principle,
+  Rule,
+  Law,
+  Standard,
+  Norm,
+  Criterion,
+  Measure,
+  Scale,
+  Gauge as GaugeAlt,
+  Meter,
+  Indicator,
+  Pointer,
+  Marker,
+  Label as LabelAlt,
+  Tag as TagAlt,
+  Badge as BadgeAlt,
+  Emblem,
+  Logo,
+  Brand,
+  Identity,
+  Character,
+  Personality,
+  Nature,
+  Essence,
+  Core,
+  Center,
+  Heart as HeartAltAltAlt,
+  Soul as SoulAlt,
+  Spirit as SpiritAlt,
+  Mind as MindAlt,
+  Brain as BrainAlt,
+  Intelligence,
+  Wisdom,
+  Knowledge,
+  Information,
+  Data,
+  Facts,
+  Details,
+  Specifics,
+  Particulars,
+  Elements,
+  Components,
+  Parts,
+  Pieces,
+  Fragments,
+  Segments,
+  Sections,
+  Divisions,
+  Categories,
+  Classes,
+  Types,
+  Kinds,
+  Sorts,
+  Varieties,
+  Forms,
+  Shapes,
+  Structures,
+  Patterns,
+  Designs,
+  Styles,
+  Fashions,
+  Trends,
+  Movements,
+  Flows,
+  Currents,
+  Streams,
+  Rivers,
+  Channels,
+  Paths,
+  Routes,
+  Ways,
+  Methods,
+  Techniques,
+  Approaches,
+  Strategies,
+  Tactics,
+  Plans,
+  Schemes,
+  Programs,
+  Projects,
+  Initiatives,
+  Campaigns,
+  Operations,
+  Activities,
+  Actions,
+  Behaviors,
+  Practices,
+  Habits,
+  Customs,
+  Traditions,
+  Conventions,
+  Standards as StandardsAlt,
+  Protocols,
+  Procedures,
+  Processes,
+  Systems as SystemsAlt,
+  Frameworks,
+  Structures as StructuresAlt,
+  Organizations,
+  Institutions,
+  Establishments,
+  Entities,
+  Bodies,
+  Groups as GroupsAlt,
+  Teams as TeamsAlt,
+  Units,
+  Departments,
+  Divisions as DivisionsAlt,
+  Sections as SectionsAlt,
+  Branches,
+  Arms,
+  Wings,
+  Extensions,
+  Expansions,
+  Additions,
+  Supplements,
+  Appendages,
+  Attachments,
+  Connections as ConnectionsAlt,
+  Links as LinksAlt,
+  Bonds,
+  Ties,
+  Relationships as RelationshipsAlt,
+  Associations,
+  Partnerships,
+  Alliances,
+  Coalitions,
+  Unions,
+  Federations,
+  Confederations,
+  Leagues,
+  Societies,
+  Clubs,
+  Organizations as OrganizationsAlt,
+  Communities,
+  Networks,
+  Webs,
+  Grids,
+  Matrices,
+  Arrays,
+  Lists,
+  Catalogs,
+  Inventories,
+  Registers,
+  Records,
+  Files,
+  Documents,
+  Papers,
+  Reports,
+  Studies,
+  Analyses,
+  Evaluations,
+  Assessments,
+  Reviews,
+  Inspections,
+  Audits,
+  Checks,
+  Tests as TestsAlt,
+  Trials,
+  Experiments,
+  Demonstrations,
+  Presentations,
+  Displays,
+  Exhibitions,
+  Shows as ShowsAlt,
+  Performances,
+  Productions,
+  Creations,
+  Works,
+  Pieces,
+  Compositions,
+  Arrangements,
+  Designs as DesignsAlt,
+  Patterns as PatternsAlt,
+  Motifs,
+  Themes,
+  Subjects,
+  Topics,
+  Issues,
+  Matters,
+  Concerns,
+  Problems,
+  Challenges,
+  Difficulties,
+  Obstacles,
+  Barriers,
+  Hurdles,
+  Blocks,
+  Impediments,
+  Hindrances,
+  Restrictions,
+  Limitations,
+  Constraints,
+  Boundaries,
+  Borders,
+  Edges,
+  Margins,
+  Perimeters,
+  Outlines,
+  Contours,
+  Profiles,
+  Silhouettes,
+  Shadows,
+  Reflections,
+  Images,
+  Pictures,
+  Photos,
+  Photographs,
+  Snapshots,
+  Shots,
+  Captures,
+  Frames,
+  Scenes,
+  Views,
+  Perspectives,
+  Angles,
+  Positions,
+  Locations,
+  Places,
+  Sites,
+  Spots,
+  Points,
+  Areas,
+  Regions,
+  Zones,
+  Districts,
+  Territories,
+  Domains,
+  Realms,
+  Kingdoms,
+  Empires,
+  Nations,
+  Countries,
+  States,
+  Provinces,
+  Counties,
+  Cities,
+  Towns,
+  Villages,
+  Communities as CommunitiesAlt,
+  Neighborhoods,
+  Localities,
+  Vicinities,
+  Surroundings,
+  Environments,
+  Settings,
+  Contexts,
+  Situations,
+  Circumstances,
+  Conditions,
+  States as StatesAlt,
+  Statuses,
+  Positions as PositionsAlt,
+  Ranks,
+  Levels,
+  Grades,
+  Classes as ClassesAlt,
+  Categories as CategoriesAlt,
+  Types as TypesAlt,
+  Kinds as KindsAlt,
+  Sorts as SortsAlt,
+  Varieties as VarietiesAlt
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -87,45 +1614,447 @@ const Dashboard = () => {
       icon: Zap,
       color: 'from-violet-500 to-purple-600',
       link: '/ai-generator',
-      badge: 'NEW'
+      badge: 'NEW',
+      category: 'AI & Generation'
     },
+    {
+      title: 'Smart Suggestions',
+      description: 'AI-powered form improvements',
+      icon: Lightbulb,
+      color: 'from-yellow-500 to-orange-600',
+      link: '/suggestions',
+      category: 'AI & Generation'
+    },
+    {
+      title: 'Auto-Complete Builder',
+      description: 'Intelligent form completion',
+      icon: RefreshCw,
+      color: 'from-green-500 to-teal-600',
+      link: '/auto-complete',
+      category: 'AI & Generation'
+    },
+
+    // Design & Templates
     {
       title: 'Templates Gallery',
       description: 'Professional pre-made templates',
       icon: Layout,
       color: 'from-blue-500 to-indigo-600',
-      link: '/templates'
-    },
-    {
-      title: 'Advanced Analytics',
-      description: 'Deep insights and reporting',
-      icon: BarChart3,
-      color: 'from-emerald-500 to-teal-600',
-      link: '/analytics',
-      badge: 'PRO'
+      link: '/templates',
+      category: 'Design & Templates'
     },
     {
       title: 'Theme Studio',
       description: 'Custom design system',
       icon: Palette,
       color: 'from-pink-500 to-rose-600',
-      link: '/theme-studio'
+      link: '/theme-studio',
+      category: 'Design & Templates'
     },
     {
-      title: 'Integration Hub',
-      description: 'Connect with 100+ apps',
-      icon: Target,
-      color: 'from-orange-500 to-red-600',
-      link: '/integrations'
+      title: 'Style Editor',
+      description: 'Advanced styling controls',
+      icon: Brush,
+      color: 'from-purple-500 to-indigo-600',
+      link: '/style-editor',
+      category: 'Design & Templates'
     },
+    {
+      title: 'Brand Kit',
+      description: 'Company branding tools',
+      icon: Award,
+      color: 'from-amber-500 to-yellow-600',
+      link: '/brand-kit',
+      category: 'Design & Templates'
+    },
+
+    // Analytics & Reports
+    {
+      title: 'Advanced Analytics',
+      description: 'Deep insights and reporting',
+      icon: BarChart3,
+      color: 'from-emerald-500 to-teal-600',
+      link: '/analytics',
+      badge: 'PRO',
+      category: 'Analytics & Reports'
+    },
+    {
+      title: 'Real-time Dashboard',
+      description: 'Live form performance',
+      icon: Activity,
+      color: 'from-blue-500 to-cyan-600',
+      link: '/dashboard-live',
+      category: 'Analytics & Reports'
+    },
+    {
+      title: 'Custom Reports',
+      description: 'Tailored analytics reports',
+      icon: FileText,
+      color: 'from-gray-500 to-slate-600',
+      link: '/custom-reports',
+      category: 'Analytics & Reports'
+    },
+    {
+      title: 'Export Center',
+      description: 'Data export in multiple formats',
+      icon: Download,
+      color: 'from-indigo-500 to-purple-600',
+      link: '/export-center',
+      category: 'Analytics & Reports'
+    },
+
+    // Collaboration & Team
     {
       title: 'Collaboration',
       description: 'Team workspace features',
       icon: Users,
       color: 'from-cyan-500 to-blue-600',
-      link: '/collaboration'
+      link: '/collaboration',
+      category: 'Collaboration & Team'
+    },
+    {
+      title: 'Team Management',
+      description: 'Manage team members',
+      icon: UserPlus,
+      color: 'from-green-500 to-emerald-600',
+      link: '/team-management',
+      category: 'Collaboration & Team'
+    },
+    {
+      title: 'Workflow Builder',
+      description: 'Design approval workflows',
+      icon: GitBranch,
+      color: 'from-orange-500 to-red-600',
+      link: '/workflow-builder',
+      category: 'Collaboration & Team'
+    },
+    {
+      title: 'Comment System',
+      description: 'Form feedback and reviews',
+      icon: MessageSquare,
+      color: 'from-blue-500 to-indigo-600',
+      link: '/comments',
+      category: 'Collaboration & Team'
+    },
+
+    // Integration & Automation
+    {
+      title: 'Integration Hub',
+      description: 'Connect with 100+ apps',
+      icon: Target,
+      color: 'from-orange-500 to-red-600',
+      link: '/integrations',
+      category: 'Integration & Automation'
+    },
+
+    // Collaboration & Team
+    {
+      title: 'API Manager',
+      description: 'RESTful API endpoints',
+      icon: Code,
+      color: 'from-gray-700 to-gray-900',
+      link: '/api-manager',
+      category: 'Integration & Automation'
+    },
+    {
+      title: 'Webhooks',
+      description: 'Real-time data sync',
+      icon: Webhook,
+      color: 'from-teal-500 to-cyan-600',
+      link: '/webhooks',
+      category: 'Integration & Automation'
+    },
+    {
+      title: 'Automation Rules',
+      description: 'Trigger-based actions',
+      icon: Zap,
+      color: 'from-yellow-500 to-amber-600',
+      link: '/automation',
+      category: 'Integration & Automation'
+    },
+
+    // Security & Compliance
+    {
+      title: 'Security Center',
+      description: 'Advanced security features',
+      icon: Shield,
+      color: 'from-red-500 to-pink-600',
+      link: '/security',
+      category: 'Security & Compliance'
+    },
+    {
+      title: 'GDPR Compliance',
+      description: 'Privacy regulation tools',
+      icon: Lock,
+      color: 'from-blue-600 to-indigo-700',
+      link: '/gdpr',
+      category: 'Security & Compliance'
+    },
+    {
+      title: 'Access Control',
+      description: 'User permissions manager',
+      icon: Key,
+      color: 'from-purple-500 to-violet-600',
+      link: '/access-control',
+      category: 'Security & Compliance'
+    },
+    {
+      title: 'Audit Logs',
+      description: 'Complete activity tracking',
+      icon: FileText,
+      color: 'from-gray-600 to-slate-700',
+      link: '/audit-logs',
+      category: 'Security & Compliance'
+    },
+
+    // Data & Storage
+    {
+      title: 'Database Manager',
+      description: 'Form data management',
+      icon: Database,
+      color: 'from-blue-500 to-cyan-600',
+      link: '/database',
+      category: 'Data & Storage'
+    },
+    {
+      title: 'Cloud Storage',
+      description: 'Secure file storage',
+      icon: Cloud,
+      color: 'from-sky-500 to-blue-600',
+      link: '/cloud-storage',
+      category: 'Data & Storage'
+    },
+    {
+      title: 'Backup Center',
+      description: 'Automated data backups',
+      icon: Archive,
+      color: 'from-green-500 to-emerald-600',
+      link: '/backup',
+      category: 'Data & Storage'
+    },
+    {
+      title: 'Version Control',
+      description: 'Form version history',
+      icon: GitBranch,
+      color: 'from-purple-500 to-indigo-600',
+      link: '/version-control',
+      category: 'Data & Storage'
+    },
+
+    // Testing & Optimization
+    {
+      title: 'A/B Testing',
+      description: 'Form performance testing',
+      icon: TestTube,
+      color: 'from-green-500 to-teal-600',
+      link: '/ab-testing',
+      category: 'Testing & Optimization'
+    },
+    {
+      title: 'Performance Monitor',
+      description: 'Form speed analytics',
+      icon: Gauge,
+      color: 'from-blue-500 to-indigo-600',
+      link: '/performance',
+      category: 'Testing & Optimization'
+    },
+    {
+      title: 'Load Testing',
+      description: 'Stress test your forms',
+      icon: TrendingUp,
+      color: 'from-red-500 to-orange-600',
+      link: '/load-testing',
+      category: 'Testing & Optimization'
+    },
+    {
+      title: 'Conversion Optimizer',
+      description: 'Improve form completion',
+      icon: Target,
+      color: 'from-green-600 to-emerald-700',
+      link: '/conversion-optimizer',
+      category: 'Testing & Optimization'
+    },
+
+    // Communication & Notifications
+    {
+      title: 'Email Builder',
+      description: 'Custom email templates',
+      icon: Mail,
+      color: 'from-blue-500 to-indigo-600',
+      link: '/email-builder',
+      category: 'Communication & Notifications'
+    },
+    {
+      title: 'SMS Gateway',
+      description: 'Text message notifications',
+      icon: Smartphone,
+      color: 'from-green-500 to-teal-600',
+      link: '/sms-gateway',
+      category: 'Communication & Notifications'
+    },
+    {
+      title: 'Push Notifications',
+      description: 'Real-time alerts',
+      icon: Bell,
+      color: 'from-orange-500 to-red-600',
+      link: '/push-notifications',
+      category: 'Communication & Notifications'
+    },
+    {
+      title: 'Slack Integration',
+      description: 'Team communication sync',
+      icon: MessageSquare,
+      color: 'from-purple-500 to-indigo-600',
+      link: '/slack-integration',
+      category: 'Communication & Notifications'
+    },
+
+    // Media & Content
+    {
+      title: 'Media Library',
+      description: 'Asset management system',
+      icon: Image,
+      color: 'from-pink-500 to-rose-600',
+      link: '/media-library',
+      category: 'Media & Content'
+    },
+    {
+      title: 'Video Recorder',
+      description: 'Capture video responses',
+      icon: Video,
+      color: 'from-red-500 to-pink-600',
+      link: '/video-recorder',
+      category: 'Media & Content'
+    },
+    {
+      title: 'Audio Capture',
+      description: 'Voice response recording',
+      icon: Mic,
+      color: 'from-blue-500 to-cyan-600',
+      link: '/audio-capture',
+      category: 'Media & Content'
+    },
+    {
+      title: 'Document Scanner',
+      description: 'Upload and scan documents',
+      icon: Scan,
+      color: 'from-gray-500 to-slate-600',
+      link: '/document-scanner',
+      category: 'Media & Content'
+    },
+
+    // Payment & E-commerce
+    {
+      title: 'Payment Gateway',
+      description: 'Accept online payments',
+      icon: CreditCard,
+      color: 'from-green-500 to-emerald-600',
+      link: '/payment-gateway',
+      category: 'Payment & E-commerce'
+    },
+    {
+      title: 'Invoice Generator',
+      description: 'Automated billing system',
+      icon: Receipt,
+      color: 'from-blue-500 to-indigo-600',
+      link: '/invoice-generator',
+      category: 'Payment & E-commerce'
+    },
+    {
+      title: 'Subscription Manager',
+      description: 'Recurring payment handling',
+      icon: Calendar,
+      color: 'from-purple-500 to-violet-600',
+      link: '/subscription-manager',
+      category: 'Payment & E-commerce'
+    },
+    {
+      title: 'Tax Calculator',
+      description: 'Automatic tax computation',
+      icon: Calculator,
+      color: 'from-orange-500 to-amber-600',
+      link: '/tax-calculator',
+      category: 'Payment & E-commerce'
+    },
+
+    // Mobile & Accessibility
+    {
+      title: 'Mobile Optimizer',
+      description: 'Mobile-first form design',
+      icon: Smartphone,
+      color: 'from-indigo-500 to-purple-600',
+      link: '/mobile-optimizer',
+      category: 'Mobile & Accessibility'
+    },
+    {
+      title: 'QR Code Generator',
+      description: 'Quick form access codes',
+      icon: QrCode,
+      color: 'from-gray-600 to-slate-700',
+      link: '/qr-generator',
+      category: 'Mobile & Accessibility'
+    },
+    {
+      title: 'Accessibility Checker',
+      description: 'WCAG compliance testing',
+      icon: Eye,
+      color: 'from-blue-500 to-cyan-600',
+      link: '/accessibility-checker',
+      category: 'Mobile & Accessibility'
+    },
+    {
+      title: 'Voice Assistant',
+      description: 'Voice-controlled forms',
+      icon: Mic,
+      color: 'from-green-500 to-teal-600',
+      link: '/voice-assistant',
+      category: 'Mobile & Accessibility'
+    },
+
+    // Advanced Features
+    {
+      title: 'Logic Builder',
+      description: 'Conditional form logic',
+      icon: GitBranch,
+      color: 'from-purple-500 to-indigo-600',
+      link: '/logic-builder',
+      category: 'Advanced Features'
+    },
+    {
+      title: 'Multi-step Forms',
+      description: 'Progressive form builder',
+      icon: List,
+      color: 'from-blue-500 to-indigo-600',
+      link: '/multi-step',
+      category: 'Advanced Features'
+    },
+    {
+      title: 'Form Scheduler',
+      description: 'Time-based form availability',
+      icon: Clock,
+      color: 'from-orange-500 to-red-600',
+      link: '/scheduler',
+      category: 'Advanced Features'
+    },
+    {
+      title: 'White Label',
+      description: 'Brand customization',
+      icon: Crown,
+      color: 'from-yellow-500 to-amber-600',
+      link: '/white-label',
+      badge: 'ENTERPRISE',
+      category: 'Advanced Features'
     }
   ];
+
+  // Group tools by category
+  const toolCategories = allTools.reduce((acc, tool) => {
+    if (!acc[tool.category]) {
+      acc[tool.category] = [];
+    }
+    acc[tool.category].push(tool);
+    return acc;
+  }, {} as Record<string, typeof allTools>);
 
   const quickActions = [
     {
@@ -267,169 +2196,206 @@ const Dashboard = () => {
           ))}
         </motion.div>
 
-        {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Enhanced Tools Section */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="lg:col-span-2"
-          >
-            <Card className={`${theme === 'light' 
-              ? 'bg-white/90 border-white/50 shadow-xl' 
-              : 'bg-gray-800/50 border-gray-700 shadow-2xl'
-            } backdrop-blur-sm`}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
-                      <Layout className="h-5 w-5 text-white" />
-                    </div>
-                    <CardTitle className={`text-xl ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                      Professional Tools
-                    </CardTitle>
+        {/* Main Content - Comprehensive Tools */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          <Card className={`${theme === 'light' 
+            ? 'bg-white/90 border-white/50 shadow-xl' 
+            : 'bg-gray-800/50 border-gray-700 shadow-2xl'
+          } backdrop-blur-sm`}>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
+                    <Layout className="h-5 w-5 text-white" />
                   </div>
-                  <Link to="/create">
-                    <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create Form
-                    </Button>
-                  </Link>
+                  <CardTitle className={`text-2xl ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                    Professional Tools Suite
+                  </CardTitle>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {tools.map((tool, index) => (
-                    <Link key={index} to={tool.link}>
-                      <motion.div
-                        whileHover={{ scale: 1.02, y: -2 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`p-6 rounded-xl ${theme === 'light' 
-                          ? 'bg-gradient-to-br from-gray-50 to-white hover:from-blue-50 hover:to-indigo-50 border border-gray-200 hover:border-blue-300' 
-                          : 'bg-gray-700/50 hover:bg-gray-700 border border-gray-600'
-                        } transition-all duration-300 cursor-pointer group relative overflow-hidden`}
-                      >
-                        {tool.badge && (
-                          <Badge className="absolute top-2 right-2 text-xs bg-gradient-to-r from-orange-400 to-red-500 text-white border-0">
-                            {tool.badge}
-                          </Badge>
-                        )}
-                        <div className={`w-12 h-12 bg-gradient-to-r ${tool.color} rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-                          <tool.icon className="h-6 w-6 text-white" />
-                        </div>
-                        <h3 className={`text-lg font-semibold mb-2 ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                          {tool.title}
-                        </h3>
-                        <p className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
-                          {tool.description}
-                        </p>
-                      </motion.div>
-                    </Link>
-                  ))}
-                </div>
-
-                {/* Quick Actions */}
-                <div className="mt-8">
-                  <h4 className={`text-lg font-semibold mb-4 ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                    Quick Actions
-                  </h4>
-                  <div className="flex gap-3">
-                    {quickActions.map((action, index) => (
-                      <motion.button
-                        key={index}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg ${theme === 'light' 
-                          ? 'bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700' 
-                          : 'bg-gray-700/50 hover:bg-gray-600 text-gray-300'
-                        } transition-all duration-200 text-sm`}
-                      >
-                        <div className={`w-6 h-6 bg-gradient-to-r ${action.color} rounded flex items-center justify-center`}>
-                          <action.icon className="h-3 w-3 text-white" />
-                        </div>
-                        <span className="font-medium">{action.title}</span>
-                      </motion.button>
+                <Link to="/create">
+                  <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Form
+                  </Button>
+                </Link>
+              </div>
+              <p className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} max-w-2xl`}>
+                Comprehensive suite of professional tools for creating, managing, and optimizing forms with enterprise-grade features
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-8">
+              {Object.entries(toolCategories).map(([category, tools], categoryIndex) => (
+                <motion.div
+                  key={category}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: categoryIndex * 0.1 }}
+                  className="space-y-4"
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className={`w-8 h-1 bg-gradient-to-r ${tools[0]?.color || 'from-blue-500 to-purple-600'} rounded-full`}></div>
+                    <h3 className={`text-lg font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                      {category}
+                    </h3>
+                    <Badge variant="secondary" className="text-xs">
+                      {tools.length} {tools.length === 1 ? 'tool' : 'tools'}
+                    </Badge>
+                  </div>
+                  
+                  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {tools.map((tool, index) => (
+                      <Link key={`${category}-${index}`} to={tool.link}>
+                        <motion.div
+                          whileHover={{ scale: 1.02, y: -2 }}
+                          whileTap={{ scale: 0.98 }}
+                          className={`p-5 rounded-xl ${theme === 'light' 
+                            ? 'bg-gradient-to-br from-gray-50 to-white hover:from-blue-50 hover:to-indigo-50 border border-gray-200 hover:border-blue-300' 
+                            : 'bg-gray-700/50 hover:bg-gray-700 border border-gray-600'
+                          } transition-all duration-300 cursor-pointer group relative overflow-hidden h-full`}
+                        >
+                          {tool.badge && (
+                            <Badge className={`absolute top-2 right-2 text-xs ${
+                              tool.badge === 'NEW' 
+                                ? 'bg-gradient-to-r from-green-400 to-emerald-500' 
+                                : tool.badge === 'PRO' 
+                                ? 'bg-gradient-to-r from-orange-400 to-red-500'
+                                : 'bg-gradient-to-r from-purple-400 to-violet-500'
+                            } text-white border-0`}>
+                              {tool.badge}
+                            </Badge>
+                          )}
+                          <div className={`w-12 h-12 bg-gradient-to-r ${tool.color} rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                            <tool.icon className="h-6 w-6 text-white" />
+                          </div>
+                          <h4 className={`text-base font-semibold mb-2 ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                            {tool.title}
+                          </h4>
+                          <p className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} leading-relaxed`}>
+                            {tool.description}
+                          </p>
+                        </motion.div>
+                      </Link>
                     ))}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+                </motion.div>
+              ))}
 
-          {/* Enhanced Activity Panel */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            <Card className={`${theme === 'light' 
-              ? 'bg-white/90 border-white/50 shadow-xl' 
-              : 'bg-gray-800/50 border-gray-700 shadow-2xl'
-            } backdrop-blur-sm`}>
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg">
-                    <Activity className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <CardTitle className={`text-xl ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                      Live Activity
-                    </CardTitle>
-                    <p className={`text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                      Real-time updates
-                    </p>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {recentActivities.map((activity, index) => (
-                    <motion.div
+              {/* Quick Actions Section */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.8 }}
+                className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700"
+              >
+                <h4 className={`text-lg font-semibold mb-4 ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                  Quick Actions
+                </h4>
+                <div className="flex flex-wrap gap-3">
+                  {[
+                    { title: 'Quick Form', description: 'Create in 30 seconds', icon: Zap, color: 'from-yellow-400 to-orange-500' },
+                    { title: 'Import Data', description: 'From CSV or Excel', icon: Download, color: 'from-green-400 to-emerald-500' },
+                    { title: 'Share Link', description: 'Get shareable URL', icon: Share2, color: 'from-blue-400 to-indigo-500' },
+                    { title: 'Clone Form', description: 'Duplicate existing', icon: Copy, color: 'from-purple-400 to-violet-500' },
+                    { title: 'Template Store', description: 'Browse marketplace', icon: Star, color: 'from-pink-400 to-rose-500' }
+                  ].map((action, index) => (
+                    <motion.button
                       key={index}
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: index * 0.1 }}
-                      className={`flex items-start gap-3 p-4 rounded-xl ${theme === 'light' 
-                        ? 'bg-gradient-to-r from-gray-50 to-blue-50 hover:from-blue-50 hover:to-indigo-50 border border-gray-200' 
-                        : 'bg-gray-700/50 hover:bg-gray-700 border border-gray-600'
-                      } transition-all duration-300 group`}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg ${theme === 'light' 
+                        ? 'bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700' 
+                        : 'bg-gray-700/50 hover:bg-gray-600 text-gray-300'
+                      } transition-all duration-200 text-sm font-medium`}
                     >
-                      <div className={`p-2 rounded-full ${theme === 'light' ? 'bg-white shadow-sm' : 'bg-gray-600'} group-hover:scale-110 transition-transform duration-200`}>
-                        <activity.icon className={`h-4 w-4 ${activity.color}`} />
+                      <div className={`w-6 h-6 bg-gradient-to-r ${action.color} rounded flex items-center justify-center`}>
+                        <action.icon className="h-3 w-3 text-white" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-medium ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-1`}>
-                          {activity.action}
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                            {activity.time}
-                          </p>
-                          <span className="text-xs">•</span>
-                          <p className={`text-xs font-medium ${theme === 'light' ? 'text-blue-600' : 'text-blue-400'}`}>
-                            {activity.user}
-                          </p>
-                        </div>
-                      </div>
-                    </motion.div>
+                      <span>{action.title}</span>
+                    </motion.button>
                   ))}
                 </div>
-                
-                <Button 
-                  variant="outline" 
-                  className={`w-full mt-4 ${theme === 'light' 
-                    ? 'border-gray-300 hover:bg-gray-50' 
-                    : 'border-gray-600 hover:bg-gray-700'
-                  }`}
-                >
-                  <Eye className="h-4 w-4 mr-2" />
-                  View All Activity
-                </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
+              </motion.div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Activity Panel - Smaller and positioned to the side */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="w-full max-w-md ml-auto"
+        >
+          <Card className={`${theme === 'light' 
+            ? 'bg-white/90 border-white/50 shadow-xl' 
+            : 'bg-gray-800/50 border-gray-700 shadow-2xl'
+          } backdrop-blur-sm`}>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg">
+                  <Activity className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <CardTitle className={`text-xl ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                    Live Activity
+                  </CardTitle>
+                  <p className={`text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                    Real-time updates
+                  </p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {recentActivities.map((activity, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                    className={`flex items-start gap-3 p-4 rounded-xl ${theme === 'light' 
+                      ? 'bg-gradient-to-r from-gray-50 to-blue-50 hover:from-blue-50 hover:to-indigo-50 border border-gray-200' 
+                      : 'bg-gray-700/50 hover:bg-gray-700 border border-gray-600'
+                    } transition-all duration-300 group`}
+                  >
+                    <div className={`p-2 rounded-full ${theme === 'light' ? 'bg-white shadow-sm' : 'bg-gray-600'} group-hover:scale-110 transition-transform duration-200`}>
+                      <activity.icon className={`h-4 w-4 ${activity.color}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-medium ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-1`}>
+                        {activity.action}
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                          {activity.time}
+                        </p>
+                        <span className="text-xs">•</span>
+                        <p className={`text-xs font-medium ${theme === 'light' ? 'text-blue-600' : 'text-blue-400'}`}>
+                          {activity.user}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+              
+              <Button 
+                variant="outline" 
+                className={`w-full mt-4 ${theme === 'light' 
+                  ? 'border-gray-300 hover:bg-gray-50' 
+                  : 'border-gray-600 hover:bg-gray-700'
+                }`}
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                View All Activity
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </div>
   );
