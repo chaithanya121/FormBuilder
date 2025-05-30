@@ -1,3 +1,4 @@
+
 export type FormElementType = 
   | "text" | "email" | "password" | "number" | "textarea" | "select" | "radio" | "checkbox" 
   | "date" | "time" | "file" | "checkbox-group" | "heading" | "paragraph" | "divider" | "container"
@@ -9,11 +10,7 @@ export type FormElementType =
 
 export interface FormElement {
   id: string;
-  type: 'text' | 'email' | 'password' | 'number' | 'textarea' | 'select' | 'radio' | 'checkbox' | 'date' | 'time' | 'file' | 'checkbox-group' | 'heading' | 'paragraph' | 'divider' | 'container' | '2-columns' | '3-columns' | '4-columns' | 'image' | 'video' | 'button' | 'spacer' | 'html' | 'url' | 'tel' 
-  | 'color' | 'range' | 'rating' | 'signature' | 'location' | 'payment' | 'toggle' | 'slider' | 'star-rating' 
-  | 'scale-rating' | 'radio-blocks' | 'checkbox-blocks' | 'gallery' | 'spinner' | 'range-slider' | 'vertical-slider' 
-  | 'hidden-input' | 'form_submit' | 'danger-button' | 'info-button' | 'code-block' | 'table' | 'list' | 'tabs' 
-  | 'accordion' | 'progress' | 'timer' | 'calendar' | 'map' | 'chart' | 'social-share' | 'embed' | 'markdown';
+  type: FormElementType;
   label: string;
   placeholder?: string;
   required?: boolean;
@@ -42,6 +39,14 @@ export interface FormElement {
   width?: string;
   animation?: string;
   name?: string;
+  description?: string;
+  fieldStyles?: Record<string, any>;
+  labelStyles?: Record<string, any>;
+  decorators?: {
+    required?: boolean;
+    readonly?: boolean;
+    disabled?: boolean;
+  };
 }
 
 export interface ValidationRule {
@@ -139,6 +144,7 @@ export interface FormConfig {
     };
     submitButton?: {
       text: string;
+      position?: string;
     };
   };
 }

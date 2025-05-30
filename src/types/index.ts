@@ -1,13 +1,15 @@
+
 export type FormElementType = 
-  | "text" | "email" | "password" | "date" | "file" | "textarea" | "checkbox" 
-  | "radio" | "select" | "h1" | "h2" | "h3" | "h4" | "p" | "divider" | "container"
-  | "matrix" | "matrix-table" | "tabs" | "steps" | "grid" | "2-columns" | "3-columns"
-  | "4-columns" | "table" | "list" | "nested-list" | "url" | "phone" | "hidden-input"
-  | "multiselect" | "checkbox-group" | "checkbox-blocks" | "checkbox-tabs"
-  | "radio-group" | "radio-blocks" | "radio-tabs" | "toggle" | "slider"
-  | "range-slider" | "vertical-slider" | "file-upload" | "multi-file-upload"
-  | "image-upload" | "multi-image-upload" | "gallery" | "paragraph" | "quote"
-  | "image" | "link" | "danger-button" | "static-html";
+  | "text" | "email" | "password" | "number" | "textarea" | "select" | "radio" | "checkbox" 
+  | "date" | "time" | "file" | "checkbox-group" | "heading" | "paragraph" | "divider" | "container"
+  | "2-columns" | "3-columns" | "4-columns" | "image" | "video" | "button" | "spacer" | "html" | "url" | "tel" 
+  | "color" | "range" | "rating" | "signature" | "location" | "payment" | "toggle" | "slider" | "star-rating" 
+  | "scale-rating" | "radio-blocks" | "checkbox-blocks" | "gallery" | "spinner" | "range-slider" | "vertical-slider" 
+  | "hidden-input" | "form_submit" | "danger-button" | "info-button" | "code-block" | "table" | "list" | "tabs" 
+  | "accordion" | "progress" | "timer" | "calendar" | "map" | "chart" | "social-share" | "embed" | "markdown"
+  | "matrix" | "matrix-table" | "steps" | "grid" | "nested-list" | "phone" | "multiselect" | "checkbox-tabs"
+  | "radio-tabs" | "range-slider" | "vertical-slider" | "multi-file-upload" | "image-upload" | "multi-image-upload"
+  | "gallery" | "quote" | "link" | "static-html";
 
 export interface FormElement {
   id: string;
