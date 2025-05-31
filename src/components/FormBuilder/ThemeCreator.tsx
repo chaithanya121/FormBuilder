@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -119,13 +118,19 @@ const ThemeCreator: React.FC<ThemeCreatorProps> = ({ onSaveTheme, existingThemes
   const [activeTab, setActiveTab] = useState('colors');
 
   const updateTheme = (section: keyof CustomTheme, field: string, value: any) => {
-    setTheme(prev => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [field]: value
+    setTheme(prev => {
+      const currentSection = prev[section];
+      if (typeof currentSection === 'object' && currentSection !== null) {
+        return {
+          ...prev,
+          [section]: {
+            ...currentSection,
+            [field]: value
+          }
+        };
       }
-    }));
+      return prev;
+    });
   };
 
   const handleSave = () => {

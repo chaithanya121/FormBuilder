@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -218,52 +217,37 @@ const AdvancedElementSettings: React.FC<AdvancedElementSettingsProps> = ({
                       <p className="text-sm text-gray-500">{rule.description}</p>
                     </div>
                     <Switch
-                      checked={validationRules[rule.id]?.enabled || false}
-                      onCheckedChange={(checked) => 
-                        updateValidation(rule.id, { ...validationRules[rule.id], enabled: checked })
-                      }
+                      checked={!!validationRules[rule.id as keyof typeof validationRules]}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          updateValidation(rule.id, rule.id === 'minLength' || rule.id === 'maxLength' ? 0 : '');
+                        } else {
+                          const newValidation = { ...validationRules };
+                          delete newValidation[rule.id as keyof typeof validationRules];
+                          updateValidation(rule.id, undefined);
+                        }
+                      }}
                     />
                   </div>
                   
-                  {validationRules[rule.id]?.enabled && (
+                  {!!validationRules[rule.id as keyof typeof validationRules] && (
                     <div className="ml-4 space-y-2">
                       {(rule.id === 'minLength' || rule.id === 'maxLength') && (
                         <Input
                           type="number"
                           placeholder="Enter length"
-                          value={validationRules[rule.id]?.value || ''}
-                          onChange={(e) => 
-                            updateValidation(rule.id, { 
-                              ...validationRules[rule.id], 
-                              value: parseInt(e.target.value) 
-                            })
-                          }
+                          value={validationRules[rule.id as keyof typeof validationRules] || ''}
+                          onChange={(e) => updateValidation(rule.id, parseInt(e.target.value) || 0)}
                         />
                       )}
                       
                       {rule.id === 'pattern' && (
                         <Input
                           placeholder="Enter regex pattern"
-                          value={validationRules[rule.id]?.value || ''}
-                          onChange={(e) => 
-                            updateValidation(rule.id, { 
-                              ...validationRules[rule.id], 
-                              value: e.target.value 
-                            })
-                          }
+                          value={validationRules[rule.id as keyof typeof validationRules] || ''}
+                          onChange={(e) => updateValidation(rule.id, e.target.value)}
                         />
                       )}
-                      
-                      <Input
-                        placeholder="Custom error message"
-                        value={validationRules[rule.id]?.message || ''}
-                        onChange={(e) => 
-                          updateValidation(rule.id, { 
-                            ...validationRules[rule.id], 
-                            message: e.target.value 
-                          })
-                        }
-                      />
                     </div>
                   )}
                 </div>
