@@ -7,11 +7,13 @@ import FormElementLibrary from './FormElementLibrary';
 import EnhancedFormCanvas from './EnhancedFormCanvas';
 import FormPropertiesPanel from './FormPropertiesPanel';
 import FormDesigner from './FormDesigner';
-import ThemeCreator from './ThemeCreator';
+import ThemeStudio from './ThemeStudio';
 import AdvancedElementSettings from './AdvancedElementSettings';
-import TooltipWrapper from './TooltipWrapper';
-import { FormConfig, FormElement } from './types';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import FloatingActionButtons from './FloatingActionButtons';
+import ViewCodeModal from './QuickActions/ViewCodeModal';
+import TestFormModal from './QuickActions/TestFormModal';
+import AIEnhanceModal from './QuickActions/AIEnhanceModal';
+import { FormConfig, FormElement, CustomTheme } from './types';
 import { 
   Settings, Eye, Save, Upload, Download, Play, 
   Palette, Layers, Grid, Code, Sparkles, Wand2,
@@ -63,11 +65,15 @@ const FormBuilder: React.FC = () => {
 
   const [selectedElement, setSelectedElement] = useState<FormElement | null>(null);
   const [activePanel, setActivePanel] = useState<'elements' | 'configuration' | 'designer'>('elements');
-  const [isDesignerOpen, setIsDesignerOpen] = useState(false);
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
-  const [showThemeCreator, setShowThemeCreator] = useState(false);
-  const [customThemes, setCustomThemes] = useState<any[]>([]);
+  const [showThemeStudio, setShowThemeStudio] = useState(false);
+  const [customThemes, setCustomThemes] = useState<CustomTheme[]>([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Quick Action Modals
+  const [showViewCode, setShowViewCode] = useState(false);
+  const [showTestForm, setShowTestForm] = useState(false);
+  const [showAIEnhance, setShowAIEnhance] = useState(false);
 
   // Save form to localStorage
   useEffect(() => {
@@ -195,198 +201,184 @@ const FormBuilder: React.FC = () => {
     input.click();
   };
 
-  const handleSaveCustomTheme = (theme: any) => {
-    const updatedThemes = [...customThemes, theme];
-    setCustomThemes(updatedThemes);
-    localStorage.setItem('formBuilder_customThemes', JSON.stringify(updatedThemes));
-    setShowThemeCreator(false);
-  };
-
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
+  const handleApplyTheme = (theme: CustomTheme) => {
     const updatedConfig = {
       ...formConfig,
       settings: {
         ...formConfig.settings,
         canvasStyles: {
           ...formConfig.settings.canvasStyles,
-          backgroundColor: !isDarkMode 
-            ? "linear-gradient(135deg, #1f2937 0%, #111827 100%)"
-            : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-          formBackgroundColor: !isDarkMode ? "#374151" : "#ffffff",
-          fontColor: !isDarkMode ? "#f9fafb" : "#1a1a1a"
+          backgroundColor: theme.preview,
+          formBackgroundColor: theme.colors.form,
+          fontColor: theme.colors.text,
+          primaryColor: theme.colors.primary,
+          secondaryColor: theme.colors.secondary,
+          fontFamily: theme.typography.fontFamily,
+          fontSize: theme.typography.fontSize,
+          borderRadius: `${theme.layout.borderRadius}px`,
+          padding: `${theme.layout.padding}px`
         }
       }
     };
     setFormConfig(updatedConfig);
+    setShowThemeStudio(false);
+  };
+
+  const handleQuickAction = (action: string) => {
+    switch (action) {
+      case 'view-code':
+        setShowViewCode(true);
+        break;
+      case 'test-form':
+        setShowTestForm(true);
+        break;
+      case 'ai-enhance':
+        setShowAIEnhance(true);
+        break;
+      case 'preview':
+        handlePreview();
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleAIEnhance = (enhancedConfig: FormConfig) => {
+    setFormConfig(enhancedConfig);
+    setShowAIEnhance(false);
+  };
+
+  const renderSidePanel = () => {
+    switch (activePanel) {
+      case 'elements':
+        return <FormElementLibrary onDragStart={() => {}} />;
+      case 'configuration':
+        return (
+          <FormPropertiesPanel
+            formConfig={formConfig}
+            selectedElement={selectedElement}
+            onFormConfigUpdate={setFormConfig}
+            onElementUpdate={handleElementUpdate}
+            onElementDelete={handleDeleteElement}
+            onElementDuplicate={handleDuplicateElement}
+          />
+        );
+      case 'designer':
+        return (
+          <FormDesigner
+            isOpen={true}
+            onClose={() => {}}
+            formConfig={formConfig}
+            onUpdate={setFormConfig}
+          />
+        );
+      default:
+        return null;
+    }
   };
 
   return (
-    <div className={`h-screen flex flex-col ${isDarkMode ? 'dark' : ''}`}>
+    <div className="h-screen flex flex-col bg-gradient-to-br from-gray-50 to-blue-50">
       {/* Enhanced Header */}
-      <div className="bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
+      <motion.div 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm"
+      >
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-3">
+              <motion.div 
+                className="flex items-center gap-3"
+                whileHover={{ scale: 1.05 }}
+              >
                 <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
                   <Grid className="h-6 w-6 text-white" />
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    Form Builder Pro
+                    FormCraft Pro
                   </h1>
                   <p className="text-sm text-gray-600">
                     {formConfig.elements.length} elements • Advanced Builder
                   </p>
                 </div>
-              </div>
+              </motion.div>
               
               <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-                v2.0 Pro
+                v3.0 Pro
               </Badge>
             </div>
 
             {/* Action Buttons */}
             <div className="flex items-center gap-3">
-              <TooltipWrapper content="Save your form to local storage">
-                <Button variant="outline" size="sm" onClick={handleSave}>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save
-                </Button>
-              </TooltipWrapper>
+              <Button variant="outline" size="sm" onClick={handleSave}>
+                <Save className="h-4 w-4 mr-2" />
+                Save
+              </Button>
 
-              <TooltipWrapper content="Import form configuration from JSON">
-                <Button variant="outline" size="sm" onClick={handleImport}>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Import
-                </Button>
-              </TooltipWrapper>
+              <Button variant="outline" size="sm" onClick={handleImport}>
+                <Upload className="h-4 w-4 mr-2" />
+                Import
+              </Button>
 
-              <TooltipWrapper content="Export form configuration as JSON">
-                <Button variant="outline" size="sm" onClick={handleExport}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Export
-                </Button>
-              </TooltipWrapper>
+              <Button variant="outline" size="sm" onClick={handleExport}>
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
 
-              <TooltipWrapper content="Preview your form in a new tab">
-                <Button onClick={handlePreview} className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
-                  <Eye className="h-4 w-4 mr-2" />
-                  Preview
-                </Button>
-              </TooltipWrapper>
-            </div>
-          </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setShowThemeStudio(true)}
+                className="border-purple-200 text-purple-700 hover:bg-purple-50"
+              >
+                <Palette className="h-4 w-4 mr-2" />
+                Theme Studio
+              </Button>
 
-          {/* Secondary Navigation */}
-          <div className="flex items-center justify-between mt-4">
-            <Tabs value={activePanel} onValueChange={(value: any) => setActivePanel(value)}>
-              <TabsList className="bg-gray-100">
-                <TooltipWrapper content="Drag and drop form elements">
-                  <TabsTrigger value="elements" className="data-[state=active]:bg-white">
-                    <Layers className="h-4 w-4 mr-2" />
-                    Elements
-                  </TabsTrigger>
-                </TooltipWrapper>
-                <TooltipWrapper content="Configure form and element settings">
-                  <TabsTrigger value="configuration" className="data-[state=active]:bg-white">
-                    <Settings className="h-4 w-4 mr-2" />
-                    Configuration
-                  </TabsTrigger>
-                </TooltipWrapper>
-                <TooltipWrapper content="Advanced form designer with themes">
-                  <TabsTrigger value="designer" className="data-[state=active]:bg-white">
-                    <Palette className="h-4 w-4 mr-2" />
-                    Designer
-                  </TabsTrigger>
-                </TooltipWrapper>
-              </TabsList>
-            </Tabs>
-
-            <div className="flex items-center gap-2">
-              <TooltipWrapper content="Create custom themes for your forms">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => setShowThemeCreator(true)}
-                >
-                  <Wand2 className="h-4 w-4 mr-1" />
-                  Theme Creator
-                </Button>
-              </TooltipWrapper>
-
-              <TooltipWrapper content={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={toggleDarkMode}
-                >
-                  {isDarkMode ? '☀️' : '🌙'}
-                </Button>
-              </TooltipWrapper>
-
-              {selectedElement && (
-                <TooltipWrapper content="Advanced element configuration">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setShowAdvancedSettings(true)}
-                  >
-                    <Zap className="h-4 w-4 mr-1" />
-                    Advanced
-                  </Button>
-                </TooltipWrapper>
-              )}
+              <Button 
+                onClick={handlePreview} 
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                Preview
+              </Button>
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar */}
-        <div className="w-80 border-r border-gray-200 bg-white flex flex-col">
+        {/* Left Sidebar with Animation */}
+        <motion.div 
+          initial={{ x: -300, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="w-80 border-r border-gray-200 bg-white/95 backdrop-blur-md flex flex-col shadow-lg"
+        >
           <AnimatePresence mode="wait">
             <motion.div
               key={activePanel}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.3 }}
               className="flex-1 overflow-hidden"
             >
-              {activePanel === 'elements' && (
-                <FormElementLibrary 
-                  onDragStart={() => {}}
-                />
-              )}
-              
-              {activePanel === 'configuration' && (
-                <FormPropertiesPanel
-                  formConfig={formConfig}
-                  selectedElement={selectedElement}
-                  onFormConfigUpdate={setFormConfig}
-                  onElementUpdate={handleElementUpdate}
-                  onElementDelete={handleDeleteElement}
-                  onElementDuplicate={handleDuplicateElement}
-                />
-              )}
-              
-              {activePanel === 'designer' && (
-                <FormDesigner
-                  isOpen={true}
-                  onClose={() => {}}
-                  formConfig={formConfig}
-                  onUpdate={setFormConfig}
-                />
-              )}
+              {renderSidePanel()}
             </motion.div>
           </AnimatePresence>
-        </div>
+        </motion.div>
 
         {/* Center Canvas Area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <motion.div 
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="flex-1 flex flex-col overflow-hidden relative"
+        >
           <EnhancedFormCanvas
             elements={formConfig.elements}
             setFormConfig={setFormConfig}
@@ -395,13 +387,18 @@ const FormBuilder: React.FC = () => {
             formConfig={formConfig}
             onUpdate={setFormConfig}
           />
-        </div>
+        </motion.div>
 
         {/* Right Info Panel */}
-        <div className="w-80 border-l border-gray-200 bg-gradient-to-b from-gray-50 to-white p-6 overflow-y-auto">
+        <motion.div 
+          initial={{ x: 300, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="w-80 border-l border-gray-200 bg-gradient-to-b from-gray-50/95 to-white/95 backdrop-blur-md p-6 overflow-y-auto shadow-lg"
+        >
           <div className="space-y-6">
             {/* Form Info */}
-            <Card className="p-4">
+            <Card className="p-4 bg-white/80 backdrop-blur-sm border-gray-200/50">
               <div className="flex items-center gap-2 mb-3">
                 <Info className="h-4 w-4 text-blue-500" />
                 <h3 className="font-semibold">Form Information</h3>
@@ -426,68 +423,59 @@ const FormBuilder: React.FC = () => {
               </div>
             </Card>
 
-            {/* Quick Actions */}
-            <Card className="p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Target className="h-4 w-4 text-green-500" />
-                <h3 className="font-semibold">Quick Actions</h3>
-              </div>
-              <div className="space-y-2">
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <Code className="h-3 w-3 mr-2" />
-                  View Code
-                </Button>
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <Play className="h-3 w-3 mr-2" />
-                  Test Form
-                </Button>
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <Sparkles className="h-3 w-3 mr-2" />
-                  AI Enhance
-                </Button>
-              </div>
-            </Card>
-
-            {/* Tips */}
-            <Card className="p-4">
+            {/* Pro Tips */}
+            <Card className="p-4 bg-white/80 backdrop-blur-sm border-gray-200/50">
               <div className="flex items-center gap-2 mb-3">
                 <Lightbulb className="h-4 w-4 text-yellow-500" />
                 <h3 className="font-semibold">Pro Tips</h3>
               </div>
               <div className="space-y-2 text-sm text-gray-600">
-                <p>💡 Use containers to organize related fields</p>
-                <p>🎨 Try the Theme Creator for custom designs</p>
-                <p>⚡ Advanced settings unlock more features</p>
-                <p>👀 Preview your form before publishing</p>
+                <p>💡 Use floating buttons for quick access</p>
+                <p>🎨 Visit Theme Studio for custom designs</p>
+                <p>⚡ Try AI enhancement for smart improvements</p>
+                <p>👀 Test your form before publishing</p>
               </div>
             </Card>
           </div>
-        </div>
+        </motion.div>
       </div>
+
+      {/* Floating Action Buttons */}
+      <FloatingActionButtons
+        activePanel={activePanel}
+        onPanelChange={setActivePanel}
+        onQuickAction={handleQuickAction}
+      />
 
       {/* Modals */}
       <AnimatePresence>
-        {showThemeCreator && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            onClick={() => setShowThemeCreator(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="max-w-6xl w-full max-h-[90vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <ThemeCreator
-                onSaveTheme={handleSaveCustomTheme}
-                existingThemes={customThemes}
-              />
-            </motion.div>
-          </motion.div>
+        {showThemeStudio && (
+          <ThemeStudio
+            onApplyTheme={handleApplyTheme}
+            onClose={() => setShowThemeStudio(false)}
+          />
+        )}
+
+        {showViewCode && (
+          <ViewCodeModal
+            formConfig={formConfig}
+            onClose={() => setShowViewCode(false)}
+          />
+        )}
+
+        {showTestForm && (
+          <TestFormModal
+            formConfig={formConfig}
+            onClose={() => setShowTestForm(false)}
+          />
+        )}
+
+        {showAIEnhance && (
+          <AIEnhanceModal
+            formConfig={formConfig}
+            onEnhance={handleAIEnhance}
+            onClose={() => setShowAIEnhance(false)}
+          />
         )}
 
         {showAdvancedSettings && selectedElement && (

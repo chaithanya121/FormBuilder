@@ -1,8 +1,9 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { FormCanvasProps } from './types';
 import FormElementRenderer from './FormElementRenderer';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Plus, Sparkles } from 'lucide-react';
 
 const FormCanvas: React.FC<FormCanvasProps> = ({ 
   elements, 
@@ -12,10 +13,14 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
   formConfig,
   onUpdate 
 }) => {
-  const handleDrop = (e: React.DragEvent, containerId?: string) => {
+  const handleDrop = useCallback((e: React.DragEvent, containerId?: string) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    console.log('Drop event triggered'); // Debug log
+    
     const elementType = e.dataTransfer.getData('application/json');
+    console.log('Element type from dataTransfer:', elementType); // Debug log
     
     if (elementType) {
       const newElement = {
@@ -26,19 +31,26 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
         placeholder: `Enter ${elementType}`,
         options: elementType === 'select' || elementType === 'radio' || elementType === 'checkbox-group' ? 
           ['Option 1', 'Option 2', 'Option 3'] : undefined,
-        containerId: containerId, // Add container reference for nested elements
+        containerId: containerId,
       };
 
-      setFormConfig(prev => ({
-        ...prev,
-        elements: [...prev.elements, newElement]
-      }));
-    }
-  };
+      console.log('Creating new element:', newElement); // Debug log
 
-  const handleDragOver = (e: React.DragEvent) => {
+      setFormConfig(prev => {
+        const updatedConfig = {
+          ...prev,
+          elements: [...prev.elements, newElement]
+        };
+        console.log('Updated form config:', updatedConfig); // Debug log
+        return updatedConfig;
+      });
+    }
+  }, [setFormConfig]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
-  };
+    e.dataTransfer.dropEffect = 'copy';
+  }, []);
 
   const getFormStyles = () => {
     const canvasStyles = formConfig.settings.canvasStyles || {};
@@ -82,15 +94,17 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.05 }}
-        className={`mb-4 p-2 rounded-lg border-2 transition-all duration-200 cursor-pointer ${
+        className={`mb-4 p-3 rounded-xl border-2 transition-all duration-300 cursor-pointer hover:shadow-lg ${
           selectedElement?.id === element.id
-            ? 'border-blue-500 bg-blue-50/50'
-            : 'border-transparent hover:border-gray-200'
+            ? 'border-blue-500 bg-blue-50/50 shadow-lg scale-105'
+            : 'border-transparent hover:border-blue-200 hover:bg-blue-50/30'
         }`}
         onClick={(e) => {
           e.stopPropagation();
           onSelectElement(element);
         }}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
       >
         <FormElementRenderer
           element={element}
@@ -107,24 +121,26 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
     console.log('FormCanvas: Configuration updated', {
       width: formConfig.settings.preview?.width,
       liveValidation: formConfig.settings.validation?.liveValidation,
-      canvasStyles: formConfig.settings.canvasStyles
+      canvasStyles: formConfig.settings.canvasStyles,
+      elementsCount: elements.length
     });
-  }, [formConfig.settings]);
+  }, [formConfig.settings, elements.length]);
 
   // Get root level elements (not in containers)
   const rootElements = elements.filter(el => !el.containerId);
 
   return (
-    <div className="w-full h-full flex items-center justify-center p-8">
+    <div className="w-full h-full flex items-center justify-center p-8 relative">
       {/* Global Custom CSS Injection */}
       {formConfig.settings.canvasStyles?.customCSS && (
         <style dangerouslySetInnerHTML={{ __html: formConfig.settings.canvasStyles.customCSS }} />
       )}
       
+      {/* Enhanced Drop Zone */}
       <motion.div 
         className={`w-full relative ${formConfig.settings.canvasStyles?.containerClass || ''}`}
         style={getFormStyles()}
-        onDrop={(e) => handleDrop(e)}
+        onDrop={handleDrop}
         onDragOver={handleDragOver}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -132,214 +148,249 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
       >
         {rootElements.length === 0 ? (
           <motion.div 
-            className="text-center py-16"
+            className="text-center py-20"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <div className="text-gray-400 mb-6">
-              <svg
-                className="mx-auto h-16 w-16"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={1}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-            </div>
-            <h3 className="text-xl font-semibold text-gray-600 mb-3" style={{
-              fontFamily: formConfig.settings.canvasStyles?.fontFamily || 'Inter',
-              fontSize: formConfig.settings.canvasStyles?.fontSize ? `${formConfig.settings.canvasStyles.fontSize}px` : '20px',
-              color: formConfig.settings.canvasStyles?.fontColor || '#6b7280'
-            }}>
-              Start building your form
+            <motion.div 
+              className="mb-8"
+              animate={{ 
+                scale: [1, 1.1, 1],
+                rotate: [0, 5, -5, 0]
+              }}
+              transition={{ 
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            >
+              <div className="relative">
+                <div className="mx-auto h-20 w-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                  <Plus className="h-10 w-10 text-white" />
+                </div>
+                <motion.div
+                  className="absolute -top-2 -right-2 h-6 w-6 bg-yellow-400 rounded-full flex items-center justify-center"
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                >
+                  <Sparkles className="h-3 w-3 text-yellow-800" />
+                </motion.div>
+              </div>
+            </motion.div>
+            
+            <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Start Building Your Amazing Form
             </h3>
-            <p className="text-gray-500" style={{
-              fontFamily: formConfig.settings.canvasStyles?.fontFamily || 'Inter',
-              fontSize: formConfig.settings.canvasStyles?.fontSize ? `${formConfig.settings.canvasStyles.fontSize - 2}px` : '14px',
-              color: formConfig.settings.canvasStyles?.fontColor || '#9ca3af'
-            }}>
-              Drag elements from the sidebar to begin creating your form
+            <p className="text-gray-500 mb-6 max-w-md mx-auto">
+              Drag elements from the floating sidebar to begin creating your beautiful, interactive form
             </p>
+            
+            <motion.div
+              className="grid grid-cols-3 gap-4 max-w-sm mx-auto"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              {['📝', '📧', '📞'].map((emoji, index) => (
+                <motion.div
+                  key={index}
+                  className="p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200"
+                  whileHover={{ scale: 1.05, borderColor: '#3b82f6' }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <div className="text-2xl mb-2">{emoji}</div>
+                  <div className="text-xs text-gray-500">Drop here</div>
+                </motion.div>
+              ))}
+            </motion.div>
           </motion.div>
         ) : (
           <div className="space-y-6">
-            {rootElements.map((element, index) => (
-              <motion.div
-                key={element.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className={`relative group ${
-                  selectedElement?.id === element.id
-                    ? 'ring-2 ring-blue-500 rounded-xl'
-                    : ''
-                }`}
-                style={{
-                  marginBottom: formConfig.settings.layout?.questionSpacing ? 
-                    `${formConfig.settings.layout.questionSpacing}px` : '24px'
-                }}
-              >
-                {/* Container/Layout Elements with Drop Zones */}
-                {(element.type === 'container' || element.type === '2-columns' || element.type === '3-columns' || element.type === '4-columns') ? (
-                  <div
-                    className={`p-6 rounded-xl border-2 transition-all duration-200 cursor-pointer min-h-[200px] ${
-                      selectedElement?.id === element.id
-                        ? 'border-blue-500 bg-blue-50/50 shadow-lg'
-                        : 'border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/30'
-                    }`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelectElement(element);
-                    }}
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-medium text-gray-700">{element.label}</h4>
-                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                        {element.type}
-                      </span>
-                    </div>
-                    
-                    {/* Render based on layout type */}
-                    {element.type === 'container' && (
-                      <div
-                        className="min-h-[120px] border-2 border-dashed border-gray-200 rounded-lg p-4 bg-gray-50/50"
-                        onDrop={(e) => handleDrop(e, element.id)}
-                        onDragOver={handleDragOver}
-                      >
-                        <div className="text-center text-gray-500 mb-4">
-                          <svg className="mx-auto h-8 w-8 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 4v16m8-8H4" />
-                          </svg>
-                          Drop elements here to group them
-                        </div>
-                        {renderNestedElements(element.id)}
+            <AnimatePresence>
+              {rootElements.map((element, index) => (
+                <motion.div
+                  key={element.id}
+                  layout
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                  transition={{ 
+                    delay: index * 0.1,
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 30
+                  }}
+                  className={`relative group ${
+                    selectedElement?.id === element.id
+                      ? 'ring-2 ring-blue-500 rounded-xl shadow-xl'
+                      : ''
+                  }`}
+                  style={{
+                    marginBottom: formConfig.settings.layout?.questionSpacing ? 
+                      `${formConfig.settings.layout.questionSpacing}px` : '24px'
+                  }}
+                >
+                  {/* Container/Layout Elements with Enhanced Drop Zones */}
+                  {(element.type === 'container' || element.type === '2-columns' || element.type === '3-columns' || element.type === '4-columns') ? (
+                    <motion.div
+                      className={`p-6 rounded-xl border-2 transition-all duration-300 cursor-pointer min-h-[200px] ${
+                        selectedElement?.id === element.id
+                          ? 'border-blue-500 bg-blue-50/50 shadow-xl'
+                          : 'border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/30 hover:shadow-lg'
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelectElement(element);
+                      }}
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="font-semibold text-gray-800">{element.label}</h4>
+                        <motion.span 
+                          className="text-xs bg-gradient-to-r from-blue-500 to-purple-600 text-white px-3 py-1 rounded-full"
+                          whileHover={{ scale: 1.1 }}
+                        >
+                          {element.type}
+                        </motion.span>
                       </div>
-                    )}
-                    
-                    {element.type === '2-columns' && (
-                      <div className="grid grid-cols-2 gap-4">
+                      
+                      {/* Enhanced Container Layouts */}
+                      {element.type === 'container' && (
                         <div
-                          className="min-h-[120px] border-2 border-dashed border-gray-200 rounded-lg p-4 bg-gray-50/50"
-                          onDrop={(e) => handleDrop(e, `${element.id}-col1`)}
+                          className="min-h-[120px] border-2 border-dashed border-gray-200 rounded-lg p-4 bg-gradient-to-br from-gray-50 to-white transition-all duration-300 hover:border-blue-300"
+                          onDrop={(e) => handleDrop(e, element.id)}
                           onDragOver={handleDragOver}
                         >
-                          <div className="text-center text-gray-500 text-sm mb-2">Column 1</div>
-                          {renderNestedElements(`${element.id}-col1`)}
-                        </div>
-                        <div
-                          className="min-h-[120px] border-2 border-dashed border-gray-200 rounded-lg p-4 bg-gray-50/50"
-                          onDrop={(e) => handleDrop(e, `${element.id}-col2`)}
-                          onDragOver={handleDragOver}
-                        >
-                          <div className="text-center text-gray-500 text-sm mb-2">Column 2</div>
-                          {renderNestedElements(`${element.id}-col2`)}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {element.type === '3-columns' && (
-                      <div className="grid grid-cols-3 gap-4">
-                        {[1, 2, 3].map(col => (
-                          <div
-                            key={col}
-                            className="min-h-[120px] border-2 border-dashed border-gray-200 rounded-lg p-4 bg-gray-50/50"
-                            onDrop={(e) => handleDrop(e, `${element.id}-col${col}`)}
-                            onDragOver={handleDragOver}
-                          >
-                            <div className="text-center text-gray-500 text-sm mb-2">Column {col}</div>
-                            {renderNestedElements(`${element.id}-col${col}`)}
+                          <div className="text-center text-gray-500 mb-4">
+                            <motion.div
+                              animate={{ y: [0, -5, 0] }}
+                              transition={{ duration: 2, repeat: Infinity }}
+                            >
+                              <Plus className="mx-auto h-8 w-8 mb-2" />
+                            </motion.div>
+                            Drop elements here to group them
                           </div>
-                        ))}
-                      </div>
-                    )}
-                    
-                    {element.type === '4-columns' && (
-                      <div className="grid grid-cols-4 gap-4">
-                        {[1, 2, 3, 4].map(col => (
-                          <div
-                            key={col}
-                            className="min-h-[120px] border-2 border-dashed border-gray-200 rounded-lg p-4 bg-gray-50/50"
-                            onDrop={(e) => handleDrop(e, `${element.id}-col${col}`)}
-                            onDragOver={handleDragOver}
-                          >
-                            <div className="text-center text-gray-500 text-sm mb-2">Column {col}</div>
-                            {renderNestedElements(`${element.id}-col${col}`)}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  /* Regular Form Elements */
-                  <motion.div
-                    className={`p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer hover:shadow-lg ${
-                      selectedElement?.id === element.id
-                        ? 'border-blue-500 bg-blue-50/50 shadow-lg'
-                        : 'border-transparent hover:border-gray-200 hover:bg-gray-50/50'
-                    }`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelectElement(element);
-                    }}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                  >
-                    <FormElementRenderer
-                      element={element}
-                      value=""
-                      onChange={() => {}}
-                      formConfig={formConfig}
-                    />
-                  </motion.div>
-                )}
-              </motion.div>
-            ))}
+                          {renderNestedElements(element.id)}
+                        </div>
+                      )}
+                      
+                      {element.type === '2-columns' && (
+                        <div className="grid grid-cols-2 gap-4">
+                          {[1, 2].map(col => (
+                            <div
+                              key={col}
+                              className="min-h-[120px] border-2 border-dashed border-gray-200 rounded-lg p-4 bg-gradient-to-br from-gray-50 to-white transition-all duration-300 hover:border-blue-300"
+                              onDrop={(e) => handleDrop(e, `${element.id}-col${col}`)}
+                              onDragOver={handleDragOver}
+                            >
+                              <div className="text-center text-gray-500 text-sm mb-2">Column {col}</div>
+                              {renderNestedElements(`${element.id}-col${col}`)}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {element.type === '3-columns' && (
+                        <div className="grid grid-cols-3 gap-4">
+                          {[1, 2, 3].map(col => (
+                            <div
+                              key={col}
+                              className="min-h-[120px] border-2 border-dashed border-gray-200 rounded-lg p-4 bg-gradient-to-br from-gray-50 to-white transition-all duration-300 hover:border-blue-300"
+                              onDrop={(e) => handleDrop(e, `${element.id}-col${col}`)}
+                              onDragOver={handleDragOver}
+                            >
+                              <div className="text-center text-gray-500 text-sm mb-2">Column {col}</div>
+                              {renderNestedElements(`${element.id}-col${col}`)}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {element.type === '4-columns' && (
+                        <div className="grid grid-cols-4 gap-4">
+                          {[1, 2, 3, 4].map(col => (
+                            <div
+                              key={col}
+                              className="min-h-[120px] border-2 border-dashed border-gray-200 rounded-lg p-4 bg-gradient-to-br from-gray-50 to-white transition-all duration-300 hover:border-blue-300"
+                              onDrop={(e) => handleDrop(e, `${element.id}-col${col}`)}
+                              onDragOver={handleDragOver}
+                            >
+                              <div className="text-center text-gray-500 text-sm mb-2">Column {col}</div>
+                              {renderNestedElements(`${element.id}-col${col}`)}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </motion.div>
+                  ) : (
+                    /* Enhanced Regular Form Elements */
+                    <motion.div
+                      className={`p-4 rounded-xl border-2 transition-all duration-300 cursor-pointer hover:shadow-xl ${
+                        selectedElement?.id === element.id
+                          ? 'border-blue-500 bg-blue-50/50 shadow-xl scale-105'
+                          : 'border-transparent hover:border-blue-200 hover:bg-blue-50/30'
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelectElement(element);
+                      }}
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <FormElementRenderer
+                        element={element}
+                        value=""
+                        onChange={() => {}}
+                        formConfig={formConfig}
+                      />
+                    </motion.div>
+                  )}
+                </motion.div>
+              ))}
+            </AnimatePresence>
             
-            {/* Submit Button */}
+            {/* Enhanced Submit Button */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: rootElements.length * 0.1 + 0.2 }}
-              className="pt-4"
+              className="pt-6"
             >
-              <button
+              <motion.button
                 type="submit"
-                className="w-full py-3 px-6 rounded-lg font-medium transition-colors hover:shadow-lg"
+                className="w-full py-4 px-8 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
                 style={{
-                  backgroundColor: formConfig.settings.canvasStyles?.primaryColor || '#3b82f6',
+                  background: `linear-gradient(135deg, ${formConfig.settings.canvasStyles?.primaryColor || '#3b82f6'}, ${formConfig.settings.canvasStyles?.secondaryColor || '#8b5cf6'})`,
                   color: 'white',
                   fontFamily: formConfig.settings.canvasStyles?.fontFamily || 'Inter',
                   fontSize: formConfig.settings.canvasStyles?.fontSize ? `${formConfig.settings.canvasStyles.fontSize}px` : '16px'
                 }}
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
               >
-                {formConfig.settings.submitButton?.text || 'Submit'}
-              </button>
+                {formConfig.settings.submitButton?.text || 'Submit Form'} ✨
+              </motion.button>
             </motion.div>
 
-            {/* Terms & Conditions */}
+            {/* Enhanced Terms & Conditions */}
             {formConfig.settings.termsAndConditions?.enabled && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: rootElements.length * 0.1 + 0.3 }}
-                className="flex items-center gap-2 text-sm"
+                className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
               >
                 <input
                   type="checkbox"
                   id="terms"
                   required={formConfig.settings.termsAndConditions.required}
-                  className="rounded border-gray-300"
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
-                <label htmlFor="terms" className="text-gray-600" style={{
+                <label htmlFor="terms" className="text-gray-700 text-sm" style={{
                   fontFamily: formConfig.settings.canvasStyles?.fontFamily || 'Inter',
-                  fontSize: formConfig.settings.canvasStyles?.fontSize ? `${formConfig.settings.canvasStyles.fontSize - 2}px` : '14px',
-                  color: formConfig.settings.canvasStyles?.fontColor || '#6b7280'
+                  fontSize: formConfig.settings.canvasStyles?.fontSize ? `${formConfig.settings.canvasStyles.fontSize - 2}px` : '14px'
                 }}>
                   {formConfig.settings.termsAndConditions.text || 'I accept the Terms & Conditions'}
                 </label>
@@ -347,6 +398,13 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
             )}
           </div>
         )}
+
+        {/* Drop Zone Indicator */}
+        <motion.div
+          className="absolute inset-0 pointer-events-none border-2 border-dashed border-blue-400 rounded-xl bg-blue-50/10 opacity-0"
+          animate={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+        />
       </motion.div>
     </div>
   );
