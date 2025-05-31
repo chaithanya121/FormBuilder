@@ -29,17 +29,7 @@ function App() {
       <AuthProvider>
         <Layout>
           <Routes>
-            {/* <Route path="/" element={<LandingPage />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/features" element={<Features />} />
-            <Route path="/dashboard" element={<MainDashboard />} />
-            <Route path="/form-builder" element={<FormBuilder />} />
-            <Route path="/form-preview/:formId" element={<FormPreviewPage />} />
-            <Route path="/forms" element={<Forms />} />
-            <Route path="/submissions" element={<Submissions />} />
-            <Route path="/form/:id" element={<FormSubmission />} />
-            <Route path="*" element={<NotFound />} /> */}
+      
                       <Route path="/" element={<LandingPage/>} />
                       <Route path="/dashboard" element={<MainDashboard />} />
                       <Route path="/forms" element={<Forms />} />
