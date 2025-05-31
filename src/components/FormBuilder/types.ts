@@ -6,7 +6,12 @@ export type FormElementType =
   | "color" | "range" | "rating" | "signature" | "location" | "payment" | "toggle" | "slider" | "star-rating" 
   | "scale-rating" | "radio-blocks" | "checkbox-blocks" | "gallery" | "spinner" | "range-slider" | "vertical-slider" 
   | "hidden-input" | "form_submit" | "danger-button" | "info-button" | "code-block" | "table" | "list" | "tabs" 
-  | "accordion" | "progress" | "timer" | "calendar" | "map" | "chart" | "social-share" | "embed" | "markdown";
+  | "accordion" | "progress" | "timer" | "calendar" | "map" | "chart" | "social-share" | "embed" | "markdown"
+  | "matrix" | "matrix-table" | "steps" | "grid" | "nested-list" | "phone" | "multiselect" | "checkbox-tabs"
+  | "radio-tabs" | "multi-file-upload" | "image-upload" | "multi-image-upload" | "quote" | "link" | "static-html"
+  | "file-upload" | "tab-container" | "step-wizard" | "appointment" | "address" | "street-address" | "captcha"
+  | "section-collapse" | "first-name" | "last-name" | "name" | "city" | "state-province" | "postal-code" 
+  | "street-address-line2" | "youtube" | "h1" | "h2" | "h3" | "h4" | "p";
 
 export interface FormElement {
   id: string;
@@ -17,7 +22,17 @@ export interface FormElement {
   options?: string[];
   value?: any;
   containerId?: string;
-  validation?: ValidationRule;
+  validation?: {
+    pattern?: string;
+    min?: number;
+    max?: number;
+    minLength?: number;
+    maxLength?: number;
+    step?: number;
+    accept?: string;
+    maxSize?: number;
+    maxFiles?: number;
+  };
   customCSS?: string;
   customClasses?: string;
   customAttributes?: Record<string, any>;
@@ -40,12 +55,19 @@ export interface FormElement {
   animation?: string;
   name?: string;
   description?: string;
+  tooltip?: string;
   fieldStyles?: Record<string, any>;
   labelStyles?: Record<string, any>;
   decorators?: {
     required?: boolean;
     readonly?: boolean;
     disabled?: boolean;
+  };
+  autoFloat?: "Default" | "Off";
+  layout?: {
+    inRow?: boolean;
+    rowId?: string;
+    rowPosition?: number;
   };
 }
 

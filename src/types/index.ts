@@ -8,8 +8,10 @@ export type FormElementType =
   | "hidden-input" | "form_submit" | "danger-button" | "info-button" | "code-block" | "table" | "list" | "tabs" 
   | "accordion" | "progress" | "timer" | "calendar" | "map" | "chart" | "social-share" | "embed" | "markdown"
   | "matrix" | "matrix-table" | "steps" | "grid" | "nested-list" | "phone" | "multiselect" | "checkbox-tabs"
-  | "radio-tabs" | "range-slider" | "vertical-slider" | "multi-file-upload" | "image-upload" | "multi-image-upload"
-  | "gallery" | "quote" | "link" | "static-html";
+  | "radio-tabs" | "multi-file-upload" | "image-upload" | "multi-image-upload" | "quote" | "link" | "static-html"
+  | "file-upload" | "tab-container" | "step-wizard" | "appointment" | "address" | "street-address" | "captcha"
+  | "section-collapse" | "first-name" | "last-name" | "name" | "city" | "state-province" | "postal-code" 
+  | "street-address-line2" | "youtube" | "h1" | "h2" | "h3" | "h4" | "p";
 
 export interface FormElement {
   id: string;
@@ -20,6 +22,7 @@ export interface FormElement {
   options?: string[];
   value?: string;
   description?: string;
+  tooltip?: string;
   validation?: {
     pattern?: string;
     min?: number;
@@ -31,7 +34,6 @@ export interface FormElement {
     maxSize?: number;
     maxFiles?: number;
   };
-  tooltip?: string;
   nestedData?: boolean;
   name?: string;
   submitData?: boolean;
