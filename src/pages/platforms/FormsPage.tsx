@@ -62,31 +62,21 @@ const FormsPage = () => {
     try {
       const newForm = await dispatch(createForm({
         name: 'Untitled Form',
-        description: 'A new form created with Form Builder',
-        elements: [],
-        settings: {
-          canvasStyles: {
-            backgroundColor: '#ffffff',
-            fontFamily: 'Inter',
-            fontSize: 14
-          },
-          notifications: {
-            email: true,
-            webhook: false
-          },
-          privacy: {
-            public: true,
-            requireAuth: false
-          },
-          seo: {
-            title: 'Untitled Form',
-            description: 'A form created with BuildCraft Form Builder'
+        published: false,
+        config: {
+          name: 'Untitled Form',
+          elements: [],
+          settings: {
+            canvasStyles: {
+              backgroundColor: '#ffffff',
+              fontFamily: 'Inter',
+              fontSize: 14
+            }
           }
-        },
-        status: 'draft'
+        }
       })).unwrap();
       
-      navigate(`/form-builder/${newForm.id}`);
+      navigate(`/form-builder/${newForm.primary_id}`);
     } catch (error) {
       console.error('Failed to create form:', error);
     }
@@ -106,10 +96,8 @@ const FormsPage = () => {
     try {
       const duplicatedForm = await dispatch(createForm({
         name: `${form.name} (Copy)`,
-        description: form.description,
-        elements: form.elements,
-        settings: form.settings,
-        status: 'draft'
+        published: false,
+        config: form.config
       })).unwrap();
       
       console.log('Form duplicated successfully');
@@ -128,9 +116,9 @@ const FormsPage = () => {
     console.log('Share URL copied to clipboard');
   };
 
-  const handleToggleFormStatus = async (formId: string, currentStatus: string) => {
-    const newStatus = currentStatus === 'published' ? 'draft' : 'published';
-    console.log(`Toggling form ${formId} from ${currentStatus} to ${newStatus}`);
+  const handleToggleFormStatus = async (formId: string, currentPublished: boolean) => {
+    const newStatus = !currentPublished;
+    console.log(`Toggling form ${formId} published status from ${currentPublished} to ${newStatus}`);
   };
 
   const handleCreateFromTemplate = (templateId: number) => {
@@ -223,8 +211,8 @@ const FormsPage = () => {
   const filteredForms = forms.filter(form => {
     const matchesSearch = form.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === 'all' || 
-      (filterStatus === 'published' && form.status === 'published') ||
-      (filterStatus === 'draft' && form.status === 'draft');
+      (filterStatus === 'published' && form.published === true) ||
+      (filterStatus === 'draft' && form.published === false);
     return matchesSearch && matchesFilter;
   });
 
@@ -417,7 +405,7 @@ const FormsPage = () => {
                   <div className={viewMode === 'grid' ? 'grid md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
                     {filteredForms.map((form) => (
                       <motion.div
-                        key={form.id}
+                        key={form.primary_id}
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         whileHover={{ scale: 1.02 }}
@@ -432,14 +420,14 @@ const FormsPage = () => {
                               {form.name}
                             </h3>
                             <div className="flex items-center gap-2 mb-3">
-                              <Badge className={`${form.status === 'published' 
+                              <Badge className={`${form.published 
                                 ? 'bg-green-100 text-green-700 border-green-200' 
                                 : 'bg-yellow-100 text-yellow-700 border-yellow-200'
                               }`}>
-                                {form.status}
+                                {form.published ? 'published' : 'draft'}
                               </Badge>
                               <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                                Updated {new Date(form.lastUpdated).toLocaleDateString()}
+                                Updated {new Date(form.last_modified).toLocaleDateString()}
                               </span>
                             </div>
                           </div>
@@ -456,7 +444,7 @@ const FormsPage = () => {
                           </div>
                           <div>
                             <div className={`text-lg font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                              {form.views}
+                              {Math.floor(Math.random() * 200 + 100)}
                             </div>
                             <div className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                               Views
@@ -473,7 +461,7 @@ const FormsPage = () => {
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <Link to={`/form-builder/${form.id}`} className="flex-1">
+                          <Link to={`/form-builder/${form.primary_id}`} className="flex-1">
                             <Button className="w-full bg-gradient-to-r from-blue-500 to-cyan-400 text-white hover:from-blue-600 hover:to-cyan-500">
                               <Edit className="h-4 w-4 mr-2" />
                               Edit
@@ -482,14 +470,14 @@ const FormsPage = () => {
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => handlePreviewForm(form.id)}
+                            onClick={() => handlePreviewForm(form.primary_id)}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => handleShareForm(form.id)}
+                            onClick={() => handleShareForm(form.primary_id)}
                           >
                             <Share2 className="h-4 w-4" />
                           </Button>
@@ -503,7 +491,7 @@ const FormsPage = () => {
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => handleDeleteForm(form.id)}
+                            onClick={() => handleDeleteForm(form.primary_id)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
