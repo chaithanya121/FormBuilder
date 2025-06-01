@@ -11,8 +11,6 @@ import {
   FileText, 
   Plus, 
   Search, 
-  Filter, 
-  MoreVertical, 
   Eye, 
   Edit, 
   Share2, 
@@ -21,24 +19,19 @@ import {
   ArrowLeft,
   BarChart3,
   Users,
-  Clock,
   Star,
-  TrendingUp,
-  Calendar,
-  MousePointer,
-  CheckCircle,
   Grid,
   List,
-  Zap,
   Copy,
-  Settings,
-  Play,
-  Pause,
-  ExternalLink,
   BookOpen,
   Sparkles,
   Target,
-  Activity
+  Activity,
+  ChevronRight,
+  Home,
+  Database,
+  Play,
+  Pause
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { RootState, AppDispatch } from '@/store';
@@ -116,9 +109,13 @@ const FormsPage = () => {
     console.log('Share URL copied to clipboard');
   };
 
-  const handleToggleFormStatus = async (formId: string, currentPublished: boolean) => {
-    const newStatus = !currentPublished;
-    console.log(`Toggling form ${formId} published status from ${currentPublished} to ${newStatus}`);
+  const handleTogglePublish = async (formId: string, currentPublished: boolean) => {
+    console.log(`Toggling form ${formId} published status from ${currentPublished} to ${!currentPublished}`);
+    // This would update the form's published status in the backend
+  };
+
+  const handleViewSubmissions = (formId: string) => {
+    navigate(`/form-submissions/${formId}`);
   };
 
   const handleCreateFromTemplate = (templateId: number) => {
@@ -229,31 +226,37 @@ const FormsPage = () => {
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
+        {/* Breadcrumbs */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-2 mb-6"
+        >
+          <Link to="/" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <Home className="h-4 w-4" />
+            Home
+          </Link>
+          <ChevronRight className="h-4 w-4 text-gray-400" />
+          <span className="text-sm font-medium text-gray-900 dark:text-white">Forms</span>
+        </motion.div>
+
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between mb-8"
+          className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-4"
         >
-          <div className="flex items-center gap-4">
-            <Link to="/dashboard">
-              <Button variant="outline" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Dashboard
-              </Button>
-            </Link>
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-2xl shadow-lg">
-                <FileText className="h-8 w-8 text-white" />
-              </div>
-              <div>
-                <h1 className={`text-3xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                  Form Builder Studio
-                </h1>
-                <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
-                  Create and manage dynamic forms with AI assistance
-                </p>
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-2xl shadow-lg">
+              <FileText className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <h1 className={`text-3xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                Form Builder Studio
+              </h1>
+              <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
+                Create and manage dynamic forms with AI assistance
+              </p>
             </div>
           </div>
           
@@ -402,7 +405,7 @@ const FormsPage = () => {
                     </Button>
                   </div>
                 ) : (
-                  <div className={viewMode === 'grid' ? 'grid md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
+                  <div className={viewMode === 'grid' ? 'grid md:grid-cols-2 lg:grid-cols-2 gap-6' : 'space-y-4'}>
                     {filteredForms.map((form) => (
                       <motion.div
                         key={form.primary_id}
@@ -434,7 +437,10 @@ const FormsPage = () => {
                         </div>
 
                         <div className="grid grid-cols-3 gap-4 text-center mb-4">
-                          <div>
+                          <div 
+                            className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded transition-colors"
+                            onClick={() => handleViewSubmissions(form.primary_id)}
+                          >
                             <div className={`text-lg font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
                               {form.submissions}
                             </div>
@@ -460,6 +466,21 @@ const FormsPage = () => {
                           </div>
                         </div>
 
+                        <div className="flex items-center gap-2 mb-4">
+                          <Button
+                            onClick={() => handleTogglePublish(form.primary_id, form.published)}
+                            size="sm"
+                            variant={form.published ? "outline" : "default"}
+                            className={`flex items-center gap-1 ${form.published 
+                              ? 'text-red-600 hover:text-red-700' 
+                              : 'bg-green-600 hover:bg-green-700 text-white'
+                            }`}
+                          >
+                            {form.published ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+                            {form.published ? 'Unpublish' : 'Publish'}
+                          </Button>
+                        </div>
+
                         <div className="flex items-center gap-2">
                           <Link to={`/form-builder/${form.primary_id}`} className="flex-1">
                             <Button className="w-full bg-gradient-to-r from-blue-500 to-cyan-400 text-white hover:from-blue-600 hover:to-cyan-500">
@@ -473,6 +494,13 @@ const FormsPage = () => {
                             onClick={() => handlePreviewForm(form.primary_id)}
                           >
                             <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleViewSubmissions(form.primary_id)}
+                          >
+                            <Database className="h-4 w-4" />
                           </Button>
                           <Button 
                             variant="outline" 

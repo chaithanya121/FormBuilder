@@ -1,20 +1,29 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Menu, Search, Bell, Settings, User, Rocket, Zap, Plus } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Menu, Bell, Settings, User, Rocket, Home } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useTheme } from '@/components/theme-provider';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 
 interface HeaderProps {
   toggleSidebar?: () => void;
 }
 
 const Header = ({ toggleSidebar }: HeaderProps) => {
-  const [isToggled, setIsToggled] = useState<boolean>(false);
   const { theme } = useTheme();
   const location = useLocation();
+  const navigate = useNavigate();
+  const [notificationCount] = useState(3);
 
   const handleToggleSidebar = () => {
     if (toggleSidebar) {
@@ -23,16 +32,6 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
   };
 
   const isPlatformPage = location.pathname.startsWith('/platform/');
-  const currentPlatform = location.pathname.split('/')[2];
-
-  const platformNames = {
-    forms: 'Forms',
-    resume: 'Resume Builder',
-    website: 'Website Builder',
-    ecommerce: 'E-Commerce',
-    presentation: 'Presentation Builder',
-    portfolio: 'Portfolio Builder'
-  };
 
   return (
     <header className={`${theme === 'light' 
@@ -56,7 +55,7 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
             </Button>
           )}
           
-          <Link to="/dashboard" className="flex items-center gap-3 group">
+          <Link to="/" className="flex items-center gap-3 group">
             <motion.div 
               initial={{ rotate: -10, scale: 0.9 }}
               animate={{ rotate: 0, scale: 1 }}
@@ -87,77 +86,118 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
               >
                 BuildCraft
               </motion.span>
-              <motion.span 
-                initial={{ opacity: 0, x: -5 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4, duration: 0.3 }}
-                className={`text-xs font-medium ${theme === 'light'
-                  ? 'text-purple-600'
-                  : 'text-purple-400'
-                } -mt-1 tracking-wide`}
-              >
-                {isPlatformPage && currentPlatform ? platformNames[currentPlatform as keyof typeof platformNames] || 'Platform' : 'Platform'}
-              </motion.span>
             </div>
           </Link>
         </div>
-        
+
+        {/* Navigation */}
         <nav className="hidden md:flex items-center gap-6">
-          {[
-            { name: 'Dashboard', path: '/dashboard', icon: Rocket },
-            { name: 'Forms', path: '/platform/forms', icon: Plus },
-            { name: 'Resume', path: '/platform/resume', icon: User },
-            { name: 'Analytics', path: '/analytics', icon: Zap }
-          ].map((item) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <Link 
-                key={item.name}
-                to={item.path}
-                className={`relative ${isActive 
-                  ? theme === 'light' ? 'text-blue-600' : 'text-blue-400'
-                  : theme === 'light' ? 'text-gray-700 hover:text-blue-600' : 'text-gray-300 hover:text-blue-400'
-                } font-medium transition-all duration-300 px-4 py-2 rounded-xl hover:scale-105 group flex items-center gap-2`}
-              >
-                <item.icon className="h-4 w-4" />
-                <span className="relative z-10">{item.name}</span>
-                <div className={`absolute inset-0 ${isActive 
-                  ? theme === 'light' ? 'bg-blue-50' : 'bg-blue-500/20'
-                  : theme === 'light' ? 'bg-blue-50 group-hover:bg-blue-100' : 'bg-blue-500/10 group-hover:bg-blue-500/20'
-                } rounded-xl ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-all duration-300 scale-95 group-hover:scale-100`}></div>
-                {isActive && (
-                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-3/4 h-0.5 bg-gradient-to-r from-blue-500 to-purple-600"></div>
-                )}
-              </Link>
-            );
-          })}
+          <Link 
+            to="/" 
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+              location.pathname === '/' 
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' 
+                : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+            }`}
+          >
+            <Home className="h-4 w-4" />
+            Home
+          </Link>
         </nav>
 
+        {/* Right side actions */}
         <div className="flex items-center gap-3">
-          <div className="relative">
-            <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${theme === 'light' ? 'text-gray-400' : 'text-gray-500'}`} />
-            <input 
-              placeholder="Search..." 
-              className={`pl-10 pr-4 py-2 w-48 rounded-xl border ${theme === 'light' 
-                ? 'bg-white/80 border-gray-300 focus:border-blue-500 text-gray-900' 
-                : 'bg-gray-800/50 border-gray-600 focus:border-blue-400 text-white'
-              } focus:outline-none transition-all duration-300`}
-            />
-          </div>
+          <ThemeToggle />
           
-          <Button variant="ghost" size="icon" className="hover:scale-110 transition-transform duration-300">
-            <Bell className="h-5 w-5" />
-          </Button>
-          
-          <ThemeToggle variant="icon" className="hover:scale-110 transition-transform duration-300" />
-          
-          <Button variant="ghost" size="icon" className="hover:scale-110 transition-transform duration-300">
+          {/* Notifications */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative"
+              >
+                <Bell className="h-5 w-5" />
+                {notificationCount > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                  >
+                    {notificationCount}
+                  </Badge>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80">
+              <div className="p-3 border-b">
+                <h4 className="font-medium">Notifications</h4>
+              </div>
+              <div className="max-h-64 overflow-y-auto">
+                <DropdownMenuItem className="p-3 cursor-pointer">
+                  <div className="flex flex-col gap-1">
+                    <p className="text-sm font-medium">Form submitted</p>
+                    <p className="text-xs text-gray-500">New submission for Contact Form</p>
+                    <p className="text-xs text-gray-400">2 minutes ago</p>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="p-3 cursor-pointer">
+                  <div className="flex flex-col gap-1">
+                    <p className="text-sm font-medium">Resume downloaded</p>
+                    <p className="text-xs text-gray-500">Your resume was downloaded</p>
+                    <p className="text-xs text-gray-400">1 hour ago</p>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="p-3 cursor-pointer">
+                  <div className="flex flex-col gap-1">
+                    <p className="text-sm font-medium">System update</p>
+                    <p className="text-xs text-gray-500">New features available</p>
+                    <p className="text-xs text-gray-400">3 hours ago</p>
+                  </div>
+                </DropdownMenuItem>
+              </div>
+              <div className="p-3 border-t">
+                <Button variant="ghost" size="sm" className="w-full">
+                  View all notifications
+                </Button>
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Settings */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/settings')}
+          >
             <Settings className="h-5 w-5" />
           </Button>
-          
-          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-            <User className="h-4 w-4 text-white" />
-          </div>
+
+          {/* Profile */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full"
+              >
+                <User className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => navigate('/profile')}>
+                <User className="h-4 w-4 mr-2" />
+                Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/settings')}>
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>

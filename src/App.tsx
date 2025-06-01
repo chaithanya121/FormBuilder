@@ -12,6 +12,8 @@ import Forms from '@/components/Forms';
 import Submissions from '@/components/Submissions';
 import FormSubmission from '@/components/FormSubmission';
 import FormPreview from '@/pages/FormPreview';
+import FormSubmissions from '@/pages/FormSubmissions';
+import ProfilePage from '@/pages/ProfilePage';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/hooks/use-auth';
@@ -41,6 +43,13 @@ function App() {
             <Route path="/platform/presentation" element={<div>Presentation Builder Coming Soon</div>} />
             <Route path="/platform/portfolio" element={<div>Portfolio Builder Coming Soon</div>} />
             
+            {/* Form Submissions Route */}
+            <Route path="/form-submissions/:formId" element={<FormSubmissions />} />
+            
+            {/* Profile and Settings */}
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/settings" element={<EnhancedUserSettings />} />
+            
             {/* Legacy Form Builder Routes */}
             <Route path="/forms" element={<Forms />} />
             <Route path="/create" element={<FormBuilder />} />
@@ -50,7 +59,6 @@ function App() {
             <Route path="/select-plan" element={<PlanSelection />} />
             <Route path="/payment" element={<PaymentMethod />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
-            <Route path="/settings" element={<EnhancedUserSettings />} />
             <Route path="/tools" element={<ProfessionalTools />} />
             <Route path="/tools/:toolId" element={<ToolRouter />} />
             <Route path="/features" element={<Features />} />
