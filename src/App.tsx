@@ -11,7 +11,7 @@ import FormBuilder from '@/components/FormBuilder';
 import Forms from '@/components/Forms';
 import Submissions from '@/components/Submissions';
 import FormSubmission from '@/components/FormSubmission';
-import FormPreviewPage from '@/pages/FormPreview';
+import FormPreview from '@/pages/FormPreview';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/hooks/use-auth';
@@ -21,7 +21,8 @@ import PaymentSuccess from './components/PaymentSuccess';
 import { EnhancedUserSettings } from './components/settings/EnhancedUserSettings';
 import ProfessionalTools from './components/ProfessionalTools';
 import ToolRouter from './components/tools/ToolRouter';
-
+import FormsPage from './pages/platforms/FormsPage';
+import ResumePage from './pages/platforms/ResumePage';
 
 function App() {
   return (
@@ -29,24 +30,33 @@ function App() {
       <AuthProvider>
         <Layout>
           <Routes>
-      
-                      <Route path="/" element={<LandingPage/>} />
-                      <Route path="/dashboard" element={<MainDashboard />} />
-                      <Route path="/forms" element={<Forms />} />
-                      <Route path="/create" element={<FormBuilder />} />
-                      <Route path="/form-builder/:id" element={<FormBuilder />} />
-                      <Route path="/form/:id" element={<FormSubmission />} />
-                       <Route path="/form-preview/:formId" element={<FormPreviewPage />} />
-                      <Route path="/select-plan" element={<PlanSelection />} />
-                      <Route path="/payment" element={<PaymentMethod />} />
-                      <Route path="/payment-success" element={<PaymentSuccess />} />
-                      <Route path="/settings" element={<EnhancedUserSettings />} />
-                      <Route path="/tools" element={<ProfessionalTools />} />
-                      <Route path="/tools/:toolId" element={<ToolRouter />} />
-                      <Route path="/features" element={<Features />} />
-                      <Route path="/about" element={<About />} />
-                      <Route path="/contact" element={<Contact />} />
-                      <Route path="*" element={<NotFound />} />
+            <Route path="/" element={<LandingPage/>} />
+            <Route path="/dashboard" element={<MainDashboard />} />
+            
+            {/* Platform Routes */}
+            <Route path="/platform/forms" element={<FormsPage />} />
+            <Route path="/platform/resume" element={<ResumePage />} />
+            <Route path="/platform/website" element={<div>Website Builder Coming Soon</div>} />
+            <Route path="/platform/ecommerce" element={<div>E-Commerce Builder Coming Soon</div>} />
+            <Route path="/platform/presentation" element={<div>Presentation Builder Coming Soon</div>} />
+            <Route path="/platform/portfolio" element={<div>Portfolio Builder Coming Soon</div>} />
+            
+            {/* Legacy Form Builder Routes */}
+            <Route path="/forms" element={<Forms />} />
+            <Route path="/create" element={<FormBuilder />} />
+            <Route path="/form-builder/:id" element={<FormBuilder />} />
+            <Route path="/form/:id" element={<FormSubmission />} />
+            <Route path="/form-preview/:formId" element={<FormPreview />} />
+            <Route path="/select-plan" element={<PlanSelection />} />
+            <Route path="/payment" element={<PaymentMethod />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/settings" element={<EnhancedUserSettings />} />
+            <Route path="/tools" element={<ProfessionalTools />} />
+            <Route path="/tools/:toolId" element={<ToolRouter />} />
+            <Route path="/features" element={<Features />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
           <Toaster />
         </Layout>

@@ -7,7 +7,20 @@ import {
   CheckCircle2, 
   Play, 
   LogIn, 
-  UserPlus 
+  UserPlus,
+  ArrowRight,
+  Star,
+  Briefcase,
+  Globe,
+  ShoppingCart,
+  Book,
+  Camera,
+  FileText,
+  Users,
+  TrendingUp,
+  Zap,
+  Shield,
+  Award
 } from 'lucide-react';
 import { useTheme } from '@/components/theme-provider';
 import { useAuth } from '@/hooks/use-auth';
@@ -30,163 +43,319 @@ const LandingPage = () => {
     setAuthTab("signup");
   };
 
-  const builderFeatures = [
-    {
-      title: "Drag & Drop Builder",
-      description: "Create forms effortlessly with our intuitive drag-and-drop interface",
-      icon: <Layers className="h-6 w-6" />,
-      bgColor: "bg-blue-100",
-      iconColor: "text-blue-600"
-    },
-    {
-      title: "Professional Templates",
-      description: "Start with pre-designed templates for common use cases",
-      icon: <CheckCircle2 className="h-6 w-6" />,
-      bgColor: "bg-green-100",
-      iconColor: "text-green-600"
-    },
-    {
-      title: "Real-time Analytics",
-      description: "Track form performance and submission analytics in real-time",
-      icon: <Play className="h-6 w-6" />,
-      bgColor: "bg-purple-100",
-      iconColor: "text-purple-600"
-    }
-  ];
-
-  const formTemplates = [
-    {
-      name: "Contact Form",
-      description: "Perfect for customer inquiries and support requests",
-      image: "https://images.unsplash.com/photo-1423666639041-f56000c27a9a?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&h=300&q=80"
-    },
-    {
-      name: "Event Registration",
-      description: "Streamline event signups and attendee management",
-      image: "https://images.unsplash.com/photo-1511578314322-379afb476865?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&h=300&q=80"
-    },
-    {
-      name: "Survey Form",
-      description: "Collect feedback and insights from your audience",
-      image: "https://images.unsplash.com/photo-1434626881859-194d67b2b86f?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&h=300&q=80"
-    }
-  ];
-
   // Show Dashboard if user is authenticated
   if (isAuthenticated) {
     return <Dashboard />;
   }
 
-  // Show landing page if user is not authenticated
+  const platforms = [
+    {
+      name: "Form Builder",
+      description: "Create dynamic forms with AI assistance",
+      icon: FileText,
+      color: "from-blue-500 to-cyan-400",
+      stats: "2.5M+ forms created"
+    },
+    {
+      name: "Resume Builder", 
+      description: "Professional CV creation with templates",
+      icon: Briefcase,
+      color: "from-emerald-500 to-green-400",
+      stats: "500K+ resumes built"
+    },
+    {
+      name: "Website Builder",
+      description: "Stunning websites and landing pages",
+      icon: Globe,
+      color: "from-purple-500 to-pink-400",
+      stats: "100K+ websites launched"
+    },
+    {
+      name: "E-Commerce",
+      description: "Online stores with payment integration",
+      icon: ShoppingCart,
+      color: "from-orange-500 to-red-400",
+      stats: "50K+ stores created"
+    },
+    {
+      name: "Presentations",
+      description: "Interactive presentation builder",
+      icon: Book,
+      color: "from-indigo-500 to-blue-400",
+      stats: "1M+ slides designed"
+    },
+    {
+      name: "Portfolio",
+      description: "Showcase your work professionally",
+      icon: Camera,
+      color: "from-pink-500 to-rose-400",
+      stats: "250K+ portfolios"
+    }
+  ];
+
+  const features = [
+    {
+      title: "AI-Powered Creation",
+      description: "Generate content, designs, and layouts using advanced AI technology",
+      icon: Zap,
+      gradient: "from-yellow-400 to-orange-500"
+    },
+    {
+      title: "Drag & Drop Builder",
+      description: "Intuitive visual editor with professional templates and components",
+      icon: Layers,
+      gradient: "from-blue-500 to-purple-600"
+    },
+    {
+      title: "Real-time Collaboration",
+      description: "Work together with your team in real-time with advanced sharing features",
+      icon: Users,
+      gradient: "from-green-500 to-emerald-600"
+    },
+    {
+      title: "Advanced Analytics",
+      description: "Deep insights and performance tracking across all your projects",
+      icon: TrendingUp,
+      gradient: "from-purple-500 to-pink-600"
+    },
+    {
+      title: "Enterprise Security",
+      description: "Bank-level security with SSL encryption and data protection",
+      icon: Shield,
+      gradient: "from-gray-700 to-gray-900"
+    },
+    {
+      title: "Premium Support",
+      description: "24/7 priority support with dedicated success managers",
+      icon: Award,
+      gradient: "from-amber-500 to-orange-600"
+    }
+  ];
+
+  const stats = [
+    { value: "5M+", label: "Active Users", icon: Users },
+    { value: "50M+", label: "Projects Created", icon: Layers },
+    { value: "99.9%", label: "Uptime", icon: Shield },
+    { value: "150+", label: "Countries", icon: Globe }
+  ];
+
   return (
-    <div className={`min-h-screen ${theme === 'light'
-      ? 'bg-gradient-to-br from-blue-50 via-white to-indigo-50'
+    <div className={`min-h-screen overflow-hidden ${theme === 'light'
+      ? 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100'
       : 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900'
-      } text-${theme === 'light' ? 'gray-900' : 'white'}`}>
-      <div className="container mx-auto px-4 py-12">
+      }`}>
+      
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className={`absolute -top-40 -right-40 w-80 h-80 ${theme === 'light' ? 'bg-blue-400/20' : 'bg-blue-500/10'} rounded-full blur-3xl animate-pulse`}></div>
+        <div className={`absolute top-40 -left-40 w-80 h-80 ${theme === 'light' ? 'bg-purple-400/20' : 'bg-purple-500/10'} rounded-full blur-3xl animate-pulse`} style={{ animationDelay: '2s' }}></div>
+        <div className={`absolute bottom-40 right-1/3 w-80 h-80 ${theme === 'light' ? 'bg-emerald-400/20' : 'bg-emerald-500/10'} rounded-full blur-3xl animate-pulse`} style={{ animationDelay: '4s' }}></div>
+      </div>
+
+      <div className="relative z-10 container mx-auto px-6 py-16">
         {/* Hero Section */}
-        <div className="flex flex-col items-center justify-center text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-20"
+        >
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-3xl blur-lg opacity-75 animate-pulse"></div>
+              <div className="relative bg-gradient-to-r from-blue-500 to-purple-600 p-4 rounded-3xl shadow-2xl">
+                <Layers className="h-12 w-12 text-white" />
+              </div>
+            </div>
+            <div className="text-left">
+              <h1 className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight">
+                BuildCraft
+              </h1>
+              <p className="text-2xl md:text-3xl font-semibold bg-gradient-to-r from-gray-600 to-gray-800 bg-clip-text text-transparent">
+                Platform
+              </p>
+            </div>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+            className="max-w-4xl mx-auto mb-12"
+          >
+            <h2 className={`text-2xl md:text-4xl font-bold mb-6 ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+              The Ultimate Multi-Platform SaaS Solution
+            </h2>
+            <p className={`text-lg md:text-xl leading-relaxed ${theme === 'light' ? 'text-gray-600' : 'text-gray-300'}`}>
+              Create, design, and deploy anything with our comprehensive suite of AI-powered builders. 
+              From forms to websites, resumes to e-commerce stores - all in one unified platform.
+            </p>
+          </motion.div>
+
+          {/* Platform Statistics */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="mb-8 max-w-4xl"
+            transition={{ delay: 0.5, duration: 0.8 }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12"
           >
-            <div className="relative mx-auto w-24 h-24 mb-6">
-              <div className="absolute inset-0 bg-blue-500/20 rounded-full animate-pulse"></div>
-              <div className="absolute inset-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-xl">
-                <Layers className="h-12 w-12 text-white" />
+            {stats.map((stat, index) => (
+              <div key={index} className={`${theme === 'light' 
+                ? 'bg-white/80 border-white/50' 
+                : 'bg-gray-800/50 border-gray-700/50'
+              } backdrop-blur-sm border rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105`}>
+                <div className="flex items-center justify-center mb-3">
+                  <div className="p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl">
+                    <stat.icon className="h-6 w-6 text-white" />
+                  </div>
+                </div>
+                <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1">
+                  {stat.value}
+                </div>
+                <div className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
+                  {stat.label}
+                </div>
               </div>
-              <div className="absolute -right-4 -bottom-2 bg-green-500 rounded-full p-2 border-4 border-white dark:border-gray-900 shadow-lg">
-                <CheckCircle2 className="h-4 w-4 text-white" />
-              </div>
-            </div>
+            ))}
+          </motion.div>
 
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600">
-                Form Builder Pro
-              </span>
-            </h1>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3, duration: 0.8 }}
-              className={`text-lg md:text-xl max-w-3xl mx-auto leading-relaxed ${theme === 'light' ? 'text-gray-600' : 'text-blue-100/80'}`}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.7 }}
+            className="flex flex-wrap justify-center gap-6 mb-16"
+          >
+            <Button
+              onClick={() => setGetStarted(true)}
+              size="lg"
+              className="bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white px-12 py-6 rounded-2xl text-xl font-semibold shadow-2xl hover:shadow-purple-500/25 transition-all duration-300 transform hover:scale-105 group"
             >
-              Create stunning forms with our intuitive drag-and-drop builder.
-              No coding required. Perfect for surveys, registration forms,
-              lead generation, and more.
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5 }}
-              className="flex flex-wrap justify-center gap-4 mb-12 pt-8"
+              Start Building Free
+              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              className={`${theme === 'light' 
+                ? 'bg-white/90 text-gray-700 border-gray-200 hover:bg-white' 
+                : 'bg-gray-800/50 text-white border-gray-600 hover:bg-gray-700/50'
+              } px-12 py-6 rounded-2xl text-xl font-semibold shadow-2xl backdrop-blur-sm transition-all duration-300 transform hover:scale-105`}
+              onClick={() => setIsVideoOpen(true)}
             >
-              <Button
-                onClick={() => setGetStarted(true)}
-                size="lg"
-                className="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-500 hover:to-indigo-600 text-white px-8 py-6 rounded-xl text-lg font-semibold border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
-              >
-                Get Started Free
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className={`${theme === 'light' 
-                  ? 'bg-white/80 text-gray-700 border-gray-300 hover:bg-white hover:text-gray-900' 
-                  : 'bg-gray-800/50 text-white border-gray-600 hover:bg-gray-700/50'
-                } px-8 py-6 rounded-xl text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 backdrop-blur-sm`}
-                onClick={() => setIsVideoOpen(true)}
-              >
-                <Play className="mr-2 h-5 w-5" />
-                Watch Demo
-              </Button>
-            </motion.div>
+              <Play className="mr-2 h-5 w-5" />
+              Watch Demo
+            </Button>
+          </motion.div>
+        </motion.div>
 
-            {/* Form Preview Image */}
-            <div className="relative mx-auto max-w-5xl">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl"></div>
+        {/* Platforms Showcase */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.9, duration: 0.8 }}
+          className="mb-20"
+        >
+          <div className="text-center mb-12">
+            <h3 className={`text-3xl md:text-5xl font-bold mb-4 ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+              Six Platforms, One Solution
+            </h3>
+            <p className={`text-xl ${theme === 'light' ? 'text-gray-600' : 'text-gray-300'} max-w-3xl mx-auto`}>
+              Everything you need to create, design, and deploy your digital presence
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {platforms.map((platform, index) => (
               <motion.div
-                initial={{ y: 100, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.7, duration: 0.8 }}
-                className={`relative ${theme === 'light' 
-                  ? 'bg-white/70 border-gray-200' 
-                  : 'bg-gray-800/70 border-gray-700/50'
-                } backdrop-blur-sm border rounded-2xl overflow-hidden shadow-2xl`}
+                key={platform.name}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * index }}
+                className={`${theme === 'light' 
+                  ? 'bg-white/80 border-white/50 hover:bg-white' 
+                  : 'bg-gray-800/50 border-gray-700/50 hover:bg-gray-800/80'
+                } backdrop-blur-sm border rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all duration-500 group cursor-pointer transform hover:scale-105`}
               >
-                <img
-                  src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&h=600&q=80"
-                  alt="Form Builder Dashboard"
-                  className="w-full h-auto opacity-90"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent flex items-end">
-                  <div className="p-8 text-left">
-                    <h3 className="text-2xl md:text-3xl font-bold text-white mb-3">
-                      Beautiful Form Builder
-                    </h3>
-                    <p className="text-gray-200 text-lg">
-                      Create forms with our intuitive drag-and-drop interface.
+                <div className="flex items-center gap-4 mb-6">
+                  <div className={`w-16 h-16 bg-gradient-to-r ${platform.color} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                    <platform.icon className="h-8 w-8 text-white" />
+                  </div>
+                  <div>
+                    <h4 className={`text-xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                      {platform.name}
+                    </h4>
+                    <p className={`text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                      {platform.stats}
                     </p>
                   </div>
                 </div>
+                <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-300'} leading-relaxed`}>
+                  {platform.description}
+                </p>
               </motion.div>
-            </div>
-          </motion.div>
+            ))}
+          </div>
+        </motion.div>
 
-          <div className={`w-full max-w-md ${theme === 'light' 
-            ? 'bg-white/80 border-gray-200' 
-            : 'bg-gray-800/80 border-gray-700/50'
-          } backdrop-blur-sm p-8 rounded-2xl border shadow-2xl my-16`}>
-            <div className="flex mb-6 rounded-lg overflow-hidden">
+        {/* Features Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.1, duration: 0.8 }}
+          className="mb-20"
+        >
+          <div className="text-center mb-12">
+            <h3 className={`text-3xl md:text-5xl font-bold mb-4 ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+              Enterprise-Grade Features
+            </h3>
+            <p className={`text-xl ${theme === 'light' ? 'text-gray-600' : 'text-gray-300'} max-w-3xl mx-auto`}>
+              Built for scale with cutting-edge technology and security
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((feature, index) => (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * index }}
+                className={`${theme === 'light' 
+                  ? 'bg-white/80 border-white/50 hover:bg-white' 
+                  : 'bg-gray-800/50 border-gray-700/50 hover:bg-gray-800/80'
+                } backdrop-blur-sm border rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all duration-500 group`}
+              >
+                <div className={`w-16 h-16 bg-gradient-to-r ${feature.gradient} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                  <feature.icon className="h-8 w-8 text-white" />
+                </div>
+                <h4 className={`text-xl font-bold mb-4 ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                  {feature.title}
+                </h4>
+                <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-300'} leading-relaxed`}>
+                  {feature.description}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Auth Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.3, duration: 0.8 }}
+          className="max-w-md mx-auto"
+        >
+          <div className={`${theme === 'light' 
+            ? 'bg-white/90 border-white/50' 
+            : 'bg-gray-800/90 border-gray-700/50'
+          } backdrop-blur-sm p-8 rounded-3xl border shadow-2xl`}>
+            <div className="flex mb-6 rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-700 p-1">
               <button
-                className={`flex-1 py-3 px-4 text-center transition-all duration-200 ${
+                className={`flex-1 py-3 px-4 text-center transition-all duration-300 rounded-xl ${
                   authTab === "signin"
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : `${theme === 'light' ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`
+                    ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+                    : `${theme === 'light' ? 'text-gray-600 hover:text-gray-800' : 'text-gray-300 hover:text-white'}`
                 }`}
                 onClick={() => setAuthTab("signin")}
               >
@@ -196,10 +365,10 @@ const LandingPage = () => {
                 </div>
               </button>
               <button
-                className={`flex-1 py-3 px-4 text-center transition-all duration-200 ${
+                className={`flex-1 py-3 px-4 text-center transition-all duration-300 rounded-xl ${
                   authTab === "signup"
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : `${theme === 'light' ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`
+                    ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+                    : `${theme === 'light' ? 'text-gray-600 hover:text-gray-800' : 'text-gray-300 hover:text-white'}`
                 }`}
                 onClick={() => setAuthTab("signup")}
               >
@@ -211,178 +380,21 @@ const LandingPage = () => {
             </div>
 
             {authTab === "signin" ? (
-              <SignInForm
-                onSuccess={() => {
-                  navigate("/");
-                }}
-              />
+              <SignInForm onSuccess={() => navigate("/")} />
             ) : (
-              <SignUpForm
-                onSuccess={() => {
-                  navigate("/");
-                }}
-              />
+              <SignUpForm onSuccess={() => navigate("/")} />
             )}
           </div>
+        </motion.div>
 
-          {/* Features Section */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8, duration: 0.8 }}
-            className="w-full py-20"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Powerful Features</h2>
-            <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} text-lg mb-12 max-w-2xl mx-auto`}>
-              All the tools you need to create and manage forms with professional results
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-              {builderFeatures.map((feature, index) => (
-                <motion.div
-                  key={feature.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 * index }}
-                  className={`${theme === 'light' 
-                    ? 'bg-white/70 border-gray-200/50 hover:bg-white' 
-                    : 'bg-gray-800/30 border-gray-700/50 hover:bg-gray-800/50'
-                  } backdrop-blur-sm border rounded-2xl p-8 hover:shadow-xl transition-all duration-300 group transform hover:scale-105`}
-                >
-                  <div className={`p-4 ${feature.bgColor} rounded-2xl w-16 h-16 flex items-center justify-center mb-6 group-hover:scale-110 transition-all duration-300`}>
-                    <div className={feature.iconColor}>
-                      {feature.icon}
-                    </div>
-                  </div>
-                  <h3 className={`text-xl font-semibold mb-3 ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                    {feature.title}
-                  </h3>
-                  <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} leading-relaxed`}>
-                    {feature.description}
-                  </p>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Templates Section */}
-          <div className="w-full py-20">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Ready-to-Use Templates
-            </h2>
-            <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} text-lg mb-12 max-w-2xl mx-auto`}>
-              Jump start your form creation with our professionally-designed templates
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              {formTemplates.map((template, index) => (
-                <motion.div
-                  key={template.name}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3 * index }}
-                  className={`${theme === 'light' 
-                    ? 'bg-white border-gray-200' 
-                    : 'bg-gray-800/30 border-gray-700/50'
-                  } backdrop-blur-sm border rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300 group transform hover:scale-105`}
-                >
-                  <div className="relative h-48 overflow-hidden">
-                    <img
-                      src={template.image}
-                      alt={template.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900/70 to-transparent"></div>
-                    <div className="absolute bottom-0 left-0 p-6">
-                      <h3 className="text-xl font-semibold text-white">
-                        {template.name}
-                      </h3>
-                    </div>
-                  </div>
-                  <div className="p-6">
-                    <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} mb-6 leading-relaxed`}>
-                      {template.description}
-                    </p>
-                    <Button
-                      onClick={() => setAuthTab("signup")}
-                      variant="secondary"
-                      className="w-full rounded-lg font-medium"
-                    >
-                      Use Template
-                    </Button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-
-          {/* Demo Video Modal */}
-          <DemoVideo open={isVideoOpen} onOpenChange={setIsVideoOpen} />
-          {getStarted && (
-            <GetStarted
-              onClose={() => setGetStarted(false)}
-              onSignUp={handleOpenSignUp}
-            />
-          )}
-
-          {/* Testimonials */}
-          <div className={`w-full py-20 ${theme === 'light' 
-            ? 'bg-gradient-to-br from-blue-50/50 to-indigo-50/50' 
-            : 'bg-gradient-to-br from-gray-800/30 to-gray-900/30'
-          } rounded-3xl my-16`}>
-            <h2 className="text-3xl md:text-4xl font-bold mb-16">
-              Trusted by Businesses
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              {[
-                {
-                  name: "Alex Johnson",
-                  role: "Marketing Director",
-                  avatar: "A",
-                  color: "bg-blue-600",
-                  quote: "Form Builder Pro transformed how we collect lead information. Our conversion rate increased by 40% in just one month!"
-                },
-                {
-                  name: "Sarah Miller",
-                  role: "Event Manager",
-                  avatar: "S",
-                  color: "bg-purple-600",
-                  quote: "The event registration templates saved us countless hours. Setting up our conference registration was a breeze."
-                },
-                {
-                  name: "Michael Chen",
-                  role: "Product Owner",
-                  avatar: "M",
-                  color: "bg-green-600",
-                  quote: "The analytics dashboard gives us incredible insights into our customer feedback. It's become an essential tool for our product team."
-                }
-              ].map((testimonial, index) => (
-                <div key={index} className={`${theme === 'light' 
-                  ? 'bg-white/80 border-gray-200' 
-                  : 'bg-gray-800/50 border-gray-700/50'
-                } backdrop-blur-sm border rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300`}>
-                  <div className="flex items-center mb-6">
-                    <div className={`h-14 w-14 rounded-full ${testimonial.color} flex items-center justify-center mr-4 shadow-lg`}>
-                      <span className="text-xl font-bold text-white">{testimonial.avatar}</span>
-                    </div>
-                    <div>
-                      <h4 className={`font-semibold text-lg ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                        {testimonial.name}
-                      </h4>
-                      <p className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
-                        {testimonial.role}
-                      </p>
-                    </div>
-                  </div>
-                  <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} italic leading-relaxed`}>
-                    "{testimonial.quote}"
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        {/* Demo Video Modal */}
+        <DemoVideo open={isVideoOpen} onOpenChange={setIsVideoOpen} />
+        {getStarted && (
+          <GetStarted
+            onClose={() => setGetStarted(false)}
+            onSignUp={handleOpenSignUp}
+          />
+        )}
       </div>
     </div>
   );

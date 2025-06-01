@@ -1,6 +1,4 @@
 
-"use client";
-
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
 type Theme = 'dark' | 'light';
@@ -29,16 +27,22 @@ export function ThemeProvider({
   storageKey = 'fb-theme',
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
-  );
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem(storageKey) as Theme) || defaultTheme;
+    }
+    return defaultTheme;
+  });
 
   useEffect(() => {
     const root = window.document.documentElement;
     
     root.classList.remove('light', 'dark');
     root.classList.add(theme);
-    localStorage.setItem(storageKey, theme);
+    
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(storageKey, theme);
+    }
 
     // Adjust background color based on theme
     if (theme === 'light') {

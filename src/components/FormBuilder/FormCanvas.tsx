@@ -3,7 +3,8 @@ import React, { useEffect, useCallback } from 'react';
 import { FormCanvasProps } from './types';
 import FormElementRenderer from './FormElementRenderer';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Sparkles } from 'lucide-react';
+import { Plus, Sparkles, Layers, Trash2, Copy, Settings } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const FormCanvas: React.FC<FormCanvasProps> = ({ 
   elements, 
@@ -17,31 +18,38 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
     e.preventDefault();
     e.stopPropagation();
     
-    console.log('Drop event triggered'); // Debug log
+    console.log('Drop event triggered');
     
-    const elementType = e.dataTransfer.getData('application/json');
-    console.log('Element type from dataTransfer:', elementType); // Debug log
+    // Try both data transfer methods
+    let elementType = e.dataTransfer.getData('text/plain');
+    if (!elementType) {
+      elementType = e.dataTransfer.getData('application/json');
+    }
+    
+    console.log('Element type from dataTransfer:', elementType);
     
     if (elementType) {
       const newElement = {
         id: Date.now().toString(),
         type: elementType as any,
-        label: `New ${elementType.charAt(0).toUpperCase() + elementType.slice(1)}`,
+        label: `${elementType.charAt(0).toUpperCase() + elementType.slice(1)} Field`,
         required: false,
         placeholder: `Enter ${elementType}`,
-        options: elementType === 'select' || elementType === 'radio' || elementType === 'checkbox-group' ? 
+        options: ['select', 'radio', 'checkbox-group'].includes(elementType) ? 
           ['Option 1', 'Option 2', 'Option 3'] : undefined,
         containerId: containerId,
+        value: elementType === 'youtube' ? 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' : '',
+        url: elementType === 'youtube' ? 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' : undefined,
       };
 
-      console.log('Creating new element:', newElement); // Debug log
+      console.log('Creating new element:', newElement);
 
       setFormConfig(prev => {
         const updatedConfig = {
           ...prev,
           elements: [...prev.elements, newElement]
         };
-        console.log('Updated form config:', updatedConfig); // Debug log
+        console.log('Updated form config:', updatedConfig);
         return updatedConfig;
       });
     }
@@ -51,6 +59,25 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
     e.preventDefault();
     e.dataTransfer.dropEffect = 'copy';
   }, []);
+
+  const handleElementDelete = (elementId: string) => {
+    setFormConfig(prev => ({
+      ...prev,
+      elements: prev.elements.filter(el => el.id !== elementId)
+    }));
+  };
+
+  const handleElementDuplicate = (element: any) => {
+    const duplicatedElement = {
+      ...element,
+      id: Date.now().toString(),
+      label: `${element.label} (Copy)`
+    };
+    setFormConfig(prev => ({
+      ...prev,
+      elements: [...prev.elements, duplicatedElement]
+    }));
+  };
 
   const getFormStyles = () => {
     const canvasStyles = formConfig.settings.canvasStyles || {};
@@ -67,9 +94,20 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
         }
       }
     }
+
+    const backgroundStyle = canvasStyles.backgroundImage 
+      ? {
+          backgroundImage: `url(${canvasStyles.backgroundImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }
+      : {
+          background: canvasStyles.backgroundColor || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        };
     
     return {
-      backgroundColor: canvasStyles.formBackgroundColor || '#ffffff',
+      ...backgroundStyle,
       padding: canvasStyles.padding || '32px',
       borderRadius: canvasStyles.borderRadius || '16px',
       boxShadow: '0 20px 40px -12px rgba(0, 0, 0, 0.15), 0 8px 24px -8px rgba(0, 0, 0, 0.1)',
@@ -85,6 +123,36 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
     };
   };
 
+  const getFormBackgroundStyle = () => {
+    const canvasStyles = formConfig.settings.canvasStyles || {};
+    return {
+      backgroundColor: canvasStyles.formBackgroundColor || '#ffffff',
+      borderRadius: canvasStyles.borderRadius || '16px',
+      padding: canvasStyles.padding || '32px',
+      boxShadow: '0 20px 40px -12px rgba(0, 0, 0, 0.15)',
+      backdropFilter: 'blur(20px)',
+      border: '1px solid rgba(255, 255, 255, 0.2)',
+    };
+  };
+
+  // Get background style for the entire canvas area
+  const getCanvasBackgroundStyle = () => {
+    const canvasStyles = formConfig.settings.canvasStyles || {};
+    
+    if (canvasStyles.backgroundImage) {
+      return {
+        backgroundImage: `url(${canvasStyles.backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      };
+    }
+    
+    return {
+      background: canvasStyles.backgroundColor || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    };
+  };
+
   // Render nested elements for containers
   const renderNestedElements = (containerId: string) => {
     const nestedElements = elements.filter(el => el.containerId === containerId);
@@ -94,7 +162,7 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.05 }}
-        className={`mb-4 p-3 rounded-xl border-2 transition-all duration-300 cursor-pointer hover:shadow-lg ${
+        className={`relative group mb-4 p-3 rounded-xl border-2 transition-all duration-300 cursor-pointer hover:shadow-lg ${
           selectedElement?.id === element.id
             ? 'border-blue-500 bg-blue-50/50 shadow-lg scale-105'
             : 'border-transparent hover:border-blue-200 hover:bg-blue-50/30'
@@ -106,6 +174,43 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
       >
+        {/* Element Actions */}
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-6 w-6 p-0"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelectElement(element);
+            }}
+          >
+            <Settings className="h-3 w-3" />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-6 w-6 p-0"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleElementDuplicate(element);
+            }}
+          >
+            <Copy className="h-3 w-3" />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-6 w-6 p-0 hover:bg-red-50 hover:border-red-200"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleElementDelete(element.id);
+            }}
+          >
+            <Trash2 className="h-3 w-3 text-red-500" />
+          </Button>
+        </div>
+
         <FormElementRenderer
           element={element}
           value=""
@@ -116,21 +221,14 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
     ));
   };
 
-  // Log configuration changes for debugging
-  useEffect(() => {
-    console.log('FormCanvas: Configuration updated', {
-      width: formConfig.settings.preview?.width,
-      liveValidation: formConfig.settings.validation?.liveValidation,
-      canvasStyles: formConfig.settings.canvasStyles,
-      elementsCount: elements.length
-    });
-  }, [formConfig.settings, elements.length]);
-
   // Get root level elements (not in containers)
   const rootElements = elements.filter(el => !el.containerId);
 
   return (
-    <div className="w-full h-full flex items-center justify-center p-8 relative">
+    <div 
+      className="w-full h-full flex items-center justify-center p-8 relative"
+      style={getCanvasBackgroundStyle()}
+    >
       {/* Global Custom CSS Injection */}
       {formConfig.settings.canvasStyles?.customCSS && (
         <style dangerouslySetInnerHTML={{ __html: formConfig.settings.canvasStyles.customCSS }} />
@@ -139,7 +237,7 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
       {/* Enhanced Drop Zone */}
       <motion.div 
         className={`w-full relative ${formConfig.settings.canvasStyles?.containerClass || ''}`}
-        style={getFormStyles()}
+        style={getFormBackgroundStyle()}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         initial={{ opacity: 0, scale: 0.95 }}
@@ -195,7 +293,7 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
               {['📝', '📧', '📞'].map((emoji, index) => (
                 <motion.div
                   key={index}
-                  className="p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200"
+                  className="p-4 bg-white/70 backdrop-blur-sm rounded-lg border-2 border-dashed border-gray-200"
                   whileHover={{ scale: 1.05, borderColor: '#3b82f6' }}
                   transition={{ delay: index * 0.1 }}
                 >
@@ -231,6 +329,43 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
                       `${formConfig.settings.layout.questionSpacing}px` : '24px'
                   }}
                 >
+                  {/* Element Actions */}
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 z-10">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 w-8 p-0 bg-white/90 backdrop-blur-sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelectElement(element);
+                      }}
+                    >
+                      <Settings className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 w-8 p-0 bg-white/90 backdrop-blur-sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleElementDuplicate(element);
+                      }}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 w-8 p-0 bg-white/90 backdrop-blur-sm hover:bg-red-50 hover:border-red-200"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleElementDelete(element.id);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </Button>
+                  </div>
+
                   {/* Container/Layout Elements with Enhanced Drop Zones */}
                   {(element.type === 'container' || element.type === '2-columns' || element.type === '3-columns' || element.type === '4-columns') ? (
                     <motion.div
@@ -245,6 +380,8 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
                       }}
                       whileHover={{ scale: 1.01 }}
                       whileTap={{ scale: 0.99 }}
+                      onDrop={(e) => handleDrop(e, element.id)}
+                      onDragOver={handleDragOver}
                     >
                       <div className="flex items-center justify-between mb-4">
                         <h4 className="font-semibold text-gray-800">{element.label}</h4>
@@ -256,87 +393,29 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
                         </motion.span>
                       </div>
                       
-                      {/* Enhanced Container Layouts */}
-                      {element.type === 'container' && (
-                        <div
-                          className="min-h-[120px] border-2 border-dashed border-gray-200 rounded-lg p-4 bg-gradient-to-br from-gray-50 to-white transition-all duration-300 hover:border-blue-300"
-                          onDrop={(e) => handleDrop(e, element.id)}
-                          onDragOver={handleDragOver}
-                        >
-                          <div className="text-center text-gray-500 mb-4">
-                            <motion.div
-                              animate={{ y: [0, -5, 0] }}
-                              transition={{ duration: 2, repeat: Infinity }}
-                            >
-                              <Plus className="mx-auto h-8 w-8 mb-2" />
-                            </motion.div>
-                            Drop elements here to group them
+                      <div className="min-h-[120px] border-2 border-dashed border-gray-200 rounded-lg p-4 flex flex-col justify-center items-center">
+                        {renderNestedElements(element.id)}
+                        {elements.filter(el => el.containerId === element.id).length === 0 && (
+                          <div className="text-center text-gray-400">
+                            <Layers className="h-8 w-8 mx-auto mb-2" />
+                            <p className="text-sm">Drop elements here</p>
                           </div>
-                          {renderNestedElements(element.id)}
-                        </div>
-                      )}
-                      
-                      {element.type === '2-columns' && (
-                        <div className="grid grid-cols-2 gap-4">
-                          {[1, 2].map(col => (
-                            <div
-                              key={col}
-                              className="min-h-[120px] border-2 border-dashed border-gray-200 rounded-lg p-4 bg-gradient-to-br from-gray-50 to-white transition-all duration-300 hover:border-blue-300"
-                              onDrop={(e) => handleDrop(e, `${element.id}-col${col}`)}
-                              onDragOver={handleDragOver}
-                            >
-                              <div className="text-center text-gray-500 text-sm mb-2">Column {col}</div>
-                              {renderNestedElements(`${element.id}-col${col}`)}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      
-                      {element.type === '3-columns' && (
-                        <div className="grid grid-cols-3 gap-4">
-                          {[1, 2, 3].map(col => (
-                            <div
-                              key={col}
-                              className="min-h-[120px] border-2 border-dashed border-gray-200 rounded-lg p-4 bg-gradient-to-br from-gray-50 to-white transition-all duration-300 hover:border-blue-300"
-                              onDrop={(e) => handleDrop(e, `${element.id}-col${col}`)}
-                              onDragOver={handleDragOver}
-                            >
-                              <div className="text-center text-gray-500 text-sm mb-2">Column {col}</div>
-                              {renderNestedElements(`${element.id}-col${col}`)}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      
-                      {element.type === '4-columns' && (
-                        <div className="grid grid-cols-4 gap-4">
-                          {[1, 2, 3, 4].map(col => (
-                            <div
-                              key={col}
-                              className="min-h-[120px] border-2 border-dashed border-gray-200 rounded-lg p-4 bg-gradient-to-br from-gray-50 to-white transition-all duration-300 hover:border-blue-300"
-                              onDrop={(e) => handleDrop(e, `${element.id}-col${col}`)}
-                              onDragOver={handleDragOver}
-                            >
-                              <div className="text-center text-gray-500 text-sm mb-2">Column {col}</div>
-                              {renderNestedElements(`${element.id}-col${col}`)}
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </motion.div>
                   ) : (
-                    /* Enhanced Regular Form Elements */
+                    /* Regular Form Elements */
                     <motion.div
-                      className={`p-4 rounded-xl border-2 transition-all duration-300 cursor-pointer hover:shadow-xl ${
+                      className={`p-4 rounded-xl border-2 transition-all duration-300 cursor-pointer hover:shadow-lg ${
                         selectedElement?.id === element.id
-                          ? 'border-blue-500 bg-blue-50/50 shadow-xl scale-105'
+                          ? 'border-blue-500 bg-blue-50/50 shadow-xl'
                           : 'border-transparent hover:border-blue-200 hover:bg-blue-50/30'
                       }`}
                       onClick={(e) => {
                         e.stopPropagation();
                         onSelectElement(element);
                       }}
-                      whileHover={{ scale: 1.02, y: -2 }}
+                      whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
                       <FormElementRenderer
@@ -350,61 +429,25 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
                 </motion.div>
               ))}
             </AnimatePresence>
-            
-            {/* Enhanced Submit Button */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: rootElements.length * 0.1 + 0.2 }}
-              className="pt-6"
-            >
-              <motion.button
-                type="submit"
-                className="w-full py-4 px-8 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
-                style={{
-                  background: `linear-gradient(135deg, ${formConfig.settings.canvasStyles?.primaryColor || '#3b82f6'}, ${formConfig.settings.canvasStyles?.secondaryColor || '#8b5cf6'})`,
-                  color: 'white',
-                  fontFamily: formConfig.settings.canvasStyles?.fontFamily || 'Inter',
-                  fontSize: formConfig.settings.canvasStyles?.fontSize ? `${formConfig.settings.canvasStyles.fontSize}px` : '16px'
-                }}
-                whileHover={{ scale: 1.02, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                {formConfig.settings.submitButton?.text || 'Submit Form'} ✨
-              </motion.button>
-            </motion.div>
 
-            {/* Enhanced Terms & Conditions */}
-            {formConfig.settings.termsAndConditions?.enabled && (
+            {/* Submit Button */}
+            {rootElements.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: rootElements.length * 0.1 + 0.3 }}
-                className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                transition={{ delay: rootElements.length * 0.1 + 0.2 }}
+                className="pt-6 border-t border-gray-200"
               >
-                <input
-                  type="checkbox"
-                  id="terms"
-                  required={formConfig.settings.termsAndConditions.required}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <label htmlFor="terms" className="text-gray-700 text-sm" style={{
-                  fontFamily: formConfig.settings.canvasStyles?.fontFamily || 'Inter',
-                  fontSize: formConfig.settings.canvasStyles?.fontSize ? `${formConfig.settings.canvasStyles.fontSize - 2}px` : '14px'
-                }}>
-                  {formConfig.settings.termsAndConditions.text || 'I accept the Terms & Conditions'}
-                </label>
+                <Button 
+                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200"
+                  size="lg"
+                >
+                  {formConfig.settings.submitButton?.text || 'Submit Form'}
+                </Button>
               </motion.div>
             )}
           </div>
         )}
-
-        {/* Drop Zone Indicator */}
-        <motion.div
-          className="absolute inset-0 pointer-events-none border-2 border-dashed border-blue-400 rounded-xl bg-blue-50/10 opacity-0"
-          animate={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-        />
       </motion.div>
     </div>
   );

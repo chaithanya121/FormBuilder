@@ -1,272 +1,314 @@
 import React, { useState } from 'react';
-import { DragStartProps } from './types';
-import { 
-  Type, Mail, Lock, Calendar, Clock, Upload, FileText, CheckSquare, 
-  Circle, ChevronDown, Heading1, Heading2, Heading3, Heading4, 
-  Minus, Square, Columns2, Columns3, Grid3X3, Table, List, 
-  Link, Phone, Hash, Sliders, Star, MapPin, User, CreditCard,
-  Image, Video, Quote, Code, Layers, Layout, LayoutGrid,
-  AlignLeft, BarChart3, Radio, ToggleLeft, FileImage,
-  MessageSquare, Users, Timer, Award, Search, Filter,
-  Zap, Target, Palette, Settings
-} from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Search, Type, Mail, Hash, Calendar, FileText, 
+  List, CheckSquare, ToggleLeft, Image, Video,
+  Columns, Container, Heading, AlignLeft, Minus,
+  Upload, Palette, Star, Heart, MessageSquare,
+  Phone, MapPin, CreditCard, Code, Table,
+  Grid, Layers, Sparkles, Info
+} from 'lucide-react';
+import { DragStartProps } from './types';
 
-const FORM_ELEMENTS = {
-  fields: [
-    { type: 'text', label: 'Text Input', icon: Type, category: 'basic', description: 'Single line text input' },
-    { type: 'email', label: 'Email', icon: Mail, category: 'basic', description: 'Email input with validation' },
-    { type: 'password', label: 'Password', icon: Lock, category: 'basic', description: 'Password input field' },
-    { type: 'textarea', label: 'Textarea', icon: FileText, category: 'basic', description: 'Multi-line text input' },
-    { type: 'number', label: 'Number', icon: Hash, category: 'basic', description: 'Numeric input field' },
-    { type: 'phone', label: 'Phone', icon: Phone, category: 'basic', description: 'Phone number input' },
-    { type: 'url', label: 'URL', icon: Link, category: 'basic', description: 'Website URL input' },
-    { type: 'date', label: 'Date', icon: Calendar, category: 'basic', description: 'Date picker' },
-    { type: 'time', label: 'Time', icon: Clock, category: 'basic', description: 'Time picker' },
-    { type: 'file', label: 'File Upload', icon: Upload, category: 'advanced', description: 'Single file upload' },
-    { type: 'multi-file-upload', label: 'Multi-File Upload', icon: Upload, category: 'advanced', description: 'Multiple file upload' },
-    { type: 'image-upload', label: 'Image Upload', icon: FileImage, category: 'advanced', description: 'Image file upload' },
-  ],
-  selection: [
-    { type: 'select', label: 'Dropdown', icon: ChevronDown, category: 'basic', description: 'Dropdown selection' },
-    { type: 'radio', label: 'Radio Buttons', icon: Circle, category: 'basic', description: 'Single choice selection' },
-    { type: 'checkbox', label: 'Checkbox', icon: CheckSquare, category: 'basic', description: 'Single checkbox' },
-    { type: 'checkbox-group', label: 'Checkbox Group', icon: CheckSquare, category: 'basic', description: 'Multiple checkboxes' },
-    { type: 'multiselect', label: 'Multi-Select', icon: List, category: 'advanced', description: 'Multiple selection dropdown' },
-    { type: 'radio-blocks', label: 'Radio Blocks', icon: LayoutGrid, category: 'advanced', description: 'Radio buttons as blocks' },
-    { type: 'checkbox-blocks', label: 'Checkbox Blocks', icon: LayoutGrid, category: 'advanced', description: 'Checkboxes as blocks' },
-    { type: 'toggle', label: 'Toggle Switch', icon: ToggleLeft, category: 'advanced', description: 'On/off toggle switch' },
-    { type: 'slider', label: 'Slider', icon: Sliders, category: 'advanced', description: 'Range slider input' },
-    { type: 'star-rating', label: 'Star Rating', icon: Star, category: 'advanced', description: 'Star rating system' },
-    { type: 'scale-rating', label: 'Scale Rating', icon: BarChart3, category: 'advanced', description: 'Numeric scale rating' },
-  ],
-  layout: [
-    { type: 'container', label: 'Container', icon: Square, category: 'layout', description: 'Group elements together' },
-    { type: '2-columns', label: '2 Columns', icon: Columns2, category: 'layout', description: 'Two column layout' },
-    { type: '3-columns', label: '3 Columns', icon: Columns3, category: 'layout', description: 'Three column layout' },
-    { type: '4-columns', label: '4 Columns', icon: Grid3X3, category: 'layout', description: 'Four column layout' },
-    { type: 'tabs', label: 'Tabs', icon: Layers, category: 'layout', description: 'Tabbed content sections' },
-    { type: 'steps', label: 'Step Wizard', icon: Target, category: 'layout', description: 'Multi-step form wizard' },
-    { type: 'section-collapse', label: 'Collapsible Section', icon: Layout, category: 'layout', description: 'Expandable content section' },
-    { type: 'divider', label: 'Divider', icon: Minus, category: 'layout', description: 'Visual separator line' },
-  ],
-  content: [
-    { type: 'h1', label: 'Heading 1', icon: Heading1, category: 'content', description: 'Large heading text' },
-    { type: 'h2', label: 'Heading 2', icon: Heading2, category: 'content', description: 'Medium heading text' },
-    { type: 'h3', label: 'Heading 3', icon: Heading3, category: 'content', description: 'Small heading text' },
-    { type: 'p', label: 'Paragraph', icon: AlignLeft, category: 'content', description: 'Paragraph text block' },
-    { type: 'quote', label: 'Quote', icon: Quote, category: 'content', description: 'Blockquote text' },
-    { type: 'image', label: 'Image', icon: Image, category: 'content', description: 'Display image' },
-    { type: 'video', label: 'Video', icon: Video, category: 'content', description: 'Embedded video' },
-    { type: 'static-html', label: 'Custom HTML', icon: Code, category: 'content', description: 'Custom HTML content' },
-    { type: 'link', label: 'Link', icon: Link, category: 'content', description: 'Clickable link' },
-  ],
-  specialized: [
-    { type: 'name', label: 'Full Name', icon: User, category: 'specialized', description: 'Name input fields' },
-    { type: 'first-name', label: 'First Name', icon: User, category: 'specialized', description: 'First name field' },
-    { type: 'last-name', label: 'Last Name', icon: User, category: 'specialized', description: 'Last name field' },
-    { type: 'address', label: 'Address', icon: MapPin, category: 'specialized', description: 'Full address input' },
-    { type: 'street-address', label: 'Street Address', icon: MapPin, category: 'specialized', description: 'Street address field' },
-    { type: 'city', label: 'City', icon: MapPin, category: 'specialized', description: 'City input field' },
-    { type: 'state-province', label: 'State/Province', icon: MapPin, category: 'specialized', description: 'State or province field' },
-    { type: 'postal-code', label: 'Postal Code', icon: MapPin, category: 'specialized', description: 'ZIP/postal code field' },
-    { type: 'appointment', label: 'Appointment', icon: Calendar, category: 'specialized', description: 'Appointment booking' },
-    { type: 'captcha', label: 'CAPTCHA', icon: Settings, category: 'specialized', description: 'CAPTCHA verification' },
-    { type: 'matrix', label: 'Matrix', icon: Table, category: 'specialized', description: 'Matrix question grid' },
-    { type: 'input-table', label: 'Input Table', icon: Table, category: 'specialized', description: 'Editable data table' },
-  ],
-  advanced: [
-    { type: 'gallery', label: 'Image Gallery', icon: Image, category: 'advanced', description: 'Image gallery display' },
-    { type: 'spinner', label: 'Number Spinner', icon: Hash, category: 'advanced', description: 'Number input with +/- buttons' },
-    { type: 'range-slider', label: 'Range Slider', icon: Sliders, category: 'advanced', description: 'Min/max range slider' },
-    { type: 'vertical-slider', label: 'Vertical Slider', icon: Sliders, category: 'advanced', description: 'Vertical orientation slider' },
-    { type: 'hidden-input', label: 'Hidden Field', icon: Settings, category: 'advanced', description: 'Hidden form field' },
-    { type: 'form_submit', label: 'Submit Button', icon: Zap, category: 'advanced', description: 'Custom submit button' },
-    { type: 'danger-button', label: 'Danger Button', icon: Zap, category: 'advanced', description: 'Warning/danger action button' },
-  ]
+interface FormElementLibraryProps extends DragStartProps {}
+
+const ELEMENT_CATEGORIES = {
+  basic: {
+    name: 'Basic Inputs',
+    icon: Type,
+    elements: [
+      { type: 'text', label: 'Text Input', icon: Type, description: 'Single line text input field' },
+      { type: 'email', label: 'Email', icon: Mail, description: 'Email input with validation' },
+      { type: 'password', label: 'Password', icon: Type, description: 'Password input field' },
+      { type: 'number', label: 'Number', icon: Hash, description: 'Numeric input field' },
+      { type: 'tel', label: 'Phone', icon: Phone, description: 'Phone number input' },
+      { type: 'url', label: 'URL', icon: Code, description: 'Website URL input' },
+      { type: 'textarea', label: 'Textarea', icon: FileText, description: 'Multi-line text input' },
+    ]
+  },
+  selection: {
+    name: 'Selection',
+    icon: List,
+    elements: [
+      { type: 'select', label: 'Dropdown', icon: List, description: 'Dropdown selection menu' },
+      { type: 'radio', label: 'Radio Group', icon: CheckSquare, description: 'Single choice radio buttons' },
+      { type: 'checkbox', label: 'Checkbox', icon: CheckSquare, description: 'Single checkbox' },
+      { type: 'checkbox-group', label: 'Checkbox Group', icon: CheckSquare, description: 'Multiple checkboxes' },
+      { type: 'multiselect', label: 'Multi Select', icon: List, description: 'Multiple selection dropdown' },
+      { type: 'toggle', label: 'Toggle Switch', icon: ToggleLeft, description: 'On/off toggle switch' },
+    ]
+  },
+  datetime: {
+    name: 'Date & Time',
+    icon: Calendar,
+    elements: [
+      { type: 'date', label: 'Date Picker', icon: Calendar, description: 'Date selection input' },
+      { type: 'time', label: 'Time Picker', icon: Calendar, description: 'Time selection input' },
+      { type: 'calendar', label: 'Calendar', icon: Calendar, description: 'Full calendar widget' },
+    ]
+  },
+  media: {
+    name: 'Media & Files',
+    icon: Upload,
+    elements: [
+      { type: 'file', label: 'File Upload', icon: Upload, description: 'Single file upload' },
+      { type: 'multi-file-upload', label: 'Multi File Upload', icon: Upload, description: 'Multiple file upload' },
+      { type: 'image-upload', label: 'Image Upload', icon: Image, description: 'Image file upload' },
+      { type: 'multi-image-upload', label: 'Multi Image Upload', icon: Image, description: 'Multiple image upload' },
+      { type: 'image', label: 'Image', icon: Image, description: 'Display image' },
+      { type: 'video', label: 'Video', icon: Video, description: 'Video embed' },
+      { type: 'youtube', label: 'YouTube', icon: Video, description: 'YouTube video embed' },
+    ]
+  },
+  layout: {
+    name: 'Layout',
+    icon: Columns,
+    elements: [
+      { type: 'container', label: 'Container', icon: Container, description: 'Group elements together' },
+      { type: '2-columns', label: '2 Columns', icon: Columns, description: 'Two column layout' },
+      { type: '3-columns', label: '3 Columns', icon: Columns, description: 'Three column layout' },
+      { type: '4-columns', label: '4 Columns', icon: Columns, description: 'Four column layout' },
+      { type: 'divider', label: 'Divider', icon: Minus, description: 'Horizontal line separator' },
+      { type: 'spacer', label: 'Spacer', icon: Minus, description: 'Add vertical spacing' },
+    ]
+  },
+  content: {
+    name: 'Content',
+    icon: Heading,
+    elements: [
+      { type: 'heading', label: 'Heading', icon: Heading, description: 'Section heading text' },
+      { type: 'h1', label: 'H1 Heading', icon: Heading, description: 'Large heading' },
+      { type: 'h2', label: 'H2 Heading', icon: Heading, description: 'Medium heading' },
+      { type: 'h3', label: 'H3 Heading', icon: Heading, description: 'Small heading' },
+      { type: 'paragraph', label: 'Paragraph', icon: AlignLeft, description: 'Paragraph text' },
+      { type: 'p', label: 'Text Block', icon: AlignLeft, description: 'Text content block' },
+      { type: 'quote', label: 'Quote', icon: MessageSquare, description: 'Blockquote text' },
+      { type: 'link', label: 'Link', icon: Code, description: 'Hyperlink element' },
+    ]
+  },
+  advanced: {
+    name: 'Advanced',
+    icon: Sparkles,
+    elements: [
+      { type: 'rating', label: 'Rating', icon: Star, description: 'Star rating input' },
+      { type: 'star-rating', label: 'Star Rating', icon: Star, description: 'Star rating widget' },
+      { type: 'scale-rating', label: 'Scale Rating', icon: Star, description: 'Numeric scale rating' },
+      { type: 'range', label: 'Range Slider', icon: ToggleLeft, description: 'Range input slider' },
+      { type: 'color', label: 'Color Picker', icon: Palette, description: 'Color selection input' },
+      { type: 'signature', label: 'Signature', icon: Type, description: 'Digital signature pad' },
+      { type: 'location', label: 'Location', icon: MapPin, description: 'Location picker' },
+      { type: 'map', label: 'Map', icon: MapPin, description: 'Interactive map' },
+      { type: 'payment', label: 'Payment', icon: CreditCard, description: 'Payment form fields' },
+      { type: 'captcha', label: 'Captcha', icon: CheckSquare, description: 'Bot protection' },
+    ]
+  },
+  data: {
+    name: 'Data Display',
+    icon: Table,
+    elements: [
+      { type: 'table', label: 'Table', icon: Table, description: 'Data table' },
+      { type: 'chart', label: 'Chart', icon: Grid, description: 'Data visualization' },
+      { type: 'list', label: 'List', icon: List, description: 'Bulleted list' },
+      { type: 'code-block', label: 'Code Block', icon: Code, description: 'Code display' },
+      { type: 'html', label: 'HTML Block', icon: Code, description: 'Custom HTML' },
+      { type: 'static-html', label: 'Static HTML', icon: Code, description: 'Static HTML content' },
+      { type: 'markdown', label: 'Markdown', icon: FileText, description: 'Markdown content' },
+    ]
+  }
 };
 
-const FormElementLibrary: React.FC<DragStartProps> = ({ onDragStart }) => {
+const FormElementLibrary: React.FC<FormElementLibraryProps> = ({ onDragStart }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [activeCategory, setActiveCategory] = useState('basic');
 
-  const getAllElements = () => {
-    return Object.values(FORM_ELEMENTS).flat();
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, elementType: string) => {
+    console.log('Drag started for element:', elementType);
+    e.dataTransfer.setData('text/plain', elementType);
+    e.dataTransfer.effectAllowed = 'copy';
+    onDragStart(e, elementType);
   };
 
-  const filterElements = (elements: any[]) => {
-    return elements.filter(element => {
-      const matchesSearch = element.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          element.description.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = selectedCategory === 'all' || element.category === selectedCategory;
-      return matchesSearch && matchesCategory;
-    });
-  };
+  const filteredElements = Object.entries(ELEMENT_CATEGORIES).map(([key, category]) => ({
+    key,
+    ...category,
+    elements: category.elements.filter(element =>
+      element.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      element.type.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  })).filter(category => category.elements.length > 0);
 
-  const renderElementCard = (element: any, isCompact = false) => {
-    const IconComponent = element.icon;
-    
-    return (
-      <div
-        key={element.type}
-        draggable
-        onDragStart={(e) => onDragStart(e, element.type)}
-        className={`group bg-white border-2 border-gray-200 rounded-xl transition-all duration-200 cursor-grab active:cursor-grabbing hover:border-blue-400 hover:shadow-lg hover:scale-[1.02] ${
-          isCompact ? 'p-3' : 'p-4'
-        }`}
-      >
-        <div className={`flex ${viewMode === 'list' ? 'items-center gap-3' : 'flex-col items-center text-center'}`}>
-          <div className={`${viewMode === 'list' ? 'flex-shrink-0' : 'mb-3'}`}>
-            <div className={`${isCompact ? 'w-10 h-10' : 'w-12 h-12'} bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center group-hover:from-blue-600 group-hover:to-purple-700 transition-all duration-200`}>
-              <IconComponent className={`${isCompact ? 'w-5 h-5' : 'w-6 h-6'} text-white`} />
-            </div>
-          </div>
-          
-          <div className={viewMode === 'list' ? 'flex-1' : ''}>
-            <h4 className={`font-semibold text-gray-900 group-hover:text-blue-600 transition-colors ${
-              isCompact ? 'text-sm' : 'text-sm'
-            }`}>
-              {element.label}
-            </h4>
-            {!isCompact && (
-              <p className="text-xs text-gray-600 mt-1 group-hover:text-gray-700 transition-colors">
-                {element.description}
-              </p>
-            )}
-            
-            <Badge 
-              variant="secondary" 
-              className={`${isCompact ? 'text-xs px-2 py-0' : 'text-xs'} ${viewMode === 'list' ? 'ml-0 mt-1' : 'mt-2'} bg-gray-100 text-gray-600 group-hover:bg-blue-100 group-hover:text-blue-700 transition-all duration-200`}
-            >
-              {element.category}
-            </Badge>
-          </div>
-        </div>
-      </div>
-    );
-  };
+  const currentCategory = ELEMENT_CATEGORIES[activeCategory as keyof typeof ELEMENT_CATEGORIES];
 
   return (
-    <div className="h-full flex flex-col bg-gray-900 text-white">
-      {/* Search and Filters */}
-      <div className="p-4 space-y-4 border-b border-gray-700">
-        <div className="relative">
-          <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-          <Input
-            placeholder="Search elements..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
-          />
-        </div>
-        
-        <div className="flex items-center justify-between">
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none"
-          >
-            <option value="all">All Categories</option>
-            <option value="basic">Basic</option>
-            <option value="advanced">Advanced</option>
-            <option value="layout">Layout</option>
-            <option value="content">Content</option>
-            <option value="specialized">Specialized</option>
-          </select>
-          
-          <div className="flex gap-1">
-            <Button
-              size="sm"
-              variant={viewMode === 'grid' ? 'default' : 'outline'}
-              onClick={() => setViewMode('grid')}
-              className="w-8 h-8 p-0"
-            >
-              <LayoutGrid className="w-4 h-4" />
-            </Button>
-            <Button
-              size="sm"
-              variant={viewMode === 'list' ? 'default' : 'outline'}
-              onClick={() => setViewMode('list')}
-              className="w-8 h-8 p-0"
-            >
-              <List className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
+    <TooltipProvider>
+      <Card className="h-full flex flex-col bg-white/95 backdrop-blur-md border-gray-200/50">
+        <CardHeader className="flex-shrink-0 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+          <CardTitle className="flex items-center gap-2">
+            <Layers className="h-5 w-5" />
+            <div>
+              <h3 className="text-lg font-bold">Elements Library</h3>
+              <p className="text-blue-100 text-sm">Drag elements to canvas</p>
+            </div>
+          </CardTitle>
+        </CardHeader>
 
-      {/* Elements */}
-      <div className="flex-1 overflow-y-auto">
-        <Tabs defaultValue="all" className="h-full flex flex-col">
-          <div className="px-4 pt-3 flex-shrink-0">
-            <TabsList className="grid w-full grid-cols-3 bg-gray-800 h-9">
-              <TabsTrigger value="all" className="text-xs data-[state=active]:bg-blue-600">All</TabsTrigger>
-              <TabsTrigger value="popular" className="text-xs data-[state=active]:bg-blue-600">Popular</TabsTrigger>
-              <TabsTrigger value="recent" className="text-xs data-[state=active]:bg-blue-600">Recent</TabsTrigger>
+        <CardContent className="flex-1 flex flex-col p-4 overflow-hidden">
+          {/* Search */}
+          <div className="relative mb-4">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search elements..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+
+          {/* Info Panel */}
+          <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="flex items-center gap-2 mb-2">
+              <Info className="h-4 w-4 text-blue-500" />
+              <span className="font-semibold text-blue-700">How to Use</span>
+            </div>
+            <p className="text-sm text-blue-600">
+              Drag any element from the library and drop it onto the canvas to add it to your form.
+            </p>
+          </div>
+
+          {/* Category Tabs */}
+          <Tabs value={activeCategory} onValueChange={setActiveCategory} className="flex-1 flex flex-col">
+            <TabsList className="grid grid-cols-4 mb-4">
+              <TabsTrigger value="basic" className="text-xs">Basic</TabsTrigger>
+              <TabsTrigger value="selection" className="text-xs">Select</TabsTrigger>
+              <TabsTrigger value="layout" className="text-xs">Layout</TabsTrigger>
+              <TabsTrigger value="advanced" className="text-xs">Advanced</TabsTrigger>
             </TabsList>
-          </div>
 
-          <div className="flex-1 overflow-y-auto">
-            <TabsContent value="all" className="p-4 mt-0">
-              {selectedCategory === 'all' ? (
-                <div className="space-y-6">
-                  {Object.entries(FORM_ELEMENTS).map(([category, elements]) => {
-                    const filteredElements = filterElements(elements);
-                    if (filteredElements.length === 0) return null;
-                    
-                    return (
-                      <div key={category}>
-                        <h3 className="text-sm font-semibold text-gray-300 mb-3 uppercase tracking-wider">
-                          {category.replace(/([A-Z])/g, ' $1').toUpperCase()}
-                        </h3>
-                        <div className={`grid gap-3 ${
-                          viewMode === 'grid' ? 'grid-cols-1 xl:grid-cols-2' : 'grid-cols-1'
-                        }`}>
-                          {filteredElements.map(element => renderElementCard(element, true))}
-                        </div>
+            {/* Elements Grid */}
+            <ScrollArea className="flex-1">
+              <TabsContent value={activeCategory} className="mt-0">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 mb-3">
+                    <currentCategory.icon className="h-4 w-4 text-blue-500" />
+                    <span className="font-semibold text-gray-700">{currentCategory.name}</span>
+                    <Badge variant="outline" className="text-xs">
+                      {currentCategory.elements.length}
+                    </Badge>
+                  </div>
+
+                  <AnimatePresence>
+                    <div className="grid grid-cols-1 gap-2">
+                      {currentCategory.elements.map((element, index) => (
+                        <Tooltip key={element.type}>
+                          <TooltipTrigger asChild>
+                            <div
+                              draggable
+                              onDragStart={(e) => handleDragStart(e, element.type)}
+                              className="group p-3 bg-white border border-gray-200 rounded-lg cursor-grab hover:cursor-grabbing hover:shadow-md hover:border-blue-300 transition-all duration-200 active:scale-95"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
+                                  <element.icon className="h-4 w-4 text-blue-600" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-gray-900 text-sm truncate">
+                                    {element.label}
+                                  </p>
+                                  <p className="text-xs text-gray-500 line-clamp-2">
+                                    {element.description}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent side="right">
+                            <div className="max-w-xs">
+                              <p className="font-semibold">{element.label}</p>
+                              <p className="text-sm text-gray-600">{element.description}</p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Drag to canvas to add
+                              </p>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      ))}
+                    </div>
+                  </AnimatePresence>
+                </div>
+              </TabsContent>
+
+              {/* Other category tabs */}
+              {Object.entries(ELEMENT_CATEGORIES)
+                .filter(([key]) => key !== activeCategory)
+                .map(([key, category]) => (
+                  <TabsContent key={key} value={key} className="mt-0">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 mb-3">
+                        <category.icon className="h-4 w-4 text-blue-500" />
+                        <span className="font-semibold text-gray-700">{category.name}</span>
+                        <Badge variant="outline" className="text-xs">
+                          {category.elements.length}
+                        </Badge>
                       </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className={`grid gap-3 ${
-                  viewMode === 'grid' ? 'grid-cols-1 xl:grid-cols-2' : 'grid-cols-1'
-                }`}>
-                  {filterElements(getAllElements()).map(element => renderElementCard(element))}
-                </div>
-              )}
-            </TabsContent>
 
-            <TabsContent value="popular" className="p-4 mt-0">
-              <div className={`grid gap-3 ${
-                viewMode === 'grid' ? 'grid-cols-1 xl:grid-cols-2' : 'grid-cols-1'
-              }`}>
-                {filterElements([
-                  ...FORM_ELEMENTS.fields.slice(0, 6),
-                  ...FORM_ELEMENTS.selection.slice(0, 4),
-                  ...FORM_ELEMENTS.layout.slice(0, 3)
-                ]).map(element => renderElementCard(element))}
-              </div>
-            </TabsContent>
+                      <div className="grid grid-cols-1 gap-2">
+                        {category.elements.map((element, index) => (
+                          <Tooltip key={element.type}>
+                            <TooltipTrigger asChild>
+                              <div
+                                draggable
+                                onDragStart={(e) => handleDragStart(e, element.type)}
+                                className="group p-3 bg-white border border-gray-200 rounded-lg cursor-grab hover:cursor-grabbing hover:shadow-md hover:border-blue-300 transition-all duration-200 active:scale-95"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
+                                    <element.icon className="h-4 w-4 text-blue-600" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-gray-900 text-sm truncate">
+                                      {element.label}
+                                    </p>
+                                    <p className="text-xs text-gray-500 line-clamp-2">
+                                      {element.description}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="right">
+                              <div className="max-w-xs">
+                                <p className="font-semibold">{element.label}</p>
+                                <p className="text-sm text-gray-600">{element.description}</p>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Drag to canvas to add
+                                </p>
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        ))}
+                      </div>
+                    </div>
+                  </TabsContent>
+                ))}
+            </ScrollArea>
+          </Tabs>
 
-            <TabsContent value="recent" className="p-4 mt-0">
-              <div className={`grid gap-3 ${
-                viewMode === 'grid' ? 'grid-cols-1 xl:grid-cols-2' : 'grid-cols-1'
-              }`}>
-                {filterElements([
-                  ...FORM_ELEMENTS.advanced,
-                  ...FORM_ELEMENTS.specialized.slice(0, 4)
-                ]).map(element => renderElementCard(element))}
-              </div>
-            </TabsContent>
+          {/* Usage Stats */}
+          <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+            <div className="text-xs text-gray-600 text-center">
+              {Object.values(ELEMENT_CATEGORIES).reduce((acc, cat) => acc + cat.elements.length, 0)} elements available
+            </div>
           </div>
-        </Tabs>
-      </div>
-    </div>
+        </CardContent>
+      </Card>
+    </TooltipProvider>
   );
 };
 

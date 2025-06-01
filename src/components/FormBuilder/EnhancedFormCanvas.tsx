@@ -1,405 +1,426 @@
 
-import React, { useEffect, useRef } from 'react';
-import { FormCanvasProps } from './types';
+import React, { useState, useRef } from 'react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { FormElement, FormConfig } from './types';
 import FormElementRenderer from './FormElementRenderer';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Plus, Trash2, Copy, MoveUp, MoveDown, Eye, 
+  Smartphone, Tablet, Monitor, Layers, Settings
+} from 'lucide-react';
 
-const EnhancedFormCanvas: React.FC<FormCanvasProps> = ({ 
-  elements, 
-  setFormConfig, 
-  onSelectElement, 
+interface EnhancedFormCanvasProps {
+  elements: FormElement[];
+  setFormConfig: React.Dispatch<React.SetStateAction<FormConfig>>;
+  onSelectElement: (element: FormElement) => void;
+  selectedElement: FormElement | null;
+  formConfig: FormConfig;
+  onUpdate: (config: FormConfig) => void;
+}
+
+const EnhancedFormCanvas: React.FC<EnhancedFormCanvasProps> = ({
+  elements,
+  setFormConfig,
+  onSelectElement,
   selectedElement,
   formConfig,
-  onUpdate 
+  onUpdate
 }) => {
+  const [draggedOver, setDraggedOver] = useState<number | null>(null);
+  const [previewMode, setPreviewMode] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  const handleDrop = (e: React.DragEvent, containerId?: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const elementType = e.dataTransfer.getData('application/json');
-    
-    if (elementType) {
-      const newElement = {
-        id: Date.now().toString(),
-        type: elementType as any,
-        label: `New ${elementType.charAt(0).toUpperCase() + elementType.slice(1)}`,
-        required: false,
-        placeholder: `Enter ${elementType}`,
-        options: elementType === 'select' || elementType === 'radio' || elementType === 'checkbox-group' ? 
-          ['Option 1', 'Option 2', 'Option 3'] : undefined,
-        containerId: containerId,
-      };
-
-      setFormConfig(prev => ({
-        ...prev,
-        elements: [...prev.elements, newElement]
-      }));
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'copy';
   };
 
-  const getFormStyles = () => {
-    const canvasStyles = formConfig.settings.canvasStyles || {};
-    const previewSettings = formConfig.settings.preview;
-    
-    let width = '100%';
-    if (previewSettings?.width && previewSettings.width !== 'Full') {
-      if (typeof previewSettings.width === 'number') {
-        width = `${previewSettings.width}px`;
-      } else {
-        const numericWidth = parseInt(previewSettings.width);
-        if (!isNaN(numericWidth)) {
-          width = `${numericWidth}px`;
-        }
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>, index?: number) => {
+    e.preventDefault();
+    if (typeof index === 'number') {
+      setDraggedOver(index);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    // Only reset if we're leaving the canvas entirely
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (rect) {
+      const { clientX, clientY } = e;
+      if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) {
+        setDraggedOver(null);
       }
     }
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>, dropIndex?: number) => {
+    e.preventDefault();
+    setDraggedOver(null);
     
-    return {
-      backgroundColor: canvasStyles.formBackgroundColor || '#ffffff',
-      padding: canvasStyles.padding || '32px',
-      borderRadius: canvasStyles.borderRadius || '16px',
-      boxShadow: '0 20px 40px -12px rgba(0, 0, 0, 0.15), 0 8px 24px -8px rgba(0, 0, 0, 0.1)',
-      border: '1px solid rgba(255, 255, 255, 0.2)',
-      backdropFilter: 'blur(20px)',
-      width: width,
-      maxWidth: canvasStyles.formWidth ? `${canvasStyles.formWidth}px` : '800px',
-      fontFamily: canvasStyles.fontFamily || 'Inter',
-      fontSize: canvasStyles.fontSize ? `${canvasStyles.fontSize}px` : '16px',
-      color: canvasStyles.fontColor || '#000000',
-      transition: 'all 0.3s ease-in-out',
-      minHeight: '500px',
-      margin: '0 auto',
+    const elementType = e.dataTransfer.getData('text/plain');
+    console.log('Dropped element type:', elementType);
+    
+    if (elementType) {
+      const newElement: FormElement = {
+        id: Date.now().toString(),
+        type: elementType as any,
+        label: getDefaultLabel(elementType),
+        placeholder: getDefaultPlaceholder(elementType),
+        required: false,
+        validation: {},
+        options: getDefaultOptions(elementType),
+        settings: getDefaultSettings(elementType)
+      };
+
+      console.log('Creating new element:', newElement);
+
+      const newElements = [...elements];
+      const insertIndex = dropIndex !== undefined ? dropIndex : newElements.length;
+      newElements.splice(insertIndex, 0, newElement);
+
+      setFormConfig(prev => ({
+        ...prev,
+        elements: newElements
+      }));
+
+      // Auto-select the new element
+      onSelectElement(newElement);
+    }
+  };
+
+  const getDefaultLabel = (elementType: string): string => {
+    const labels: { [key: string]: string } = {
+      'text': 'Text Input',
+      'email': 'Email Address',
+      'tel': 'Phone Number',
+      'password': 'Password',
+      'search': 'Search',
+      'url': 'Website URL',
+      'number': 'Number',
+      'range': 'Range',
+      'date': 'Date',
+      'time': 'Time',
+      'datetime-local': 'Date & Time',
+      'textarea': 'Message',
+      'select': 'Select Option',
+      'checkbox': 'Checkbox Options',
+      'radio': 'Radio Options',
+      'file': 'File Upload',
+      'image': 'Image Upload',
+      'youtube': 'YouTube Video',
+      'rating': 'Rating',
+      'scale-rating': 'Scale Rating',
+      'location': 'Location',
+      'signature': 'Signature',
+      'payment': 'Payment Information',
+      'color': 'Color',
+      'toggle': 'Toggle',
+      'multi-select': 'Multi Select',
+      'rich-text': 'Rich Text',
+      'section': 'Section',
+      'heading': 'Heading',
+      'paragraph': 'Paragraph',
+      'divider': 'Divider'
     };
+    return labels[elementType] || 'Form Field';
   };
 
-  const renderNestedElements = (containerId: string) => {
-    const nestedElements = elements.filter(el => el.containerId === containerId);
-    return nestedElements.map((element, index) => (
-      <motion.div
-        key={element.id}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.05 }}
-        className={`mb-4 p-3 rounded-lg border-2 transition-all duration-200 cursor-pointer relative group ${
-          selectedElement?.id === element.id
-            ? 'border-blue-500 bg-blue-50/50 shadow-md'
-            : 'border-transparent hover:border-gray-300 hover:bg-gray-50/50'
-        }`}
-        onClick={(e) => {
-          e.stopPropagation();
-          onSelectElement(element);
-        }}
-      >
-        {/* Element Badge */}
-        {selectedElement?.id === element.id && (
-          <div className="absolute -top-2 -right-2 bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium z-10">
-            {element.type}
-          </div>
-        )}
-        
-        <FormElementRenderer
-          element={element}
-          value=""
-          onChange={() => {}}
-          formConfig={formConfig}
-        />
-      </motion.div>
-    ));
+  const getDefaultPlaceholder = (elementType: string): string => {
+    const placeholders: { [key: string]: string } = {
+      'text': 'Enter text...',
+      'email': 'Enter your email address',
+      'tel': 'Enter phone number',
+      'password': 'Enter password',
+      'search': 'Search...',
+      'url': 'https://example.com',
+      'number': 'Enter number',
+      'textarea': 'Enter your message...',
+      'location': 'Enter address or location'
+    };
+    return placeholders[elementType] || '';
   };
 
-  const rootElements = elements.filter(el => !el.containerId);
-
-  // Handle auto-scroll to center
-  useEffect(() => {
-    if (canvasRef.current) {
-      const canvas = canvasRef.current;
-      const container = canvas.closest('.overflow-auto');
-      if (container) {
-        const scrollTop = Math.max(0, (canvas.scrollHeight - container.clientHeight) / 2);
-        container.scrollTo({ top: scrollTop, behavior: 'smooth' });
-      }
+  const getDefaultOptions = (elementType: string): string[] => {
+    if (['select', 'checkbox', 'radio', 'multi-select'].includes(elementType)) {
+      return ['Option 1', 'Option 2', 'Option 3'];
     }
-  }, [rootElements.length]);
+    return [];
+  };
+
+  const getDefaultSettings = (elementType: string): any => {
+    const settings: { [key: string]: any } = {
+      'youtube': { url: '', autoplay: false, controls: true },
+      'rating': { maxStars: 5 },
+      'scale-rating': { minValue: 1, maxValue: 10 },
+      'range': { min: 0, max: 100, step: 1 },
+      'file': { accept: '*', multiple: false },
+      'image': { accept: 'image/*', multiple: false },
+      'rich-text': { toolbar: ['bold', 'italic', 'underline'] },
+      'section': { collapsible: false },
+      'heading': { level: 2, text: 'Section Heading' },
+      'paragraph': { text: 'This is a paragraph of descriptive text.' }
+    };
+    return settings[elementType] || {};
+  };
+
+  const duplicateElement = (element: FormElement) => {
+    const newElement = {
+      ...element,
+      id: Date.now().toString(),
+      label: `${element.label} (Copy)`
+    };
+    
+    const elementIndex = elements.findIndex(el => el.id === element.id);
+    const newElements = [...elements];
+    newElements.splice(elementIndex + 1, 0, newElement);
+    
+    setFormConfig(prev => ({
+      ...prev,
+      elements: newElements
+    }));
+  };
+
+  const deleteElement = (elementId: string) => {
+    setFormConfig(prev => ({
+      ...prev,
+      elements: prev.elements.filter(el => el.id !== elementId)
+    }));
+    
+    if (selectedElement?.id === elementId) {
+      onSelectElement(null as any);
+    }
+  };
+
+  const moveElement = (elementId: string, direction: 'up' | 'down') => {
+    const currentIndex = elements.findIndex(el => el.id === elementId);
+    if (currentIndex === -1) return;
+    
+    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    if (newIndex < 0 || newIndex >= elements.length) return;
+    
+    const newElements = [...elements];
+    const [movedElement] = newElements.splice(currentIndex, 1);
+    newElements.splice(newIndex, 0, movedElement);
+    
+    setFormConfig(prev => ({
+      ...prev,
+      elements: newElements
+    }));
+  };
+
+  const getCanvasWidth = () => {
+    switch (previewMode) {
+      case 'mobile': return 'w-80';
+      case 'tablet': return 'w-96';
+      case 'desktop': return 'w-full max-w-4xl';
+      default: return 'w-full max-w-4xl';
+    }
+  };
+
+  const canvasStyles = formConfig.settings.canvasStyles || {};
 
   return (
-    <div className="w-full h-full flex flex-col">
-      {/* Global Custom CSS Injection */}
-      {formConfig.settings.canvasStyles?.customCSS && (
-        <style dangerouslySetInnerHTML={{ __html: formConfig.settings.canvasStyles.customCSS }} />
-      )}
-      
+    <div className="h-full flex flex-col">
       {/* Canvas Header */}
-      <div className="p-4 border-b bg-gradient-to-r from-blue-50 to-indigo-50 flex items-center justify-between">
-        <div>
-          <h3 className="font-semibold text-gray-900">Form Canvas</h3>
-          <p className="text-sm text-gray-600">
-            {rootElements.length} element{rootElements.length !== 1 ? 's' : ''} on canvas
-          </p>
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
+        <div className="flex items-center gap-4">
+          <Badge variant="outline" className="flex items-center gap-2">
+            <Layers className="h-3 w-3" />
+            {elements.length} Elements
+          </Badge>
+          
+          {selectedElement && (
+            <Badge className="bg-blue-100 text-blue-700">
+              <Settings className="h-3 w-3 mr-1" />
+              {selectedElement.label}
+            </Badge>
+          )}
         </div>
+
+        {/* Preview Mode Buttons */}
         <div className="flex items-center gap-2">
-          <div className="text-xs text-gray-500">
-            Drag elements here to build your form
-          </div>
+          <Button
+            size="sm"
+            variant={previewMode === 'mobile' ? 'default' : 'outline'}
+            onClick={() => setPreviewMode('mobile')}
+            className="w-9 h-9 p-0"
+          >
+            <Smartphone className="h-4 w-4" />
+          </Button>
+          <Button
+            size="sm"
+            variant={previewMode === 'tablet' ? 'default' : 'outline'}
+            onClick={() => setPreviewMode('tablet')}
+            className="w-9 h-9 p-0"
+          >
+            <Tablet className="h-4 w-4" />
+          </Button>
+          <Button
+            size="sm"
+            variant={previewMode === 'desktop' ? 'default' : 'outline'}
+            onClick={() => setPreviewMode('desktop')}
+            className="w-9 h-9 p-0"
+          >
+            <Monitor className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
-      {/* Scrollable Canvas Area */}
-      <div className="flex-1 overflow-auto p-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-        <motion.div 
-          ref={canvasRef}
-          className={`w-full relative ${formConfig.settings.canvasStyles?.containerClass || ''}`}
-          style={getFormStyles()}
-          onDrop={(e) => handleDrop(e)}
-          onDragOver={handleDragOver}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          {rootElements.length === 0 ? (
-            <motion.div 
-              className="text-center py-16"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <div className="text-gray-400 mb-6">
-                <svg
-                  className="mx-auto h-20 w-20"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={1}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-semibold text-gray-600 mb-3" style={{
-                fontFamily: formConfig.settings.canvasStyles?.fontFamily || 'Inter',
-                fontSize: formConfig.settings.canvasStyles?.fontSize ? `${formConfig.settings.canvasStyles.fontSize + 4}px` : '24px',
-                color: formConfig.settings.canvasStyles?.fontColor || '#6b7280'
-              }}>
-                Start building your form
-              </h3>
-              <p className="text-gray-500 mb-6" style={{
-                fontFamily: formConfig.settings.canvasStyles?.fontFamily || 'Inter',
-                fontSize: formConfig.settings.canvasStyles?.fontSize ? `${formConfig.settings.canvasStyles.fontSize - 2}px` : '14px',
-                color: formConfig.settings.canvasStyles?.fontColor || '#9ca3af'
-              }}>
-                Drag elements from the sidebar to begin creating your form
-              </p>
-              
-              {/* Drop Zone Indicator */}
-              <div className="mt-8 border-2 border-dashed border-gray-300 rounded-xl p-8 bg-white/50 backdrop-blur-sm">
-                <div className="text-gray-400 text-sm">
-                  Drop zone - Drag elements here
+      {/* Canvas Area */}
+      <div 
+        className="flex-1 overflow-auto p-8"
+        style={{ 
+          background: canvasStyles.backgroundColor || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          backgroundImage: canvasStyles.backgroundImage ? `url(${canvasStyles.backgroundImage})` : undefined,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      >
+        <div className={`mx-auto transition-all duration-300 ${getCanvasWidth()}`}>
+          <Card 
+            ref={canvasRef}
+            className="min-h-96 shadow-xl"
+            style={{
+              backgroundColor: canvasStyles.formBackgroundColor || '#ffffff',
+              borderRadius: canvasStyles.borderRadius || '12px',
+              padding: canvasStyles.padding || '32px',
+              fontFamily: canvasStyles.fontFamily || 'Inter',
+              fontSize: `${canvasStyles.fontSize || 16}px`,
+              color: canvasStyles.fontColor || '#1f2937',
+              width: previewMode === 'desktop' ? `${canvasStyles.formWidth || 752}px` : 'auto'
+            }}
+            onDragOver={handleDragOver}
+            onDragEnter={(e) => handleDragEnter(e)}
+            onDragLeave={handleDragLeave}
+            onDrop={(e) => handleDrop(e)}
+          >
+            {elements.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="mb-4">
+                  <Plus className="h-12 w-12 text-gray-300 mx-auto" />
                 </div>
+                <h3 className="text-lg font-medium text-gray-500 mb-2">
+                  Start Building Your Form
+                </h3>
+                <p className="text-gray-400 text-sm">
+                  Drag and drop elements from the sidebar to create your form
+                </p>
               </div>
-            </motion.div>
-          ) : (
-            <div className="space-y-6">
-              {rootElements.map((element, index) => (
-                <motion.div
-                  key={element.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className={`relative group ${
-                    selectedElement?.id === element.id
-                      ? 'ring-2 ring-blue-500 rounded-xl'
-                      : ''
-                  }`}
-                  style={{
-                    marginBottom: formConfig.settings.layout?.questionSpacing ? 
-                      `${formConfig.settings.layout.questionSpacing}px` : '24px'
-                  }}
-                >
-                  {/* Container/Layout Elements with Enhanced Drop Zones */}
-                  {(element.type === 'container' || element.type === '2-columns' || element.type === '3-columns' || element.type === '4-columns') ? (
-                    <div
-                      className={`p-6 rounded-xl border-2 transition-all duration-200 cursor-pointer min-h-[250px] relative ${
-                        selectedElement?.id === element.id
-                          ? 'border-blue-500 bg-blue-50/50 shadow-lg'
-                          : 'border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/30'
-                      }`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onSelectElement(element);
-                      }}
+            ) : (
+              <div className="space-y-6">
+                <AnimatePresence>
+                  {elements.map((element, index) => (
+                    <motion.div
+                      key={element.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.2 }}
+                      className="group relative"
                     >
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="font-medium text-gray-700">{element.label}</h4>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
-                            {element.type}
-                          </span>
+                      {/* Drop Zone Above */}
+                      <div
+                        className={`h-2 transition-all duration-200 ${
+                          draggedOver === index 
+                            ? 'bg-blue-400 rounded' 
+                            : 'bg-transparent'
+                        }`}
+                        onDragEnter={(e) => handleDragEnter(e, index)}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, index)}
+                      />
+
+                      {/* Element Container */}
+                      <div
+                        className={`relative transition-all duration-200 ${
+                          selectedElement?.id === element.id
+                            ? 'ring-2 ring-blue-500 ring-opacity-50 bg-blue-50/30'
+                            : 'hover:bg-gray-50/50'
+                        } rounded-lg`}
+                        onClick={() => onSelectElement(element)}
+                      >
+                        {/* Element Controls */}
+                        <div className={`absolute -top-2 -right-2 z-10 flex gap-1 transition-opacity ${
+                          selectedElement?.id === element.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                        }`}>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="w-8 h-8 p-0 bg-white shadow-md hover:bg-blue-50"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              moveElement(element.id, 'up');
+                            }}
+                            disabled={index === 0}
+                          >
+                            <MoveUp className="h-3 w-3" />
+                          </Button>
+                          
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="w-8 h-8 p-0 bg-white shadow-md hover:bg-blue-50"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              moveElement(element.id, 'down');
+                            }}
+                            disabled={index === elements.length - 1}
+                          >
+                            <MoveDown className="h-3 w-3" />
+                          </Button>
+                          
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="w-8 h-8 p-0 bg-white shadow-md hover:bg-green-50"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              duplicateElement(element);
+                            }}
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                          
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="w-8 h-8 p-0 bg-white shadow-md hover:bg-red-50"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteElement(element.id);
+                            }}
+                          >
+                            <Trash2 className="h-3 w-3 text-red-500" />
+                          </Button>
+                        </div>
+
+                        {/* Element Renderer */}
+                        <div className="p-2">
+                          <FormElementRenderer element={element} />
                         </div>
                       </div>
-                      
-                      {/* Enhanced Layout Rendering */}
-                      {element.type === 'container' && (
-                        <div
-                          className="min-h-[150px] border-2 border-dashed border-gray-200 rounded-lg p-4 bg-gray-50/50 relative group"
-                          onDrop={(e) => handleDrop(e, element.id)}
-                          onDragOver={handleDragOver}
-                        >
-                          <div className="text-center text-gray-500 mb-4">
-                            <svg className="mx-auto h-8 w-8 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 4v16m8-8H4" />
-                            </svg>
-                            <div className="text-sm font-medium">Container Drop Zone</div>
-                            <div className="text-xs">Drop elements here to group them</div>
-                          </div>
-                          {renderNestedElements(element.id)}
-                        </div>
-                      )}
-                      
-                      {element.type === '2-columns' && (
-                        <div className="grid grid-cols-2 gap-4">
-                          {[1, 2].map(col => (
-                            <div
-                              key={col}
-                              className="min-h-[150px] border-2 border-dashed border-gray-200 rounded-lg p-4 bg-gray-50/50 relative"
-                              onDrop={(e) => handleDrop(e, `${element.id}-col${col}`)}
-                              onDragOver={handleDragOver}
-                            >
-                              <div className="text-center text-gray-500 text-sm mb-3">
-                                <div className="font-medium">Column {col}</div>
-                                <div className="text-xs">Drop zone</div>
-                              </div>
-                              {renderNestedElements(`${element.id}-col${col}`)}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      
-                      {element.type === '3-columns' && (
-                        <div className="grid grid-cols-3 gap-4">
-                          {[1, 2, 3].map(col => (
-                            <div
-                              key={col}
-                              className="min-h-[150px] border-2 border-dashed border-gray-200 rounded-lg p-4 bg-gray-50/50"
-                              onDrop={(e) => handleDrop(e, `${element.id}-col${col}`)}
-                              onDragOver={handleDragOver}
-                            >
-                              <div className="text-center text-gray-500 text-sm mb-3">
-                                <div className="font-medium">Column {col}</div>
-                                <div className="text-xs">Drop zone</div>
-                              </div>
-                              {renderNestedElements(`${element.id}-col${col}`)}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      
-                      {element.type === '4-columns' && (
-                        <div className="grid grid-cols-4 gap-4">
-                          {[1, 2, 3, 4].map(col => (
-                            <div
-                              key={col}
-                              className="min-h-[150px] border-2 border-dashed border-gray-200 rounded-lg p-4 bg-gray-50/50"
-                              onDrop={(e) => handleDrop(e, `${element.id}-col${col}`)}
-                              onDragOver={handleDragOver}
-                            >
-                              <div className="text-center text-gray-500 text-sm mb-3">
-                                <div className="font-medium">Col {col}</div>
-                                <div className="text-xs">Drop</div>
-                              </div>
-                              {renderNestedElements(`${element.id}-col${col}`)}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    /* Regular Form Elements with Enhanced Styling */
-                    <motion.div
-                      className={`p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer hover:shadow-lg relative group ${
-                        selectedElement?.id === element.id
-                          ? 'border-blue-500 bg-blue-50/50 shadow-lg'
-                          : 'border-transparent hover:border-gray-200 hover:bg-gray-50/50'
-                      }`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onSelectElement(element);
-                      }}
-                      whileHover={{ scale: 1.01 }}
-                      whileTap={{ scale: 0.99 }}
-                    >
-                      {/* Element Type Badge */}
-                      {selectedElement?.id === element.id && (
-                        <div className="absolute -top-2 -right-2 bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium z-10">
-                          {element.type}
-                        </div>
-                      )}
-                      
-                      <FormElementRenderer
-                        element={element}
-                        value=""
-                        onChange={() => {}}
-                        formConfig={formConfig}
-                      />
                     </motion.div>
-                  )}
-                </motion.div>
-              ))}
-              
-              {/* Enhanced Submit Button */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: rootElements.length * 0.1 + 0.2 }}
-                className="pt-6"
-              >
-                <button
-                  type="submit"
-                  className="w-full py-4 px-6 rounded-xl font-medium transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
-                  style={{
-                    backgroundColor: formConfig.settings.canvasStyles?.primaryColor || '#3b82f6',
-                    color: 'white',
-                    fontFamily: formConfig.settings.canvasStyles?.fontFamily || 'Inter',
-                    fontSize: formConfig.settings.canvasStyles?.fontSize ? `${formConfig.settings.canvasStyles.fontSize}px` : '16px',
-                    borderRadius: formConfig.settings.canvasStyles?.borderRadius || '12px'
-                  }}
-                >
-                  {formConfig.settings.submitButton?.text || 'Submit Form'}
-                </button>
-              </motion.div>
+                  ))}
+                </AnimatePresence>
 
-              {/* Terms & Conditions */}
-              {formConfig.settings.termsAndConditions?.enabled && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: rootElements.length * 0.1 + 0.3 }}
-                  className="flex items-center gap-3 text-sm p-4 bg-gray-50/50 rounded-lg"
-                >
-                  <input
-                    type="checkbox"
-                    id="terms"
-                    required={formConfig.settings.termsAndConditions.required}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <label htmlFor="terms" className="text-gray-600 cursor-pointer" style={{
-                    fontFamily: formConfig.settings.canvasStyles?.fontFamily || 'Inter',
-                    fontSize: formConfig.settings.canvasStyles?.fontSize ? `${formConfig.settings.canvasStyles.fontSize - 2}px` : '14px',
-                    color: formConfig.settings.canvasStyles?.fontColor || '#6b7280'
-                  }}>
-                    {formConfig.settings.termsAndConditions.text || 'I accept the Terms & Conditions'}
-                  </label>
-                </motion.div>
-              )}
-            </div>
-          )}
-        </motion.div>
+                {/* Drop Zone at Bottom */}
+                <div
+                  className={`h-4 transition-all duration-200 ${
+                    draggedOver === elements.length 
+                      ? 'bg-blue-400 rounded' 
+                      : 'bg-transparent'
+                  }`}
+                  onDragEnter={(e) => handleDragEnter(e, elements.length)}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, elements.length)}
+                />
+              </div>
+            )}
+          </Card>
+        </div>
       </div>
     </div>
   );

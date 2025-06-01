@@ -31,11 +31,11 @@ const ThemeGallery: React.FC<ThemeGalleryProps> = ({
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const categories = ['all', ...Array.from(new Set(themes.map(theme => theme.category)))];
+  const categories = ['all', ...Array.from(new Set(themes.map(theme => theme.category || 'uncategorized')))];
   
   const filteredThemes = themes.filter(theme => {
     const matchesSearch = theme.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         theme.category.toLowerCase().includes(searchTerm.toLowerCase());
+                         (theme.category || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || theme.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -51,7 +51,7 @@ const ThemeGallery: React.FC<ThemeGalleryProps> = ({
       {/* Preview */}
       <div 
         className="h-32 relative cursor-pointer"
-        style={{ background: theme.preview }}
+        style={{ background: theme.backgroundColor }}
         onClick={() => onSelectTheme(theme)}
       >
         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -62,13 +62,13 @@ const ThemeGallery: React.FC<ThemeGalleryProps> = ({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onToggleFavorite(theme.id);
+            onToggleFavorite(String(theme.id || ''));
           }}
           className="absolute top-2 right-2 p-1 rounded-full bg-white/80 hover:bg-white transition-colors"
         >
           <Heart 
             className={`h-4 w-4 ${
-              favorites.includes(theme.id) 
+              favorites.includes(String(theme.id || '')) 
                 ? 'text-red-500 fill-red-500' 
                 : 'text-gray-400'
             }`}
@@ -91,12 +91,12 @@ const ThemeGallery: React.FC<ThemeGalleryProps> = ({
             {theme.name}
           </h3>
           <Badge variant="outline" className="text-xs">
-            {theme.category}
+            {theme.category || 'Custom'}
           </Badge>
         </div>
 
         <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
-          <span>{new Date(theme.created).toLocaleDateString()}</span>
+          <span>{theme.created ? new Date(theme.created).toLocaleDateString() : 'Custom Theme'}</span>
           {theme.popular && (
             <Badge variant="secondary" className="text-xs">
               Popular
@@ -106,13 +106,22 @@ const ThemeGallery: React.FC<ThemeGalleryProps> = ({
 
         {/* Colors Preview */}
         <div className="flex gap-1 mb-3">
-          {Object.values(theme.colors).slice(0, 4).map((color, idx) => (
-            <div
-              key={idx}
-              className="w-4 h-4 rounded-full border border-gray-200"
-              style={{ backgroundColor: color }}
-            />
-          ))}
+          <div
+            className="w-4 h-4 rounded-full border border-gray-200"
+            style={{ backgroundColor: theme.primaryColor }}
+          />
+          <div
+            className="w-4 h-4 rounded-full border border-gray-200"
+            style={{ backgroundColor: theme.secondaryColor }}
+          />
+          <div
+            className="w-4 h-4 rounded-full border border-gray-200"
+            style={{ backgroundColor: theme.formBackgroundColor }}
+          />
+          <div
+            className="w-4 h-4 rounded-full border border-gray-200"
+            style={{ backgroundColor: theme.fontColor }}
+          />
         </div>
 
         {/* Actions */}
@@ -135,7 +144,7 @@ const ThemeGallery: React.FC<ThemeGalleryProps> = ({
           <Button
             size="sm"
             variant="outline"
-            onClick={() => onDeleteTheme(theme.id)}
+            onClick={() => onDeleteTheme(String(theme.id || ''))}
             className="text-red-600 hover:text-red-700"
           >
             <Trash2 className="h-3 w-3" />
@@ -230,7 +239,7 @@ const ThemeGallery: React.FC<ThemeGalleryProps> = ({
           >
             <AnimatePresence>
               {filteredThemes.map((theme, index) => (
-                <ThemeCard key={theme.id} theme={theme} index={index} />
+                <ThemeCard key={theme.id || `theme-${index}`} theme={theme} index={index} />
               ))}
             </AnimatePresence>
           </motion.div>

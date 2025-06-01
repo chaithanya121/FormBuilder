@@ -1,11 +1,13 @@
 
 import { configureStore } from '@reduxjs/toolkit';
 import formsReducer from './slices/formsSlice';
+import resumeReducer from './slices/resumeSlice';
 import uiReducer from './slices/uiSlice';
 
 export const store = configureStore({
   reducer: {
     forms: formsReducer,
+    resumes: resumeReducer,
     ui: uiReducer,
   },
   devTools: process.env.NODE_ENV !== 'production',

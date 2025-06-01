@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Wand2, Zap, Brain, Magic, Loader2 } from 'lucide-react';
+import { Sparkles, Wand2, Zap, Brain, Mic, Loader2 } from 'lucide-react';
 import { FormConfig, FormElement } from '../types';
 import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
@@ -41,7 +41,7 @@ const AIEnhanceModal: React.FC<AIEnhanceModalProps> = ({ formConfig, onEnhance, 
       id: 'styling',
       title: 'Modern Styling',
       description: 'Apply modern design patterns and animations',
-      icon: Magic,
+      icon: Mic,
       color: 'bg-purple-500'
     },
     {

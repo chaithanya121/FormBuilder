@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,9 +13,10 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Palette, Type, Layout, Paintbrush, Check, Sparkles, Settings, Upload, Download, 
   Brush, Eye, Monitor, Smartphone, Tablet, Image as ImageIcon, X, Moon, Sun,
-  Zap, Layers, Grid, AlignLeft, RotateCcw, Copy, Wand2, Star, Heart
+  Zap, Layers, Grid, AlignLeft, RotateCcw, Copy, Wand2, Star, Heart, Save
 } from 'lucide-react';
 import { FormConfig } from './types';
+import { useToast } from '@/hooks/use-toast';
 
 interface FormDesignerProps {
   isOpen: boolean;
@@ -172,17 +172,16 @@ const FONT_FAMILIES = [
 const FormDesigner: React.FC<FormDesignerProps> = ({ isOpen, onClose, formConfig, onUpdate }) => {
   const [activeTab, setActiveTab] = useState('themes');
   const [selectedTheme, setSelectedTheme] = useState('modern-minimal');
-  const [previewMode, setPreviewMode] = useState('desktop');
-  const [darkMode, setDarkMode] = useState(false);
-  const [customColor, setCustomColor] = useState('#3b82f6');
+  const [backgroundImage, setBackgroundImage] = useState('');
+  const { toast } = useToast();
 
-  const handleStyleUpdate = (category: string, field: string, value: any) => {
+  const handleStyleUpdate = (field: string, value: any) => {
     const updatedConfig = {
       ...formConfig,
       settings: {
         ...formConfig.settings,
-        [category]: {
-          ...formConfig.settings[category as keyof typeof formConfig.settings],
+        canvasStyles: {
+          ...formConfig.settings.canvasStyles,
           [field]: value
         }
       }
@@ -210,187 +209,139 @@ const FormDesigner: React.FC<FormDesignerProps> = ({ isOpen, onClose, formConfig
         }
       };
       onUpdate(updatedConfig);
+      
+      toast({
+        title: "Theme Applied",
+        description: `${selectedThemeData.name} theme has been applied successfully.`,
+      });
     }
   };
 
-  const generateRandomTheme = () => {
-    const colors = COLOR_PALETTES[Math.floor(Math.random() * COLOR_PALETTES.length)].colors;
-    const primaryColor = colors[1];
-    const secondaryColor = colors[2];
-    const backgroundColor = `linear-gradient(135deg, ${colors[0]} 0%, ${colors[1]} 100%)`;
-    
-    const updatedConfig = {
-      ...formConfig,
-      settings: {
-        ...formConfig.settings,
-        canvasStyles: {
-          ...formConfig.settings.canvasStyles,
-          backgroundColor: backgroundColor,
-          primaryColor: primaryColor,
-          secondaryColor: secondaryColor,
-          fontColor: darkMode ? '#ffffff' : '#1a1a1a',
-          formBackgroundColor: darkMode ? '#374151' : '#ffffff'
-        }
-      }
-    };
-    onUpdate(updatedConfig);
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const imageUrl = event.target?.result as string;
+        setBackgroundImage(imageUrl);
+        handleStyleUpdate('backgroundImage', imageUrl);
+        toast({
+          title: "Background Image Added",
+          description: "Your background image has been uploaded successfully.",
+        });
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  const resetToDefault = () => {
-    applyTheme('modern-minimal');
+  const saveTheme = () => {
+    const currentTheme = {
+      id: `custom-${Date.now()}`,
+      name: `Custom Theme ${new Date().toLocaleDateString()}`,
+      preview: formConfig.settings.canvasStyles?.backgroundColor || '#f8fafc',
+      colors: {
+        primary: formConfig.settings.canvasStyles?.primaryColor || '#3b82f6',
+        secondary: formConfig.settings.canvasStyles?.secondaryColor || '#64748b',
+        background: formConfig.settings.canvasStyles?.backgroundColor || '#ffffff',
+        form: formConfig.settings.canvasStyles?.formBackgroundColor || '#ffffff',
+        text: formConfig.settings.canvasStyles?.fontColor || '#000000'
+      },
+      gradient: formConfig.settings.canvasStyles?.backgroundColor || '#f8fafc',
+      category: 'custom'
+    };
+
+    const savedThemes = JSON.parse(localStorage.getItem('formBuilder_savedThemes') || '[]');
+    savedThemes.push(currentTheme);
+    localStorage.setItem('formBuilder_savedThemes', JSON.stringify(savedThemes));
+
+    toast({
+      title: "Theme Saved",
+      description: "Your custom theme has been saved to your browser.",
+    });
   };
 
   return (
-    <div className="h-full flex flex-col bg-white">
-      {/* Header with Preview Mode */}
-      <div className="p-4 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Wand2 className="w-5 h-5 text-blue-600" />
-            <h4 className="font-semibold text-slate-900">Form Designer</h4>
-            <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-              Pro
-            </Badge>
+    <div className="h-full flex flex-col bg-white relative">
+      {/* Close Button */}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onClose}
+        className="absolute top-4 right-4 z-10 w-8 h-8 p-0 bg-white/80 backdrop-blur-sm hover:bg-white/90"
+      >
+        <X className="h-4 w-4" />
+      </Button>
+
+      {/* Header */}
+      <div className="p-6 border-b border-slate-200 bg-gradient-to-r from-purple-50 to-blue-50">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg">
+            <Wand2 className="w-6 h-6 text-white" />
           </div>
-          
-          <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={generateRandomTheme}>
-              <Sparkles className="w-3 w-3 mr-1" />
-              Random
-            </Button>
-            <Button size="sm" variant="outline" onClick={resetToDefault}>
-              <RotateCcw className="w-3 h-3 mr-1" />
-              Reset
-            </Button>
+          <div>
+            <h4 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              Form Designer Studio
+            </h4>
+            <p className="text-sm text-gray-600">Create stunning form designs with professional themes</p>
           </div>
         </div>
         
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant={previewMode === 'mobile' ? 'default' : 'outline'}
-              onClick={() => setPreviewMode('mobile')}
-              className="w-9 h-9 p-0"
-            >
-              <Smartphone className="h-4 w-4" />
-            </Button>
-            <Button
-              size="sm"
-              variant={previewMode === 'tablet' ? 'default' : 'outline'}
-              onClick={() => setPreviewMode('tablet')}
-              className="w-9 h-9 p-0"
-            >
-              <Tablet className="h-4 w-4" />
-            </Button>
-            <Button
-              size="sm"
-              variant={previewMode === 'desktop' ? 'default' : 'outline'}
-              onClick={() => setPreviewMode('desktop')}
-              className="w-9 h-9 p-0"
-            >
-              <Monitor className="h-4 w-4" />
-            </Button>
+            <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+              v3.0 Pro
+            </Badge>
+            <Badge variant="outline">
+              {Object.keys(PRESET_THEMES).length} Themes Available
+            </Badge>
           </div>
           
-          <div className="flex items-center gap-2">
-            <Sun className="w-4 h-4 text-yellow-500" />
-            <Switch
-              checked={darkMode}
-              onCheckedChange={setDarkMode}
-              className="data-[state=checked]:bg-blue-600"
-            />
-            <Moon className="w-4 h-4 text-blue-600" />
-          </div>
+          <Button onClick={saveTheme} className="bg-gradient-to-r from-purple-500 to-blue-500">
+            <Save className="w-4 h-4 mr-2" />
+            Save Theme
+          </Button>
         </div>
       </div>
 
       {/* Enhanced Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-        <div className="px-4 pt-4 border-b border-slate-200 flex-shrink-0">
-          <TabsList className="grid w-full grid-cols-4 bg-slate-100 h-10">
-            <TabsTrigger value="themes" className="text-xs data-[state=active]:bg-white">
-              <Sparkles className="h-3 w-3 mr-1" />
+        <div className="px-6 pt-4 border-b border-slate-200 flex-shrink-0">
+          <TabsList className="grid w-full grid-cols-4 bg-slate-100 h-12">
+            <TabsTrigger value="themes" className="text-sm data-[state=active]:bg-white">
+              <Sparkles className="h-4 w-4 mr-2" />
               Themes
             </TabsTrigger>
-            <TabsTrigger value="colors" className="text-xs data-[state=active]:bg-white">
-              <Palette className="h-3 w-3 mr-1" />
+            <TabsTrigger value="colors" className="text-sm data-[state=active]:bg-white">
+              <Palette className="h-4 w-4 mr-2" />
               Colors
             </TabsTrigger>
-            <TabsTrigger value="typography" className="text-xs data-[state=active]:bg-white">
-              <Type className="h-3 w-3 mr-1" />
+            <TabsTrigger value="typography" className="text-sm data-[state=active]:bg-white">
+              <Type className="h-4 w-4 mr-2" />
               Typography
             </TabsTrigger>
-            <TabsTrigger value="layout" className="text-xs data-[state=active]:bg-white">
-              <Layout className="h-3 w-3 mr-1" />
-              Layout
+            <TabsTrigger value="background" className="text-sm data-[state=active]:bg-white">
+              <ImageIcon className="h-4 w-4 mr-2" />
+              Background
             </TabsTrigger>
           </TabsList>
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {/* Enhanced Themes Tab */}
-          <TabsContent value="themes" className="p-4 space-y-4 mt-0 h-full">
-            <div className="text-center mb-6">
-              <h3 className="font-semibold text-slate-900 mb-2">Professional Themes</h3>
-              <p className="text-slate-600 text-sm">Choose from our collection of modern themes</p>
-            </div>
-
+          <TabsContent value="themes" className="p-6 space-y-6 mt-0 h-full">
             {/* Popular Themes */}
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-3">
-                <Star className="w-4 h-4 text-yellow-500" />
-                <h4 className="font-medium text-slate-800">Popular</h4>
-              </div>
-              <div className="grid grid-cols-1 gap-3">
+            <div>
+              <h4 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                <Star className="w-5 h-5 text-yellow-500" />
+                Popular Themes
+              </h4>
+              <div className="grid grid-cols-2 gap-4">
                 {PRESET_THEMES.filter(theme => theme.popular).map((theme) => (
                   <Card
                     key={theme.id}
-                    className={`cursor-pointer overflow-hidden transition-all duration-200 ${
+                    className={`cursor-pointer overflow-hidden transition-all duration-300 ${
                       selectedTheme === theme.id 
-                        ? 'ring-2 ring-blue-500 shadow-lg bg-blue-50' 
-                        : 'hover:shadow-md hover:scale-[1.01] border-gray-200'
-                    }`}
-                    onClick={() => applyTheme(theme.id)}
-                  >
-                    <div className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div 
-                          className="w-12 h-12 rounded-lg border-2 border-white shadow-sm flex-shrink-0"
-                          style={{ background: theme.preview }}
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <h4 className="font-medium text-slate-900 text-sm">{theme.name}</h4>
-                            {selectedTheme === theme.id && (
-                              <div className="flex items-center gap-1 bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-                                <Check className="w-3 h-3" />
-                                Active
-                              </div>
-                            )}
-                          </div>
-                          <Badge variant="outline" className="text-xs mt-1 capitalize">
-                            {theme.category}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </div>
-
-            {/* All Themes */}
-            <div>
-              <h4 className="font-medium text-slate-800 mb-3">All Themes</h4>
-              <div className="grid grid-cols-2 gap-3">
-                {PRESET_THEMES.map((theme) => (
-                  <Card
-                    key={theme.id}
-                    className={`cursor-pointer overflow-hidden transition-all duration-200 ${
-                      selectedTheme === theme.id 
-                        ? 'ring-2 ring-blue-500 shadow-lg' 
-                        : 'hover:shadow-md hover:scale-[1.02]'
+                        ? 'ring-2 ring-purple-500 shadow-lg scale-105' 
+                        : 'hover:shadow-md hover:scale-102'
                     }`}
                     onClick={() => applyTheme(theme.id)}
                   >
@@ -399,36 +350,29 @@ const FormDesigner: React.FC<FormDesignerProps> = ({ isOpen, onClose, formConfig
                         className="absolute inset-0"
                         style={{ background: theme.preview }}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                      
-                      {/* Theme Preview */}
-                      <div className="absolute inset-3 bg-white/95 backdrop-blur-sm rounded-lg p-2 shadow-lg">
-                        <div className="space-y-1">
-                          <div className="h-1.5 bg-slate-200 rounded w-3/4"></div>
-                          <div className="h-1 bg-slate-300 rounded w-1/2"></div>
+                      <div className="absolute inset-4 bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-lg">
+                        <div className="space-y-2">
+                          <div className="h-2 bg-slate-200 rounded w-3/4"></div>
+                          <div className="h-1.5 bg-slate-300 rounded w-1/2"></div>
                           <div 
-                            className="h-4 rounded shadow-sm"
+                            className="h-6 rounded shadow-sm"
                             style={{ backgroundColor: theme.colors.primary }}
                           ></div>
                         </div>
                       </div>
                       
-                      {/* Category Badge */}
-                      <Badge 
-                        className="absolute top-2 right-2 text-xs capitalize bg-white/90 text-gray-700"
-                        variant="secondary"
-                      >
-                        {theme.category}
-                      </Badge>
+                      {selectedTheme === theme.id && (
+                        <div className="absolute top-2 right-2 bg-purple-500 text-white p-1 rounded-full">
+                          <Check className="w-4 h-4" />
+                        </div>
+                      )}
                     </div>
                     
-                    <div className="p-3">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-medium text-slate-900 text-sm">{theme.name}</h4>
-                        {selectedTheme === theme.id && (
-                          <Check className="w-4 h-4 text-blue-600" />
-                        )}
-                      </div>
+                    <div className="p-4">
+                      <h4 className="font-medium text-slate-900">{theme.name}</h4>
+                      <Badge variant="outline" className="mt-2 text-xs capitalize">
+                        {theme.category}
+                      </Badge>
                     </div>
                   </Card>
                 ))}
@@ -436,313 +380,171 @@ const FormDesigner: React.FC<FormDesignerProps> = ({ isOpen, onClose, formConfig
             </div>
           </TabsContent>
 
-          {/* Enhanced Colors Tab */}
-          <TabsContent value="colors" className="p-4 space-y-6 mt-0 h-full">
-            {/* Color Palettes */}
-            <div>
-              <Label className="text-sm font-medium text-slate-700 mb-3 block">Color Palettes</Label>
-              <div className="space-y-3">
-                {COLOR_PALETTES.map((palette, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <span className="text-xs text-slate-600 w-16">{palette.name}</span>
-                    <div className="flex gap-1 flex-1">
-                      {palette.colors.map((color, colorIndex) => (
-                        <button
-                          key={colorIndex}
-                          className="w-8 h-8 rounded-lg border-2 border-white shadow-sm transition-all duration-200 hover:scale-110 hover:border-slate-300"
-                          style={{ backgroundColor: color }}
-                          onClick={() => handleStyleUpdate('canvasStyles', 'primaryColor', color)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Custom Color Picker */}
-            <div>
-              <Label className="text-sm font-medium text-slate-700 mb-3 block">Custom Colors</Label>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-xs text-slate-600">Primary Color</Label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <input
-                      type="color"
-                      value={formConfig.settings.canvasStyles?.primaryColor || '#3b82f6'}
-                      onChange={(e) => handleStyleUpdate('canvasStyles', 'primaryColor', e.target.value)}
-                      className="w-10 h-8 rounded border border-slate-300 cursor-pointer"
-                    />
-                    <Input
-                      value={formConfig.settings.canvasStyles?.primaryColor || '#3b82f6'}
-                      onChange={(e) => handleStyleUpdate('canvasStyles', 'primaryColor', e.target.value)}
-                      className="flex-1 text-xs font-mono"
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <Label className="text-xs text-slate-600">Secondary Color</Label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <input
-                      type="color"
-                      value={formConfig.settings.canvasStyles?.secondaryColor || '#64748b'}
-                      onChange={(e) => handleStyleUpdate('canvasStyles', 'secondaryColor', e.target.value)}
-                      className="w-10 h-8 rounded border border-slate-300 cursor-pointer"
-                    />
-                    <Input
-                      value={formConfig.settings.canvasStyles?.secondaryColor || '#64748b'}
-                      onChange={(e) => handleStyleUpdate('canvasStyles', 'secondaryColor', e.target.value)}
-                      className="flex-1 text-xs font-mono"
-                    />
-                  </div>
+          <TabsContent value="colors" className="p-6 space-y-6 mt-0 h-full">
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <Label className="text-sm font-medium mb-3 block">Primary Color</Label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={formConfig.settings.canvasStyles?.primaryColor || '#3b82f6'}
+                    onChange={(e) => handleStyleUpdate('primaryColor', e.target.value)}
+                    className="w-12 h-12 rounded-lg border-2 border-white shadow-lg cursor-pointer"
+                  />
+                  <Input
+                    value={formConfig.settings.canvasStyles?.primaryColor || '#3b82f6'}
+                    onChange={(e) => handleStyleUpdate('primaryColor', e.target.value)}
+                    className="flex-1 font-mono"
+                  />
                 </div>
               </div>
-            </div>
-
-            <Separator />
-
-            {/* Background Settings */}
-            <div className="space-y-4">
+              
               <div>
-                <Label className="text-sm font-medium text-slate-700">Page Background</Label>
-                <Input
-                  value={formConfig.settings.canvasStyles?.backgroundColor || ''}
-                  onChange={(e) => handleStyleUpdate('canvasStyles', 'backgroundColor', e.target.value)}
-                  className="mt-2"
-                  placeholder="Enter color, gradient, or CSS background"
-                />
-                <p className="text-xs text-slate-500 mt-1">Use hex colors, gradients, or CSS background properties</p>
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-slate-700">Form Background</Label>
-                <div className="flex items-center gap-2 mt-2">
+                <Label className="text-sm font-medium mb-3 block">Form Background</Label>
+                <div className="flex items-center gap-3">
                   <input
                     type="color"
                     value={formConfig.settings.canvasStyles?.formBackgroundColor || '#ffffff'}
-                    onChange={(e) => handleStyleUpdate('canvasStyles', 'formBackgroundColor', e.target.value)}
-                    className="w-10 h-8 rounded border border-slate-300 cursor-pointer"
+                    onChange={(e) => handleStyleUpdate('formBackgroundColor', e.target.value)}
+                    className="w-12 h-12 rounded-lg border-2 border-white shadow-lg cursor-pointer"
                   />
                   <Input
                     value={formConfig.settings.canvasStyles?.formBackgroundColor || '#ffffff'}
-                    onChange={(e) => handleStyleUpdate('canvasStyles', 'formBackgroundColor', e.target.value)}
-                    className="flex-1"
+                    onChange={(e) => handleStyleUpdate('formBackgroundColor', e.target.value)}
+                    className="flex-1 font-mono"
                   />
                 </div>
               </div>
-
-              <div>
-                <Label className="text-sm font-medium text-slate-700">Text Color</Label>
-                <div className="flex items-center gap-2 mt-2">
-                  <input
-                    type="color"
-                    value={formConfig.settings.canvasStyles?.fontColor || '#000000'}
-                    onChange={(e) => handleStyleUpdate('canvasStyles', 'fontColor', e.target.value)}
-                    className="w-10 h-8 rounded border border-slate-300 cursor-pointer"
-                  />
-                  <Input
-                    value={formConfig.settings.canvasStyles?.fontColor || '#000000'}
-                    onChange={(e) => handleStyleUpdate('canvasStyles', 'fontColor', e.target.value)}
-                    className="flex-1"
-                  />
-                </div>
-              </div>
+            </div>
+            
+            <div>
+              <Label className="text-sm font-medium mb-3 block">Canvas Background</Label>
+              <Textarea
+                value={formConfig.settings.canvasStyles?.backgroundColor || ''}
+                onChange={(e) => handleStyleUpdate('backgroundColor', e.target.value)}
+                placeholder="Enter CSS background (color, gradient, etc.)"
+                className="font-mono"
+                rows={3}
+              />
+              <p className="text-xs text-gray-500 mt-2">Examples: #ffffff, linear-gradient(135deg, #667eea 0%, #764ba2 100%)</p>
             </div>
           </TabsContent>
 
-          {/* Enhanced Typography Tab */}
-          <TabsContent value="typography" className="p-4 space-y-6 mt-0 h-full">
+          <TabsContent value="typography" className="p-6 space-y-6 mt-0 h-full">
             <div>
-              <Label className="text-sm font-medium text-slate-700">Font Family</Label>
+              <Label className="text-sm font-medium mb-3 block">Font Family</Label>
               <Select 
                 value={formConfig.settings.canvasStyles?.fontFamily || 'Inter'}
-                onValueChange={(value) => handleStyleUpdate('canvasStyles', 'fontFamily', value)}
+                onValueChange={(value) => handleStyleUpdate('fontFamily', value)}
               >
-                <SelectTrigger className="mt-2">
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="max-h-60">
-                  {FONT_FAMILIES.map((font) => (
-                    <SelectItem key={font.value} value={font.value}>
-                      <div className="flex items-center justify-between w-full">
-                        <span style={{ fontFamily: font.value }}>{font.label}</span>
-                        <Badge variant="outline" className="ml-2 text-xs">
-                          {font.category}
-                        </Badge>
-                      </div>
-                    </SelectItem>
-                  ))}
+                <SelectContent>
+                  <SelectItem value="Inter">Inter</SelectItem>
+                  <SelectItem value="Roboto">Roboto</SelectItem>
+                  <SelectItem value="Open Sans">Open Sans</SelectItem>
+                  <SelectItem value="Lato">Lato</SelectItem>
+                  <SelectItem value="Poppins">Poppins</SelectItem>
+                  <SelectItem value="Montserrat">Montserrat</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label className="text-sm font-medium text-slate-700 mb-3 block">
+              <Label className="text-sm font-medium mb-3 block">
                 Font Size: {formConfig.settings.canvasStyles?.fontSize || 16}px
               </Label>
               <Slider
                 value={[formConfig.settings.canvasStyles?.fontSize || 16]}
-                onValueChange={(value) => handleStyleUpdate('canvasStyles', 'fontSize', value[0])}
+                onValueChange={(value) => handleStyleUpdate('fontSize', value[0])}
                 min={12}
                 max={28}
                 step={1}
                 className="mt-2"
               />
-              <div className="flex justify-between text-xs text-slate-500 mt-1">
-                <span>12px</span>
-                <span>28px</span>
-              </div>
             </div>
 
-            <Separator />
-
             <div>
-              <Label className="text-sm font-medium text-slate-700 mb-3 block">
+              <Label className="text-sm font-medium mb-3 block">
                 Form Width: {formConfig.settings.canvasStyles?.formWidth || 752}px
               </Label>
               <Slider
                 value={[formConfig.settings.canvasStyles?.formWidth || 752]}
-                onValueChange={(value) => handleStyleUpdate('canvasStyles', 'formWidth', value[0])}
+                onValueChange={(value) => handleStyleUpdate('formWidth', value[0])}
                 min={320}
                 max={1200}
                 step={10}
                 className="mt-2"
               />
-              <div className="flex justify-between text-xs text-slate-500 mt-1">
-                <span>320px</span>
-                <span>1200px</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="text-sm font-medium text-slate-700">Padding</Label>
-                <Input
-                  value={formConfig.settings.canvasStyles?.padding || '32px'}
-                  onChange={(e) => handleStyleUpdate('canvasStyles', 'padding', e.target.value)}
-                  className="mt-2"
-                  placeholder="32px"
-                />
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-slate-700">Border Radius</Label>
-                <Input
-                  value={formConfig.settings.canvasStyles?.borderRadius || '16px'}
-                  onChange={(e) => handleStyleUpdate('canvasStyles', 'borderRadius', e.target.value)}
-                  className="mt-2"
-                  placeholder="16px"
-                />
-              </div>
             </div>
           </TabsContent>
 
-          {/* Enhanced Layout Tab */}
-          <TabsContent value="layout" className="p-4 space-y-6 mt-0 h-full">
+          <TabsContent value="background" className="p-6 space-y-6 mt-0 h-full">
             <div>
-              <Label className="text-sm font-medium text-slate-700">Form Width Mode</Label>
-              <Select 
-                value={typeof formConfig.settings.preview?.width === 'number' ? formConfig.settings.preview.width.toString() : (formConfig.settings.preview?.width || 'Full')}
-                onValueChange={(value) => {
-                  const widthValue = value === 'Full' ? 'Full' : parseInt(value);
-                  handleStyleUpdate('preview', 'width', widthValue);
-                }}
-              >
-                <SelectTrigger className="mt-2">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="400">Small (400px)</SelectItem>
-                  <SelectItem value="600">Medium (600px)</SelectItem>
-                  <SelectItem value="800">Large (800px)</SelectItem>
-                  <SelectItem value="1000">Extra Large (1000px)</SelectItem>
-                  <SelectItem value="Full">Full Width</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-sm font-medium text-slate-700">Responsive Design</Label>
-                <p className="text-xs text-slate-500">Enable responsive breakpoints</p>
-              </div>
-              <Switch
-                checked={formConfig.settings.preview?.nesting || false}
-                onCheckedChange={(checked) => handleStyleUpdate('preview', 'nesting', checked)}
-              />
-            </div>
-
-            <Separator />
-
-            <div>
-              <Label className="text-sm font-medium text-slate-700">Label Alignment</Label>
-              <Select 
-                value={formConfig.settings.layout?.labelAlignment || 'top'}
-                onValueChange={(value) => handleStyleUpdate('layout', 'labelAlignment', value)}
-              >
-                <SelectTrigger className="mt-2">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="top">Top</SelectItem>
-                  <SelectItem value="left">Left</SelectItem>
-                  <SelectItem value="right">Right</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label className="text-sm font-medium text-slate-700 mb-3 block">
-                Question Spacing: {formConfig.settings.layout?.questionSpacing || 12}px
-              </Label>
-              <Slider
-                value={[formConfig.settings.layout?.questionSpacing || 12]}
-                onValueChange={(value) => handleStyleUpdate('layout', 'questionSpacing', value[0])}
-                min={0}
-                max={48}
-                step={4}
-                className="mt-2"
-              />
-            </div>
-
-            {formConfig.settings.layout?.labelAlignment === 'left' && (
-              <div>
-                <Label className="text-sm font-medium text-slate-700 mb-3 block">
-                  Label Width: {formConfig.settings.layout?.labelWidth || 230}px
-                </Label>
-                <Slider
-                  value={[formConfig.settings.layout?.labelWidth || 230]}
-                  onValueChange={(value) => handleStyleUpdate('layout', 'labelWidth', value[0])}
-                  min={100}
-                  max={400}
-                  step={10}
-                  className="mt-2"
+              <Label className="text-sm font-medium mb-3 block">Background Image</Label>
+              <div className="space-y-4">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="w-full"
                 />
+                {(backgroundImage || formConfig.settings.canvasStyles?.backgroundImage) && (
+                  <div className="relative">
+                    <img 
+                      src={backgroundImage || formConfig.settings.canvasStyles?.backgroundImage} 
+                      alt="Background preview" 
+                      className="w-full h-40 object-cover rounded-lg"
+                    />
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="absolute top-2 right-2"
+                      onClick={() => {
+                        setBackgroundImage('');
+                        handleStyleUpdate('backgroundImage', '');
+                      }}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
-            )}
-
-            <Separator />
+            </div>
 
             <div>
-              <Label className="text-sm font-medium text-slate-700">Custom CSS</Label>
-              <Textarea
-                value={formConfig.settings.canvasStyles?.customCSS || ''}
-                onChange={(e) => handleStyleUpdate('canvasStyles', 'customCSS', e.target.value)}
-                className="mt-2 font-mono text-sm"
-                placeholder="/* Add your custom CSS here */
-.form-container {
-  /* Custom styles */
-}
+              <Label className="text-sm font-medium mb-3 block">Border Radius</Label>
+              <div className="flex items-center gap-4">
+                <Slider
+                  value={[parseInt(formConfig.settings.canvasStyles?.borderRadius?.replace('px', '') || '12')]}
+                  onValueChange={(value) => handleStyleUpdate('borderRadius', `${value[0]}px`)}
+                  max={50}
+                  min={0}
+                  step={1}
+                  className="flex-1"
+                />
+                <span className="text-sm text-gray-500 min-w-[60px]">
+                  {formConfig.settings.canvasStyles?.borderRadius || '12px'}
+                </span>
+              </div>
+            </div>
 
-.form-input {
-  /* Input styles */
-}"
-                rows={8}
-              />
-              <p className="text-xs text-slate-500 mt-1">Add custom CSS to override default styles</p>
+            <div>
+              <Label className="text-sm font-medium mb-3 block">Padding</Label>
+              <div className="flex items-center gap-4">
+                <Slider
+                  value={[parseInt(formConfig.settings.canvasStyles?.padding?.replace('px', '') || '32')]}
+                  onValueChange={(value) => handleStyleUpdate('padding', `${value[0]}px`)}
+                  max={80}
+                  min={8}
+                  step={4}
+                  className="flex-1"
+                />
+                <span className="text-sm text-gray-500 min-w-[60px]">
+                  {formConfig.settings.canvasStyles?.padding || '32px'}
+                </span>
+              </div>
             </div>
           </TabsContent>
         </div>

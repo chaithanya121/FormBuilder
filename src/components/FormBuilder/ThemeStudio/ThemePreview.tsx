@@ -40,10 +40,10 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, onApplyTheme }) => {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <h2 className="text-xl font-bold text-gray-900">{theme.name}</h2>
-              <Badge variant="outline">{theme.category}</Badge>
+              <Badge variant="outline">{theme.category || 'Custom'}</Badge>
             </div>
             <p className="text-sm text-gray-600">
-              Created {new Date(theme.created).toLocaleDateString()}
+              {theme.created ? `Created ${new Date(theme.created).toLocaleDateString()}` : 'Custom Theme'}
             </p>
           </div>
 
@@ -71,16 +71,38 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, onApplyTheme }) => {
               <h3 className="font-semibold">Colors</h3>
             </div>
             <div className="space-y-2">
-              {Object.entries(theme.colors).map(([key, color]) => (
-                <div key={key} className="flex items-center gap-3">
-                  <div
-                    className="w-6 h-6 rounded border border-gray-200"
-                    style={{ backgroundColor: color }}
-                  />
-                  <span className="text-sm capitalize text-gray-600">{key}</span>
-                  <span className="text-xs font-mono text-gray-500 ml-auto">{color}</span>
-                </div>
-              ))}
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-6 h-6 rounded border border-gray-200"
+                  style={{ backgroundColor: theme.primaryColor }}
+                />
+                <span className="text-sm text-gray-600">Primary</span>
+                <span className="text-xs font-mono text-gray-500 ml-auto">{theme.primaryColor}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-6 h-6 rounded border border-gray-200"
+                  style={{ backgroundColor: theme.secondaryColor }}
+                />
+                <span className="text-sm text-gray-600">Secondary</span>
+                <span className="text-xs font-mono text-gray-500 ml-auto">{theme.secondaryColor}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-6 h-6 rounded border border-gray-200"
+                  style={{ backgroundColor: theme.formBackgroundColor }}
+                />
+                <span className="text-sm text-gray-600">Form Background</span>
+                <span className="text-xs font-mono text-gray-500 ml-auto">{theme.formBackgroundColor}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-6 h-6 rounded border border-gray-200"
+                  style={{ backgroundColor: theme.fontColor }}
+                />
+                <span className="text-sm text-gray-600">Font Color</span>
+                <span className="text-xs font-mono text-gray-500 ml-auto">{theme.fontColor}</span>
+              </div>
             </div>
           </Card>
 
@@ -93,19 +115,11 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, onApplyTheme }) => {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Font Family</span>
-                <span className="font-medium">{theme.typography.fontFamily}</span>
+                <span className="font-medium">{theme.fontFamily || 'Default'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Font Size</span>
-                <span className="font-medium">{theme.typography.fontSize}px</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Font Weight</span>
-                <span className="font-medium">{theme.typography.fontWeight}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Line Height</span>
-                <span className="font-medium">{theme.typography.lineHeight}</span>
+                <span className="font-medium">{theme.fontSize || 16}px</span>
               </div>
             </div>
           </Card>
@@ -119,34 +133,16 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, onApplyTheme }) => {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Border Radius</span>
-                <span className="font-medium">{theme.layout.borderRadius}px</span>
+                <span className="font-medium">{theme.borderRadius || '8px'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Padding</span>
-                <span className="font-medium">{theme.layout.padding}px</span>
+                <span className="font-medium">{theme.padding || '24px'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Spacing</span>
-                <span className="font-medium">{theme.layout.spacing}px</span>
+                <span className="text-gray-600">Form Width</span>
+                <span className="font-medium">{theme.formWidth || 600}px</span>
               </div>
-            </div>
-          </Card>
-
-          {/* Effects */}
-          <Card className="p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="h-4 w-4 text-orange-500" />
-              <h3 className="font-semibold">Effects</h3>
-            </div>
-            <div className="space-y-2 text-sm">
-              {Object.entries(theme.effects).map(([key, enabled]) => (
-                <div key={key} className="flex justify-between items-center">
-                  <span className="text-gray-600 capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
-                  <Badge variant={enabled ? "default" : "secondary"} className="text-xs">
-                    {enabled ? 'Enabled' : 'Disabled'}
-                  </Badge>
-                </div>
-              ))}
             </div>
           </Card>
         </div>
@@ -162,56 +158,53 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, onApplyTheme }) => {
             animate={{ opacity: 1, scale: 1 }}
             className="rounded-lg shadow-lg overflow-hidden"
             style={{
-              background: theme.preview,
-              fontFamily: theme.typography.fontFamily,
-              fontSize: `${theme.typography.fontSize}px`,
-              fontWeight: theme.typography.fontWeight,
-              lineHeight: theme.typography.lineHeight
+              background: theme.backgroundColor,
+              fontFamily: theme.fontFamily || 'Inter',
+              fontSize: `${theme.fontSize || 16}px`
             }}
           >
             <div
               className="p-8"
               style={{
-                backgroundColor: theme.colors.form,
-                borderRadius: `${theme.layout.borderRadius}px`,
-                margin: `${theme.layout.spacing}px`,
-                padding: `${theme.layout.padding}px`,
-                color: theme.colors.text,
-                boxShadow: theme.layout.shadow
+                backgroundColor: theme.formBackgroundColor,
+                borderRadius: theme.borderRadius || '12px',
+                margin: '32px',
+                padding: theme.padding || '32px',
+                color: theme.fontColor,
+                maxWidth: `${theme.formWidth || 600}px`
               }}
             >
-              <h2 className="text-2xl font-bold mb-6" style={{ color: theme.colors.primary }}>
+              <h2 className="text-2xl font-bold mb-6" style={{ color: theme.primaryColor }}>
                 Sample Form Preview
               </h2>
               
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Full Name <span style={{ color: theme.colors.accent }}>*</span>
+                    Full Name <span style={{ color: theme.secondaryColor }}>*</span>
                   </label>
                   <input
                     type="text"
                     placeholder="Enter your full name"
                     className="w-full p-3 border rounded transition-all focus:ring-2 focus:ring-opacity-50"
                     style={{
-                      borderColor: theme.colors.secondary,
-                      borderRadius: `${theme.layout.borderRadius / 2}px`,
-                      focusRingColor: theme.colors.primary
+                      borderColor: theme.secondaryColor,
+                      borderRadius: '8px'
                     }}
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Email Address <span style={{ color: theme.colors.accent }}>*</span>
+                    Email Address <span style={{ color: theme.secondaryColor }}>*</span>
                   </label>
                   <input
                     type="email"
                     placeholder="Enter your email"
                     className="w-full p-3 border rounded transition-all focus:ring-2 focus:ring-opacity-50"
                     style={{
-                      borderColor: theme.colors.secondary,
-                      borderRadius: `${theme.layout.borderRadius / 2}px`
+                      borderColor: theme.secondaryColor,
+                      borderRadius: '8px'
                     }}
                   />
                 </div>
@@ -225,8 +218,8 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, onApplyTheme }) => {
                     rows={4}
                     className="w-full p-3 border rounded transition-all focus:ring-2 focus:ring-opacity-50"
                     style={{
-                      borderColor: theme.colors.secondary,
-                      borderRadius: `${theme.layout.borderRadius / 2}px`
+                      borderColor: theme.secondaryColor,
+                      borderRadius: '8px'
                     }}
                   />
                 </div>
@@ -238,8 +231,8 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, onApplyTheme }) => {
                   <select
                     className="w-full p-3 border rounded transition-all"
                     style={{
-                      borderColor: theme.colors.secondary,
-                      borderRadius: `${theme.layout.borderRadius / 2}px`
+                      borderColor: theme.secondaryColor,
+                      borderRadius: '8px'
                     }}
                   >
                     <option>Email</option>
@@ -253,7 +246,7 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, onApplyTheme }) => {
                     type="checkbox"
                     id="newsletter"
                     className="rounded"
-                    style={{ accentColor: theme.colors.primary }}
+                    style={{ accentColor: theme.primaryColor }}
                   />
                   <label htmlFor="newsletter" className="text-sm">
                     Subscribe to our newsletter
@@ -265,9 +258,9 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, onApplyTheme }) => {
                   whileTap={{ scale: 0.98 }}
                   className="w-full py-3 px-6 rounded font-medium transition-all duration-200 shadow-lg"
                   style={{
-                    backgroundColor: theme.colors.primary,
-                    color: theme.colors.background,
-                    borderRadius: `${theme.layout.borderRadius}px`
+                    backgroundColor: theme.primaryColor,
+                    color: theme.formBackgroundColor,
+                    borderRadius: theme.borderRadius || '12px'
                   }}
                 >
                   Submit Form

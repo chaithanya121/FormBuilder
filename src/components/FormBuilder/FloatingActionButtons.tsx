@@ -1,198 +1,230 @@
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Layers, Settings, Palette, Plus, Minus,
-  Sparkles, Code, Play, Eye
+  Layers, Settings, Palette, Eye, HelpCircle, 
+  Code, Play, Wand2, Zap, X, Plus, ChevronUp, ChevronDown
 } from 'lucide-react';
 
 interface FloatingActionButtonsProps {
-  activePanel: string;
-  onPanelChange: (panel: string) => void;
+  activePanel: 'elements' | 'configuration' | 'designer';
+  onPanelChange: (panel: 'elements' | 'configuration' | 'designer') => void;
   onQuickAction: (action: string) => void;
+  onPreview: () => void;
+  onThemeStudio: () => void;
+  onDesigner: () => void;
 }
 
-const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({ 
-  activePanel, 
+const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
+  activePanel,
   onPanelChange,
-  onQuickAction 
+  onQuickAction,
+  onPreview,
+  onThemeStudio,
+  onDesigner
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
 
-  const mainButtons = [
+  const panels = [
     {
-      id: 'elements',
-      label: 'Elements Library',
+      id: 'elements' as const,
+      label: 'Elements',
       icon: Layers,
-      color: 'from-blue-500 to-blue-600',
-      hoverColor: 'from-blue-600 to-blue-700'
+      color: '#3b82f6'
     },
     {
-      id: 'configuration',
-      label: 'Configuration',
+      id: 'configuration' as const,
+      label: 'Config',
       icon: Settings,
-      color: 'from-green-500 to-green-600',
-      hoverColor: 'from-green-600 to-green-700'
+      color: '#10b981'
     },
     {
-      id: 'designer',
-      label: 'Theme Designer',
+      id: 'designer' as const,
+      label: 'Designer',
       icon: Palette,
-      color: 'from-purple-500 to-purple-600',
-      hoverColor: 'from-purple-600 to-purple-700'
+      color: '#8b5cf6'
     }
   ];
 
   const quickActions = [
     {
+      id: 'preview',
+      label: 'Preview',
+      icon: Eye,
+      action: onPreview,
+      color: '#f59e0b'
+    },
+    {
       id: 'view-code',
-      label: 'View Code',
+      label: 'Code',
       icon: Code,
-      color: 'from-gray-500 to-gray-600'
+      action: () => onQuickAction('view-code'),
+      color: '#64748b'
     },
     {
       id: 'test-form',
-      label: 'Test Form',
+      label: 'Test',
       icon: Play,
-      color: 'from-green-500 to-green-600'
+      action: () => onQuickAction('test-form'),
+      color: '#059669'
     },
     {
       id: 'ai-enhance',
       label: 'AI Enhance',
-      icon: Sparkles,
-      color: 'from-purple-500 to-purple-600'
+      icon: Wand2,
+      action: () => onQuickAction('ai-enhance'),
+      color: '#dc2626'
     },
     {
-      id: 'preview',
-      label: 'Preview',
-      icon: Eye,
-      color: 'from-blue-500 to-blue-600'
+      id: 'help',
+      label: 'Help',
+      icon: HelpCircle,
+      action: () => onQuickAction('help'),
+      color: '#7c3aed'
     }
   ];
 
   return (
-    <TooltipProvider>
-      <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-40">
-        <div className="flex flex-col items-center space-y-4">
-          {/* Main Panel Buttons */}
-          <div className="flex flex-col space-y-3">
-            {mainButtons.map((button, index) => (
-              <Tooltip key={button.id}>
-                <TooltipTrigger asChild>
+    <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-50 flex flex-col items-center">
+      <motion.div
+        initial={{ x: 100, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="flex flex-col items-center gap-3"
+      >
+        {/* Expandable Content */}
+        <AnimatePresence>
+          {isExpanded && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.3 }}
+              className="flex flex-col items-center gap-3"
+            >
+              {/* Panel Buttons */}
+              {panels.map((panel, index) => {
+                const isActive = activePanel === panel.id;
+                return (
                   <motion.div
-                    initial={{ opacity: 0, x: 50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
+                    key={panel.id}
+                    initial={{ x: 100, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: 100, opacity: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                    className="relative group"
                   >
-                    <Button
-                      onClick={() => onPanelChange(button.id)}
-                      className={`
-                        w-14 h-14 rounded-full shadow-lg transition-all duration-300
-                        bg-gradient-to-r ${button.color} hover:${button.hoverColor}
-                        ${activePanel === button.id ? 'ring-4 ring-white ring-opacity-50 scale-110' : ''}
-                      `}
-                      size="icon"
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => onPanelChange(panel.id)}
+                      className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${
+                        isActive 
+                          ? 'shadow-xl ring-4 ring-white ring-opacity-50' 
+                          : 'hover:shadow-xl'
+                      }`}
+                      style={{ 
+                        backgroundColor: panel.color,
+                        color: 'white'
+                      }}
                     >
-                      <motion.div
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <button.icon className="h-6 w-6 text-white" />
-                      </motion.div>
-                    </Button>
+                      <panel.icon className="h-6 w-6" />
+                      {isActive && (
+                        <motion.div
+                          layoutId="activeIndicator"
+                          className="absolute inset-0 bg-white bg-opacity-20 rounded-full"
+                          transition={{ duration: 0.3 }}
+                        />
+                      )}
+                    </motion.button>
+                    
+                    {/* Tooltip */}
+                    <div className="absolute right-16 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                      <div className="bg-gray-900 text-white text-sm px-3 py-1 rounded-lg whitespace-nowrap">
+                        {panel.label}
+                        <div className="absolute left-full top-1/2 transform -translate-y-1/2 border-4 border-transparent border-l-gray-900"></div>
+                      </div>
+                    </div>
                   </motion.div>
-                </TooltipTrigger>
-                <TooltipContent side="left">
-                  <p>{button.label}</p>
-                </TooltipContent>
-              </Tooltip>
-            ))}
-          </div>
+                );
+              })}
 
-          {/* Divider */}
-          <motion.div
-            initial={{ scaleY: 0 }}
-            animate={{ scaleY: 1 }}
-            transition={{ delay: 0.4 }}
-            className="w-px h-8 bg-gradient-to-b from-gray-300 to-transparent"
-          />
-
-          {/* Quick Actions Toggle */}
-          <Tooltip>
-            <TooltipTrigger asChild>
+              {/* Separator */}
               <motion.div
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.5 }}
-              >
-                <Button
-                  onClick={() => setIsExpanded(!isExpanded)}
-                  className={`
-                    w-12 h-12 rounded-full shadow-lg transition-all duration-300
-                    bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700
-                  `}
-                  size="icon"
+                initial={{ scaleY: 0, opacity: 0 }}
+                animate={{ scaleY: 1, opacity: 1 }}
+                exit={{ scaleY: 0, opacity: 0 }}
+                className="w-0.5 h-6 bg-gray-300"
+              />
+
+              {/* Quick Action Buttons */}
+              {quickActions.map((action, index) => (
+                <motion.div
+                  key={action.id}
+                  initial={{ x: 100, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: 100, opacity: 0 }}
+                  transition={{ duration: 0.3, delay: (panels.length + index) * 0.1 }}
+                  className="relative group"
                 >
-                  <motion.div
-                    animate={{ rotate: isExpanded ? 45 : 0 }}
-                    transition={{ duration: 0.3 }}
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={action.action}
+                    className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300"
+                    style={{ 
+                      backgroundColor: action.color,
+                      color: 'white'
+                    }}
                   >
-                    {isExpanded ? (
-                      <Minus className="h-5 w-5 text-white" />
-                    ) : (
-                      <Plus className="h-5 w-5 text-white" />
-                    )}
-                  </motion.div>
-                </Button>
-              </motion.div>
-            </TooltipTrigger>
-            <TooltipContent side="left">
-              <p>{isExpanded ? 'Hide Quick Actions' : 'Show Quick Actions'}</p>
-            </TooltipContent>
-          </Tooltip>
+                    <action.icon className="h-5 w-5" />
+                  </motion.button>
+                  
+                  {/* Tooltip */}
+                  <div className="absolute right-14 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                    <div className="bg-gray-900 text-white text-sm px-3 py-1 rounded-lg whitespace-nowrap">
+                      {action.label}
+                      <div className="absolute left-full top-1/2 transform -translate-y-1/2 border-4 border-transparent border-l-gray-900"></div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
 
-          {/* Quick Actions */}
-          <AnimatePresence>
-            {isExpanded && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                className="flex flex-col space-y-2"
-              >
-                {quickActions.map((action, index) => (
-                  <Tooltip key={action.id}>
-                    <TooltipTrigger asChild>
-                      <motion.div
-                        initial={{ opacity: 0, x: 50 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                      >
-                        <Button
-                          onClick={() => onQuickAction(action.id)}
-                          className={`
-                            w-10 h-10 rounded-full shadow-md transition-all duration-200
-                            bg-gradient-to-r ${action.color} hover:scale-110
-                          `}
-                          size="icon"
-                        >
-                          <action.icon className="h-4 w-4 text-white" />
-                        </Button>
-                      </motion.div>
-                    </TooltipTrigger>
-                    <TooltipContent side="left">
-                      <p>{action.label}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+      {/* Fixed Bottom Section - Always Visible */}
+      <div className="flex flex-col items-center gap-3 mt-4">
+        {/* Toggle Button */}
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center"
+        >
+          {isExpanded ? (
+            <ChevronUp className="h-5 w-5" />
+          ) : (
+            <ChevronDown className="h-5 w-5" />
+          )}
+        </motion.button>
+
+        {/* Pro Badge - Always Visible */}
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 shadow-lg">
+            <Zap className="h-3 w-3 mr-1" />
+            Pro
+          </Badge>
+        </motion.div>
       </div>
-    </TooltipProvider>
+    </div>
   );
 };
 

@@ -11,7 +11,7 @@ import {
   Plus, Trash2, Copy, Check
 } from 'lucide-react';
 import { CustomTheme } from '../types';
-import ThemeCreator from './ThemeCreator';
+import ThemeCreator from '../ThemeCreator';
 import ThemeGallery from './ThemeGallery';
 import ThemePreview from './ThemePreview';
 import { useToast } from '@/hooks/use-toast';
@@ -64,7 +64,7 @@ const ThemeStudio: React.FC<ThemeStudioProps> = ({ onApplyTheme, onClose }) => {
   };
 
   const handleDeleteTheme = (themeId: string) => {
-    const updatedThemes = customThemes.filter(theme => theme.id !== themeId);
+    const updatedThemes = customThemes.filter(theme => String(theme.id || '') !== themeId);
     setCustomThemes(updatedThemes);
     localStorage.setItem('formBuilder_customThemes', JSON.stringify(updatedThemes));
     

@@ -1,625 +1,616 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { useTheme } from '@/components/theme-provider';
-import { motion } from 'framer-motion';
-import { Palette, ArrowLeft, Brush, Download, Upload, Eye, Paintbrush, Type, Layout, Sparkles, Copy, Check, Star } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Separator } from '@/components/ui/separator';
+import { 
+  Palette, Save, Eye, Download, Upload, RefreshCw, Zap, Star,
+  Plus, Copy, Trash2, Edit3, Sparkles, Brush, Type, Layout,
+  Image as ImageIcon, Settings, Code, Share, Heart, Crown
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useToast } from '@/hooks/use-toast';
 
-const PROFESSIONAL_THEMES = [
-  {
-    id: 'modern-minimal',
-    name: 'Modern Minimal',
-    category: 'Professional',
-    preview: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-    colors: {
-      primary: '#000000',
-      secondary: '#666666',
-      background: '#ffffff',
-      text: '#000000'
-    },
-    rating: 4.8
-  },
-  {
-    id: 'ocean-breeze',
-    name: 'Ocean Breeze',
-    category: 'Nature',
-    preview: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    colors: {
-      primary: '#0ea5e9',
-      secondary: '#06b6d4',
-      background: '#ffffff',
-      text: '#1e293b'
-    },
-    rating: 4.9
-  },
-  {
-    id: 'sunset-glow',
-    name: 'Sunset Glow',
-    category: 'Warm',
-    preview: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)',
-    colors: {
-      primary: '#f59e0b',
-      secondary: '#dc2626',
-      background: '#ffffff',
-      text: '#7c2d12'
-    },
-    rating: 4.7
-  },
-  {
-    id: 'forest-calm',
-    name: 'Forest Calm',
-    category: 'Nature',
-    preview: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-    colors: {
-      primary: '#10b981',
-      secondary: '#059669',
-      background: '#ffffff',
-      text: '#064e3b'
-    },
-    rating: 4.6
-  },
-  {
-    id: 'royal-purple',
-    name: 'Royal Purple',
-    category: 'Premium',
-    preview: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    colors: {
-      primary: '#8b5cf6',
-      secondary: '#7c3aed',
-      background: '#ffffff',
-      text: '#581c87'
-    },
-    rating: 4.8
-  },
-  {
-    id: 'dark-mode',
-    name: 'Dark Professional',
-    category: 'Dark',
-    preview: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
-    colors: {
-      primary: '#3b82f6',
-      secondary: '#6366f1',
-      background: '#374151',
-      text: '#ffffff'
-    },
-    rating: 4.9
-  },
-  {
-    id: 'corporate-blue',
-    name: 'Corporate Blue',
-    category: 'Professional',
-    preview: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
-    colors: {
-      primary: '#1e40af',
-      secondary: '#3b82f6',
-      background: '#ffffff',
-      text: '#1e293b'
-    },
-    rating: 4.5
-  },
-  {
-    id: 'creative-burst',
-    name: 'Creative Burst',
-    category: 'Creative',
-    preview: 'linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 50%, #45b7d1 100%)',
-    colors: {
-      primary: '#ff6b6b',
-      secondary: '#4ecdc4',
-      background: '#ffffff',
-      text: '#2d3748'
-    },
-    rating: 4.4
-  }
-];
-
-const FONT_FAMILIES = [
-  'Inter', 'Arial', 'Helvetica', 'Georgia', 'Roboto', 
-  'Open Sans', 'Lato', 'Montserrat', 'Poppins', 'Source Sans Pro',
-  'Playfair Display', 'Oswald', 'Raleway', 'Nunito', 'Work Sans'
-];
-
-export const ThemeStudio = () => {
-  const { theme } = useTheme();
-  const [selectedTheme, setSelectedTheme] = useState('modern-minimal');
+const ThemeStudio: React.FC = () => {
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('gallery');
+  const [selectedTheme, setSelectedTheme] = useState(null);
   const [customTheme, setCustomTheme] = useState({
     name: 'My Custom Theme',
-    primary: '#3b82f6',
-    secondary: '#64748b',
-    background: '#ffffff',
-    text: '#000000',
+    backgroundColor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    formBackgroundColor: '#ffffff',
+    primaryColor: '#3b82f6',
+    secondaryColor: '#64748b',
+    fontColor: '#1f2937',
     fontFamily: 'Inter',
     fontSize: 16,
-    borderRadius: 8
+    borderRadius: '12px',
+    padding: '32px',
+    formWidth: 752
   });
-  const [activeTab, setActiveTab] = useState('browse');
-  const [copiedTheme, setCopiedTheme] = useState('');
 
-  const handleThemeSelect = (themeId: string) => {
-    setSelectedTheme(themeId);
-    const selected = PROFESSIONAL_THEMES.find(t => t.id === themeId);
-    if (selected) {
-      setCustomTheme({
-        ...customTheme,
-        ...selected.colors,
-        name: selected.name
+  const [savedThemes, setSavedThemes] = useState([
+    {
+      id: 1,
+      name: 'Ocean Depths',
+      category: 'Professional',
+      backgroundColor: 'linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%)',
+      formBackgroundColor: '#ffffff',
+      primaryColor: '#0ea5e9',
+      secondaryColor: '#0284c7',
+      fontColor: '#0f172a',
+      popular: true,
+      rating: 4.9
+    },
+    {
+      id: 2,
+      name: 'Sunset Vibes',
+      category: 'Creative',
+      backgroundColor: 'linear-gradient(135deg, #f59e0b 0%, #dc2626 100%)',
+      formBackgroundColor: '#fffbeb',
+      primaryColor: '#f59e0b',
+      secondaryColor: '#dc2626',
+      fontColor: '#451a03',
+      popular: true,
+      rating: 4.8
+    },
+    {
+      id: 3,
+      name: 'Forest Green',
+      category: 'Nature',
+      backgroundColor: 'linear-gradient(135deg, #166534 0%, #15803d 100%)',
+      formBackgroundColor: '#f0fdf4',
+      primaryColor: '#22c55e',
+      secondaryColor: '#16a34a',
+      fontColor: '#14532d',
+      popular: false,
+      rating: 4.7
+    },
+    {
+      id: 4,
+      name: 'Purple Dreams',
+      category: 'Modern',
+      backgroundColor: 'linear-gradient(135deg, #7c3aed 0%, #c026d3 100%)',
+      formBackgroundColor: '#faf5ff',
+      primaryColor: '#8b5cf6',
+      secondaryColor: '#a855f7',
+      fontColor: '#581c87',
+      popular: true,
+      rating: 4.9
+    }
+  ]);
+
+  const categories = ['All', 'Professional', 'Creative', 'Nature', 'Modern', 'Minimal'];
+
+  const [selectedCategory, setSelectedCategory] = useState('All');
+
+  const filteredThemes = selectedCategory === 'All' 
+    ? savedThemes 
+    : savedThemes.filter(theme => theme.category === selectedCategory);
+
+  const handleCreateTheme = () => {
+    const newTheme = {
+      id: Date.now(),
+      ...customTheme,
+      category: 'Custom',
+      popular: false,
+      rating: 0
+    };
+    
+    setSavedThemes([...savedThemes, newTheme]);
+    toast({
+      title: "Theme Created!",
+      description: `${customTheme.name} has been added to your collection.`,
+    });
+  };
+
+  const handleSaveTheme = () => {
+    if (selectedTheme) {
+      const updated = savedThemes.map(theme => 
+        theme.id === selectedTheme.id ? { ...theme, ...customTheme } : theme
+      );
+      setSavedThemes(updated);
+      toast({
+        title: "Theme Updated!",
+        description: "Your changes have been saved successfully.",
       });
     }
   };
 
-  const exportTheme = () => {
-    const themeData = {
-      name: customTheme.name,
-      colors: {
-        primary: customTheme.primary,
-        secondary: customTheme.secondary,
-        background: customTheme.background,
-        text: customTheme.text
-      },
-      typography: {
-        fontFamily: customTheme.fontFamily,
-        fontSize: customTheme.fontSize
-      },
-      design: {
-        borderRadius: customTheme.borderRadius
-      }
-    };
-    
-    const blob = new Blob([JSON.stringify(themeData, null, 2)], { type: 'application/json' });
+  const handleExportTheme = () => {
+    const themeData = JSON.stringify(customTheme, null, 2);
+    const blob = new Blob([themeData], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${customTheme.name.replace(/\s+/g, '-').toLowerCase()}-theme.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${customTheme.name.toLowerCase().replace(/\s+/g, '-')}-theme.json`;
+    link.click();
     URL.revokeObjectURL(url);
   };
 
-  const copyThemeCode = (themeId: string) => {
-    const selected = PROFESSIONAL_THEMES.find(t => t.id === themeId);
-    if (selected) {
-      const css = `
-/* ${selected.name} Theme */
-:root {
-  --primary-color: ${selected.colors.primary};
-  --secondary-color: ${selected.colors.secondary};
-  --background-color: ${selected.colors.background};
-  --text-color: ${selected.colors.text};
-}
-
-.form-container {
-  background: ${selected.preview};
-  color: var(--text-color);
-}
-
-.form-input {
-  border-color: var(--primary-color);
-}
-
-.form-button {
-  background-color: var(--primary-color);
-  color: white;
-}
-      `.trim();
-      
-      navigator.clipboard.writeText(css);
-      setCopiedTheme(themeId);
-      setTimeout(() => setCopiedTheme(''), 2000);
-    }
+  const handleImportTheme = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const imported = JSON.parse(event.target?.result as string);
+            setCustomTheme(imported);
+            toast({
+              title: "Theme Imported!",
+              description: "Your theme has been loaded successfully.",
+            });
+          } catch (error) {
+            toast({
+              title: "Import Failed",
+              description: "Invalid theme file format.",
+              variant: "destructive"
+            });
+          }
+        };
+        reader.readAsText(file);
+      }
+    };
+    input.click();
   };
 
   return (
-    <div className={`min-h-screen ${theme === 'light' 
-      ? 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100' 
-      : 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900'
-    } p-6`}>
-      <div className="max-w-7xl mx-auto space-y-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-4"
-        >
-          <Link to="/tools">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Tools
-            </Button>
-          </Link>
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg">
-              <Palette className="h-6 w-6 text-white" />
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 p-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-7xl mx-auto"
+      >
+        {/* Enhanced Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl">
+                <Palette className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                  Theme Studio Pro
+                </h1>
+                <p className="text-lg text-gray-600 mt-1">Create, customize, and manage beautiful form themes</p>
+              </div>
             </div>
-            <div>
-              <h1 className={`text-3xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                Theme Studio
-              </h1>
-              <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
-                Create and customize beautiful form themes
-              </p>
+            
+            <div className="flex items-center gap-3">
+              <Badge className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-4 py-2">
+                <Crown className="w-4 h-4 mr-2" />
+                Premium Studio
+              </Badge>
+              <Button variant="outline" onClick={handleImportTheme}>
+                <Upload className="w-4 h-4 mr-2" />
+                Import
+              </Button>
+              <Button onClick={handleExportTheme} className="bg-gradient-to-r from-purple-500 to-blue-500">
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </Button>
             </div>
           </div>
-        </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Theme Browser & Editor */}
-          <div className="lg:col-span-2">
-            <Card className={`${theme === 'light' 
-              ? 'bg-white/90 border-white/50 shadow-xl' 
-              : 'bg-gray-800/50 border-gray-700 shadow-2xl'
-            } backdrop-blur-sm`}>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            {[
+              { label: 'Total Themes', value: savedThemes.length, icon: Palette, color: 'blue' },
+              { label: 'Popular Themes', value: savedThemes.filter(t => t.popular).length, icon: Star, color: 'yellow' },
+              { label: 'Categories', value: categories.length - 1, icon: Layout, color: 'green' },
+              { label: 'Downloads', value: '1.2k', icon: Download, color: 'purple' }
+            ].map((stat, index) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Card className="relative overflow-hidden">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">{stat.label}</p>
+                        <p className="text-2xl font-bold">{stat.value}</p>
+                      </div>
+                      <div className={`p-3 rounded-full bg-${stat.color}-100`}>
+                        <stat.icon className={`w-6 h-6 text-${stat.color}-600`} />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
+        {/* Enhanced Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3 bg-white shadow-sm h-12">
+            <TabsTrigger value="gallery" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-blue-500 data-[state=active]:text-white">
+              <Star className="w-4 h-4 mr-2" />
+              Theme Gallery
+            </TabsTrigger>
+            <TabsTrigger value="creator" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-blue-500 data-[state=active]:text-white">
+              <Brush className="w-4 h-4 mr-2" />
+              Theme Creator
+            </TabsTrigger>
+            <TabsTrigger value="advanced" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-blue-500 data-[state=active]:text-white">
+              <Code className="w-4 h-4 mr-2" />
+              Advanced
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Theme Gallery */}
+          <TabsContent value="gallery" className="space-y-6">
+            {/* Category Filter */}
+            <div className="flex items-center gap-4 mb-6">
+              <Label className="font-medium">Category:</Label>
+              <div className="flex gap-2">
+                {categories.map(category => (
+                  <Button
+                    key={category}
+                    variant={selectedCategory === category ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedCategory(category)}
+                    className={selectedCategory === category ? "bg-gradient-to-r from-purple-500 to-blue-500" : ""}
+                  >
+                    {category}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Themes Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <AnimatePresence>
+                {filteredThemes.map((theme, index) => (
+                  <motion.div
+                    key={theme.id}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ delay: index * 0.1 }}
+                    whileHover={{ y: -5 }}
+                  >
+                    <Card className="overflow-hidden group cursor-pointer hover:shadow-xl transition-all duration-300">
+                      <div className="relative">
+                        <div 
+                          className="h-40 relative overflow-hidden"
+                          style={{ background: theme.backgroundColor }}
+                        >
+                          <div className="absolute inset-4 bg-white/95 backdrop-blur-sm rounded-lg p-4 shadow-lg">
+                            <div className="space-y-3">
+                              <div className="h-2 bg-gray-200 rounded w-3/4"></div>
+                              <div className="h-1.5 bg-gray-300 rounded w-1/2"></div>
+                              <div 
+                                className="h-8 rounded shadow-sm"
+                                style={{ backgroundColor: theme.primaryColor }}
+                              ></div>
+                            </div>
+                          </div>
+                          
+                          {theme.popular && (
+                            <Badge className="absolute top-2 right-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
+                              <Star className="w-3 h-3 mr-1" />
+                              Popular
+                            </Badge>
+                          )}
+                        </div>
+                        
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <h3 className="font-semibold text-gray-900">{theme.name}</h3>
+                            <div className="flex items-center gap-1">
+                              <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                              <span className="text-sm text-gray-600">{theme.rating}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between">
+                            <Badge variant="outline" className="text-xs">
+                              {theme.category}
+                            </Badge>
+                            
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  // Extract only the properties that match customTheme structure
+                                  const themeForEditing = {
+                                    name: theme.name,
+                                    backgroundColor: theme.backgroundColor,
+                                    formBackgroundColor: theme.formBackgroundColor,
+                                    primaryColor: theme.primaryColor,
+                                    secondaryColor: theme.secondaryColor,
+                                    fontColor: theme.fontColor,
+                                    fontFamily: 'Inter', // Default values for missing properties
+                                    fontSize: 16,
+                                    borderRadius: '12px',
+                                    padding: '32px',
+                                    formWidth: 752
+                                  };
+                                  setCustomTheme(themeForEditing);
+                                  setSelectedTheme(theme);
+                                  setActiveTab('creator');
+                                }}
+                              >
+                                <Edit3 className="w-3 h-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(JSON.stringify(theme));
+                                  toast({
+                                    title: "Theme Copied!",
+                                    description: "Theme data copied to clipboard.",
+                                  });
+                                }}
+                              >
+                                <Copy className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </div>
+                    </Card>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </TabsContent>
+
+          {/* Theme Creator */}
+          <TabsContent value="creator" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Controls */}
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Brush className="w-5 h-5" />
+                      Theme Settings
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div>
+                      <Label>Theme Name</Label>
+                      <Input
+                        value={customTheme.name}
+                        onChange={(e) => setCustomTheme({...customTheme, name: e.target.value})}
+                        className="mt-2"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>Primary Color</Label>
+                        <div className="flex items-center gap-2 mt-2">
+                          <input
+                            type="color"
+                            value={customTheme.primaryColor}
+                            onChange={(e) => setCustomTheme({...customTheme, primaryColor: e.target.value})}
+                            className="w-12 h-10 rounded border"
+                          />
+                          <Input
+                            value={customTheme.primaryColor}
+                            onChange={(e) => setCustomTheme({...customTheme, primaryColor: e.target.value})}
+                            className="flex-1 font-mono text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label>Form Background</Label>
+                        <div className="flex items-center gap-2 mt-2">
+                          <input
+                            type="color"
+                            value={customTheme.formBackgroundColor}
+                            onChange={(e) => setCustomTheme({...customTheme, formBackgroundColor: e.target.value})}
+                            className="w-12 h-10 rounded border"
+                          />
+                          <Input
+                            value={customTheme.formBackgroundColor}
+                            onChange={(e) => setCustomTheme({...customTheme, formBackgroundColor: e.target.value})}
+                            className="flex-1 font-mono text-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label>Canvas Background</Label>
+                      <Textarea
+                        value={customTheme.backgroundColor}
+                        onChange={(e) => setCustomTheme({...customTheme, backgroundColor: e.target.value})}
+                        placeholder="Enter CSS background (gradient, color, etc.)"
+                        className="mt-2 font-mono text-sm"
+                        rows={3}
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Font Family</Label>
+                      <Select 
+                        value={customTheme.fontFamily}
+                        onValueChange={(value) => setCustomTheme({...customTheme, fontFamily: value})}
+                      >
+                        <SelectTrigger className="mt-2">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Inter">Inter</SelectItem>
+                          <SelectItem value="Roboto">Roboto</SelectItem>
+                          <SelectItem value="Open Sans">Open Sans</SelectItem>
+                          <SelectItem value="Lato">Lato</SelectItem>
+                          <SelectItem value="Poppins">Poppins</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label>Font Size: {customTheme.fontSize}px</Label>
+                      <Slider
+                        value={[customTheme.fontSize]}
+                        onValueChange={(value) => setCustomTheme({...customTheme, fontSize: value[0]})}
+                        min={12}
+                        max={24}
+                        step={1}
+                        className="mt-2"
+                      />
+                    </div>
+
+                    <div className="flex gap-3">
+                      <Button onClick={handleCreateTheme} className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create Theme
+                      </Button>
+                      {selectedTheme && (
+                        <Button onClick={handleSaveTheme} variant="outline" className="flex-1">
+                          <Save className="w-4 h-4 mr-2" />
+                          Update Theme
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Live Preview */}
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Eye className="w-5 h-5" />
+                      Live Preview
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div 
+                      className="relative rounded-lg overflow-hidden shadow-lg"
+                      style={{ 
+                        background: customTheme.backgroundColor,
+                        minHeight: '400px',
+                        padding: '32px'
+                      }}
+                    >
+                      <div 
+                        className="max-w-md mx-auto rounded-lg shadow-xl p-8"
+                        style={{ 
+                          backgroundColor: customTheme.formBackgroundColor,
+                          borderRadius: customTheme.borderRadius,
+                          fontFamily: customTheme.fontFamily,
+                          fontSize: `${customTheme.fontSize}px`,
+                          color: customTheme.fontColor
+                        }}
+                      >
+                        <h3 className="text-xl font-bold mb-6" style={{ color: customTheme.fontColor }}>
+                          Sample Form
+                        </h3>
+                        
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium mb-2">Full Name</label>
+                            <div className="w-full h-10 bg-gray-100 rounded border"></div>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium mb-2">Email Address</label>
+                            <div className="w-full h-10 bg-gray-100 rounded border"></div>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium mb-2">Message</label>
+                            <div className="w-full h-20 bg-gray-100 rounded border"></div>
+                          </div>
+                          
+                          <div 
+                            className="w-full h-12 rounded font-medium flex items-center justify-center text-white"
+                            style={{ backgroundColor: customTheme.primaryColor }}
+                          >
+                            Submit Form
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Advanced Settings */}
+          <TabsContent value="advanced" className="space-y-6">
+            <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Brush className="h-5 w-5 text-purple-500" />
-                  Theme Studio
+                  <Code className="w-5 h-5" />
+                  Advanced Customization
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="browse">Browse Themes</TabsTrigger>
-                    <TabsTrigger value="customize">Customize</TabsTrigger>
-                    <TabsTrigger value="export">Export</TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="browse" className="space-y-4 mt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {PROFESSIONAL_THEMES.map((theme) => (
-                        <motion.div
-                          key={theme.id}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          <Card 
-                            className={`cursor-pointer transition-all duration-200 ${
-                              selectedTheme === theme.id 
-                                ? 'ring-2 ring-purple-500 shadow-lg' 
-                                : 'hover:shadow-md'
-                            }`}
-                            onClick={() => handleThemeSelect(theme.id)}
-                          >
-                            <div className="aspect-video relative overflow-hidden rounded-t-lg">
-                              <div 
-                                className="absolute inset-0"
-                                style={{ background: theme.preview }}
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                              
-                              {/* Mini Form Preview */}
-                              <div className="absolute inset-4 bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-lg">
-                                <div className="space-y-2">
-                                  <div className="h-2 bg-gray-200 rounded w-3/4"></div>
-                                  <div 
-                                    className="h-6 rounded shadow-sm"
-                                    style={{ backgroundColor: theme.colors.primary }}
-                                  ></div>
-                                  <div className="h-1.5 bg-gray-300 rounded w-1/2"></div>
-                                </div>
-                              </div>
-                              
-                              {/* Category Badge */}
-                              <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 rounded text-xs">
-                                {theme.category}
-                              </div>
-                            </div>
-                            
-                            <div className="p-4">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <h3 className="font-semibold text-sm">{theme.name}</h3>
-                                  <div className="flex items-center gap-1 mt-1">
-                                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                                    <span className="text-xs text-gray-600">{theme.rating}</span>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      copyThemeCode(theme.id);
-                                    }}
-                                  >
-                                    {copiedTheme === theme.id ? (
-                                      <Check className="h-3 w-3" />
-                                    ) : (
-                                      <Copy className="h-3 w-3" />
-                                    )}
-                                  </Button>
-                                  <div className="flex gap-1">
-                                    {Object.values(theme.colors).slice(0, 3).map((color, i) => (
-                                      <div 
-                                        key={i}
-                                        className="w-4 h-4 rounded-full border border-gray-300"
-                                        style={{ backgroundColor: color }}
-                                      />
-                                    ))}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </Card>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="customize" className="space-y-6 mt-6">
-                    <div className="space-y-4">
-                      <div>
-                        <Label>Theme Name</Label>
-                        <Input 
-                          value={customTheme.name}
-                          onChange={(e) => setCustomTheme({...customTheme, name: e.target.value})}
-                          className="mt-1"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label>Primary Color</Label>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Input
-                              type="color"
-                              value={customTheme.primary}
-                              onChange={(e) => setCustomTheme({...customTheme, primary: e.target.value})}
-                              className="w-12 h-10 p-1"
-                            />
-                            <Input
-                              value={customTheme.primary}
-                              onChange={(e) => setCustomTheme({...customTheme, primary: e.target.value})}
-                              className="flex-1"
-                            />
-                          </div>
-                        </div>
-
-                        <div>
-                          <Label>Secondary Color</Label>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Input
-                              type="color"
-                              value={customTheme.secondary}
-                              onChange={(e) => setCustomTheme({...customTheme, secondary: e.target.value})}
-                              className="w-12 h-10 p-1"
-                            />
-                            <Input
-                              value={customTheme.secondary}
-                              onChange={(e) => setCustomTheme({...customTheme, secondary: e.target.value})}
-                              className="flex-1"
-                            />
-                          </div>
-                        </div>
-
-                        <div>
-                          <Label>Background Color</Label>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Input
-                              type="color"
-                              value={customTheme.background}
-                              onChange={(e) => setCustomTheme({...customTheme, background: e.target.value})}
-                              className="w-12 h-10 p-1"
-                            />
-                            <Input
-                              value={customTheme.background}
-                              onChange={(e) => setCustomTheme({...customTheme, background: e.target.value})}
-                              className="flex-1"
-                            />
-                          </div>
-                        </div>
-
-                        <div>
-                          <Label>Text Color</Label>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Input
-                              type="color"
-                              value={customTheme.text}
-                              onChange={(e) => setCustomTheme({...customTheme, text: e.target.value})}
-                              className="w-12 h-10 p-1"
-                            />
-                            <Input
-                              value={customTheme.text}
-                              onChange={(e) => setCustomTheme({...customTheme, text: e.target.value})}
-                              className="flex-1"
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <Label>Font Family</Label>
-                        <Select 
-                          value={customTheme.fontFamily}
-                          onValueChange={(value) => setCustomTheme({...customTheme, fontFamily: value})}
-                        >
-                          <SelectTrigger className="mt-1">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {FONT_FAMILIES.map((font) => (
-                              <SelectItem key={font} value={font} style={{ fontFamily: font }}>
-                                {font}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div>
-                        <Label>Font Size: {customTheme.fontSize}px</Label>
-                        <Slider
-                          value={[customTheme.fontSize]}
-                          onValueChange={(value) => setCustomTheme({...customTheme, fontSize: value[0]})}
-                          min={12}
-                          max={24}
-                          step={1}
-                          className="mt-2"
-                        />
-                      </div>
-
-                      <div>
-                        <Label>Border Radius: {customTheme.borderRadius}px</Label>
-                        <Slider
-                          value={[customTheme.borderRadius]}
-                          onValueChange={(value) => setCustomTheme({...customTheme, borderRadius: value[0]})}
-                          min={0}
-                          max={20}
-                          step={1}
-                          className="mt-2"
-                        />
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="export" className="space-y-4 mt-6">
-                    <div className="space-y-4">
-                      <div className="text-center">
-                        <h3 className="font-semibold mb-2">Export Your Theme</h3>
-                        <p className="text-sm text-gray-600">Download your custom theme as JSON or copy the CSS code</p>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <Button onClick={exportTheme} className="flex-1">
-                          <Download className="h-4 w-4 mr-2" />
-                          Download JSON
-                        </Button>
-                        <Button variant="outline" onClick={() => copyThemeCode(selectedTheme)} className="flex-1">
-                          <Copy className="h-4 w-4 mr-2" />
-                          Copy CSS
-                        </Button>
-                      </div>
-
-                      <div>
-                        <Label>CSS Preview</Label>
-                        <Textarea
-                          readOnly
-                          rows={10}
-                          className="mt-1 font-mono text-xs"
-                          value={`/* ${customTheme.name} Theme */
-:root {
-  --primary-color: ${customTheme.primary};
-  --secondary-color: ${customTheme.secondary};
-  --background-color: ${customTheme.background};
-  --text-color: ${customTheme.text};
-  --font-family: ${customTheme.fontFamily};
-  --font-size: ${customTheme.fontSize}px;
-  --border-radius: ${customTheme.borderRadius}px;
-}
-
+              <CardContent className="space-y-6">
+                <div>
+                  <Label>Custom CSS</Label>
+                  <Textarea
+                    placeholder="/* Add your custom CSS here */
 .form-container {
-  background-color: var(--background-color);
-  color: var(--text-color);
-  font-family: var(--font-family);
-  font-size: var(--font-size);
+  /* Custom styles */
 }
 
 .form-input {
-  border-radius: var(--border-radius);
-  border-color: var(--primary-color);
-}
+  /* Input styles */
+}"
+                    className="mt-2 font-mono text-sm"
+                    rows={10}
+                  />
+                </div>
 
-.form-button {
-  background-color: var(--primary-color);
-  border-radius: var(--border-radius);
-  color: white;
-}`}
-                        />
-                      </div>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
-          </div>
+                <div>
+                  <Label>Theme JSON</Label>
+                  <Textarea
+                    value={JSON.stringify(customTheme, null, 2)}
+                    onChange={(e) => {
+                      try {
+                        const parsed = JSON.parse(e.target.value);
+                        setCustomTheme(parsed);
+                      } catch (error) {
+                        // Invalid JSON, don't update
+                      }
+                    }}
+                    className="mt-2 font-mono text-sm"
+                    rows={15}
+                  />
+                </div>
 
-          {/* Live Preview */}
-          <div className="lg:col-span-1">
-            <Card className={`${theme === 'light' 
-              ? 'bg-white/90 border-white/50 shadow-xl' 
-              : 'bg-gray-800/50 border-gray-700 shadow-2xl'
-            } backdrop-blur-sm sticky top-6`}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Eye className="h-5 w-5 text-blue-500" />
-                  Live Preview
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div 
-                  className="p-6 rounded-lg shadow-lg"
-                  style={{
-                    backgroundColor: customTheme.background,
-                    fontFamily: customTheme.fontFamily,
-                    fontSize: `${customTheme.fontSize}px`,
-                    color: customTheme.text
-                  }}
-                >
-                  <h3 className="text-lg font-semibold mb-4">Sample Form</h3>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Full Name</label>
-                      <input 
-                        type="text"
-                        placeholder="Enter your name"
-                        className="w-full p-2 border rounded"
-                        style={{
-                          borderColor: customTheme.primary,
-                          borderRadius: `${customTheme.borderRadius}px`
-                        }}
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Email</label>
-                      <input 
-                        type="email"
-                        placeholder="Enter your email"
-                        className="w-full p-2 border rounded"
-                        style={{
-                          borderColor: customTheme.primary,
-                          borderRadius: `${customTheme.borderRadius}px`
-                        }}
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Message</label>
-                      <textarea 
-                        placeholder="Your message"
-                        rows={3}
-                        className="w-full p-2 border rounded"
-                        style={{
-                          borderColor: customTheme.primary,
-                          borderRadius: `${customTheme.borderRadius}px`
-                        }}
-                      />
-                    </div>
-                    
-                    <button
-                      className="w-full py-2 px-4 text-white font-medium rounded"
-                      style={{
-                        backgroundColor: customTheme.primary,
-                        borderRadius: `${customTheme.borderRadius}px`
-                      }}
-                    >
-                      Submit Form
-                    </button>
-                  </div>
+                <div className="flex gap-3">
+                  <Button onClick={handleExportTheme} variant="outline">
+                    <Download className="w-4 h-4 mr-2" />
+                    Export JSON
+                  </Button>
+                  <Button onClick={handleImportTheme} variant="outline">
+                    <Upload className="w-4 h-4 mr-2" />
+                    Import JSON
+                  </Button>
                 </div>
               </CardContent>
             </Card>
-          </div>
-        </div>
-      </div>
+          </TabsContent>
+        </Tabs>
+      </motion.div>
     </div>
   );
 };
+
+export default ThemeStudio;

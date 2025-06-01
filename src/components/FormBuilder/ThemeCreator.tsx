@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,42 +16,7 @@ import {
   Wand2, Copy, Check, Star, Heart, Trash2, Plus 
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-interface CustomTheme {
-  id: string;
-  name: string;
-  category: string;
-  preview: string;
-  colors: {
-    primary: string;
-    secondary: string;
-    background: string;
-    form: string;
-    text: string;
-    accent: string;
-  };
-  typography: {
-    fontFamily: string;
-    fontSize: number;
-    fontWeight: number;
-    lineHeight: number;
-  };
-  layout: {
-    borderRadius: number;
-    padding: number;
-    spacing: number;
-    shadow: string;
-  };
-  effects: {
-    animations: boolean;
-    gradients: boolean;
-    blurEffects: boolean;
-    darkMode: boolean;
-  };
-  created: string;
-  rating?: number;
-  popular?: boolean;
-}
+import { CustomTheme } from './types';
 
 const GRADIENT_PRESETS = [
   'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -84,6 +50,11 @@ const ThemeCreator: React.FC<ThemeCreatorProps> = ({ onSaveTheme, existingThemes
   const [theme, setTheme] = useState<CustomTheme>({
     id: '',
     name: 'My Custom Theme',
+    backgroundColor: GRADIENT_PRESETS[0],
+    formBackgroundColor: '#ffffff',
+    primaryColor: '#3b82f6',
+    secondaryColor: '#64748b',
+    fontColor: '#1a1a1a',
     category: 'Modern',
     preview: GRADIENT_PRESETS[0],
     colors: {
@@ -97,7 +68,7 @@ const ThemeCreator: React.FC<ThemeCreatorProps> = ({ onSaveTheme, existingThemes
     typography: {
       fontFamily: 'Inter',
       fontSize: 16,
-      fontWeight: 400,
+      fontWeight: '400',
       lineHeight: 1.5
     },
     layout: {
@@ -166,6 +137,7 @@ const ThemeCreator: React.FC<ThemeCreatorProps> = ({ onSaveTheme, existingThemes
       name: `Random Theme ${Date.now()}`,
       category: randomCategory,
       preview: randomGradient,
+      backgroundColor: randomGradient,
       colors: {
         ...prev.colors,
         primary: `#${Math.floor(Math.random()*16777215).toString(16)}`,
@@ -247,13 +219,19 @@ const ThemeCreator: React.FC<ThemeCreatorProps> = ({ onSaveTheme, existingThemes
                     <div className="flex gap-2">
                       <input
                         type="color"
-                        value={theme.colors.primary}
-                        onChange={(e) => updateTheme('colors', 'primary', e.target.value)}
+                        value={theme.colors?.primary || theme.primaryColor}
+                        onChange={(e) => {
+                          updateTheme('colors', 'primary', e.target.value);
+                          setTheme(prev => ({ ...prev, primaryColor: e.target.value }));
+                        }}
                         className="w-10 h-8 rounded border"
                       />
                       <Input
-                        value={theme.colors.primary}
-                        onChange={(e) => updateTheme('colors', 'primary', e.target.value)}
+                        value={theme.colors?.primary || theme.primaryColor}
+                        onChange={(e) => {
+                          updateTheme('colors', 'primary', e.target.value);
+                          setTheme(prev => ({ ...prev, primaryColor: e.target.value }));
+                        }}
                         className="flex-1"
                       />
                     </div>
@@ -263,13 +241,19 @@ const ThemeCreator: React.FC<ThemeCreatorProps> = ({ onSaveTheme, existingThemes
                     <div className="flex gap-2">
                       <input
                         type="color"
-                        value={theme.colors.secondary}
-                        onChange={(e) => updateTheme('colors', 'secondary', e.target.value)}
+                        value={theme.colors?.secondary || theme.secondaryColor}
+                        onChange={(e) => {
+                          updateTheme('colors', 'secondary', e.target.value);
+                          setTheme(prev => ({ ...prev, secondaryColor: e.target.value }));
+                        }}
                         className="w-10 h-8 rounded border"
                       />
                       <Input
-                        value={theme.colors.secondary}
-                        onChange={(e) => updateTheme('colors', 'secondary', e.target.value)}
+                        value={theme.colors?.secondary || theme.secondaryColor}
+                        onChange={(e) => {
+                          updateTheme('colors', 'secondary', e.target.value);
+                          setTheme(prev => ({ ...prev, secondaryColor: e.target.value }));
+                        }}
                         className="flex-1"
                       />
                     </div>
@@ -286,7 +270,11 @@ const ThemeCreator: React.FC<ThemeCreatorProps> = ({ onSaveTheme, existingThemes
                           theme.preview === gradient ? 'border-blue-500 scale-105' : 'border-gray-200'
                         }`}
                         style={{ background: gradient }}
-                        onClick={() => setTheme(prev => ({ ...prev, preview: gradient }))}
+                        onClick={() => setTheme(prev => ({ 
+                          ...prev, 
+                          preview: gradient,
+                          backgroundColor: gradient 
+                        }))}
                       />
                     ))}
                   </div>
@@ -297,8 +285,11 @@ const ThemeCreator: React.FC<ThemeCreatorProps> = ({ onSaveTheme, existingThemes
                 <div>
                   <Label>Font Family</Label>
                   <Select
-                    value={theme.typography.fontFamily}
-                    onValueChange={(value) => updateTheme('typography', 'fontFamily', value)}
+                    value={theme.typography?.fontFamily || theme.fontFamily}
+                    onValueChange={(value) => {
+                      updateTheme('typography', 'fontFamily', value);
+                      setTheme(prev => ({ ...prev, fontFamily: value }));
+                    }}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -314,10 +305,13 @@ const ThemeCreator: React.FC<ThemeCreatorProps> = ({ onSaveTheme, existingThemes
                 </div>
                 
                 <div>
-                  <Label>Font Size: {theme.typography.fontSize}px</Label>
+                  <Label>Font Size: {theme.typography?.fontSize || theme.fontSize}px</Label>
                   <Slider
-                    value={[theme.typography.fontSize]}
-                    onValueChange={(value) => updateTheme('typography', 'fontSize', value[0])}
+                    value={[theme.typography?.fontSize || theme.fontSize || 16]}
+                    onValueChange={(value) => {
+                      updateTheme('typography', 'fontSize', value[0]);
+                      setTheme(prev => ({ ...prev, fontSize: value[0] }));
+                    }}
                     min={12}
                     max={24}
                     step={1}
@@ -328,10 +322,13 @@ const ThemeCreator: React.FC<ThemeCreatorProps> = ({ onSaveTheme, existingThemes
 
               <TabsContent value="layout" className="space-y-4">
                 <div>
-                  <Label>Border Radius: {theme.layout.borderRadius}px</Label>
+                  <Label>Border Radius: {theme.layout?.borderRadius || theme.borderRadius || 8}px</Label>
                   <Slider
-                    value={[theme.layout.borderRadius]}
-                    onValueChange={(value) => updateTheme('layout', 'borderRadius', value[0])}
+                    value={[theme.layout?.borderRadius || (theme.borderRadius ? parseInt(theme.borderRadius) : 8)]}
+                    onValueChange={(value) => {
+                      updateTheme('layout', 'borderRadius', value[0]);
+                      setTheme(prev => ({ ...prev, borderRadius: `${value[0]}px` }));
+                    }}
                     min={0}
                     max={24}
                     step={1}
@@ -340,10 +337,13 @@ const ThemeCreator: React.FC<ThemeCreatorProps> = ({ onSaveTheme, existingThemes
                 </div>
                 
                 <div>
-                  <Label>Padding: {theme.layout.padding}px</Label>
+                  <Label>Padding: {theme.layout?.padding || (theme.padding ? parseInt(theme.padding) : 24)}px</Label>
                   <Slider
-                    value={[theme.layout.padding]}
-                    onValueChange={(value) => updateTheme('layout', 'padding', value[0])}
+                    value={[theme.layout?.padding || (theme.padding ? parseInt(theme.padding) : 24)]}
+                    onValueChange={(value) => {
+                      updateTheme('layout', 'padding', value[0]);
+                      setTheme(prev => ({ ...prev, padding: `${value[0]}px` }));
+                    }}
                     min={8}
                     max={48}
                     step={2}
@@ -357,21 +357,21 @@ const ThemeCreator: React.FC<ThemeCreatorProps> = ({ onSaveTheme, existingThemes
                   <div className="flex items-center justify-between">
                     <Label>Animations</Label>
                     <Switch
-                      checked={theme.effects.animations}
+                      checked={theme.effects?.animations || false}
                       onCheckedChange={(checked) => updateTheme('effects', 'animations', checked)}
                     />
                   </div>
                   <div className="flex items-center justify-between">
                     <Label>Gradient Effects</Label>
                     <Switch
-                      checked={theme.effects.gradients}
+                      checked={theme.effects?.gradients || false}
                       onCheckedChange={(checked) => updateTheme('effects', 'gradients', checked)}
                     />
                   </div>
                   <div className="flex items-center justify-between">
                     <Label>Blur Effects</Label>
                     <Switch
-                      checked={theme.effects.blurEffects}
+                      checked={theme.effects?.blurEffects || false}
                       onCheckedChange={(checked) => updateTheme('effects', 'blurEffects', checked)}
                     />
                   </div>
@@ -390,18 +390,18 @@ const ThemeCreator: React.FC<ThemeCreatorProps> = ({ onSaveTheme, existingThemes
             <div
               className="p-6 rounded-lg shadow-lg border"
               style={{
-                background: theme.preview,
-                fontFamily: theme.typography.fontFamily,
-                fontSize: `${theme.typography.fontSize}px`
+                background: theme.preview || theme.backgroundColor,
+                fontFamily: theme.typography?.fontFamily || theme.fontFamily,
+                fontSize: `${theme.typography?.fontSize || theme.fontSize}px`
               }}
             >
               <div
                 className="p-6 rounded-lg shadow-lg"
                 style={{
-                  backgroundColor: theme.colors.form,
-                  borderRadius: `${theme.layout.borderRadius}px`,
-                  padding: `${theme.layout.padding}px`,
-                  color: theme.colors.text
+                  backgroundColor: theme.colors?.form || theme.formBackgroundColor,
+                  borderRadius: `${theme.layout?.borderRadius || (theme.borderRadius ? parseInt(theme.borderRadius) : 8)}px`,
+                  padding: `${theme.layout?.padding || (theme.padding ? parseInt(theme.padding) : 24)}px`,
+                  color: theme.colors?.text || theme.fontColor
                 }}
               >
                 <h3 className="text-lg font-semibold mb-4">Sample Form</h3>
@@ -413,8 +413,8 @@ const ThemeCreator: React.FC<ThemeCreatorProps> = ({ onSaveTheme, existingThemes
                       placeholder="Enter your name"
                       className="w-full p-2 border rounded"
                       style={{
-                        borderColor: theme.colors.primary,
-                        borderRadius: `${theme.layout.borderRadius / 2}px`
+                        borderColor: theme.colors?.primary || theme.primaryColor,
+                        borderRadius: `${(theme.layout?.borderRadius || (theme.borderRadius ? parseInt(theme.borderRadius) : 8)) / 2}px`
                       }}
                     />
                   </div>
@@ -425,16 +425,16 @@ const ThemeCreator: React.FC<ThemeCreatorProps> = ({ onSaveTheme, existingThemes
                       placeholder="Enter your email"
                       className="w-full p-2 border rounded"
                       style={{
-                        borderColor: theme.colors.primary,
-                        borderRadius: `${theme.layout.borderRadius / 2}px`
+                        borderColor: theme.colors?.primary || theme.primaryColor,
+                        borderRadius: `${(theme.layout?.borderRadius || (theme.borderRadius ? parseInt(theme.borderRadius) : 8)) / 2}px`
                       }}
                     />
                   </div>
                   <button
                     className="w-full py-2 px-4 text-white font-medium rounded"
                     style={{
-                      backgroundColor: theme.colors.primary,
-                      borderRadius: `${theme.layout.borderRadius}px`
+                      backgroundColor: theme.colors?.primary || theme.primaryColor,
+                      borderRadius: `${theme.layout?.borderRadius || (theme.borderRadius ? parseInt(theme.borderRadius) : 8)}px`
                     }}
                   >
                     Submit Form

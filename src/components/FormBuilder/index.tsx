@@ -3,27 +3,30 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import FormElementLibrary from './FormElementLibrary';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import EnhancedFormElementLibrary from './EnhancedFormElementLibrary';
 import EnhancedFormCanvas from './EnhancedFormCanvas';
-import FormPropertiesPanel from './FormPropertiesPanel';
+import EnhancedFormPropertiesPanel from './EnhancedFormPropertiesPanel';
 import FormDesigner from './FormDesigner';
-import ThemeStudio from './ThemeStudio';
-import AdvancedElementSettings from './AdvancedElementSettings';
+import SaveSuccessDialog from './SaveSuccessDialog';
 import FloatingActionButtons from './FloatingActionButtons';
 import ViewCodeModal from './QuickActions/ViewCodeModal';
 import TestFormModal from './QuickActions/TestFormModal';
 import AIEnhanceModal from './QuickActions/AIEnhanceModal';
-import { FormConfig, FormElement, CustomTheme } from './types';
+import { FormConfig, FormElement } from './types';
 import { 
   Settings, Eye, Save, Upload, Download, Play, 
   Palette, Layers, Grid, Code, Sparkles, Wand2,
-  HelpCircle, Info, Lightbulb, Zap, Target
+  HelpCircle, Info, Lightbulb, Zap, Target, Search, Filter
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 const FormBuilder: React.FC = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const [formConfig, setFormConfig] = useState<FormConfig>({
     name: "Untitled Form",
@@ -34,11 +37,12 @@ const FormBuilder: React.FC = () => {
       layout: {
         size: "Default",
         columns: { default: true, tablet: true, desktop: true },
-        labels: "Default",
+        labels: "Default", 
         placeholders: "Default", 
         errors: "Default",
         messages: "Default",
-        questionSpacing: 24
+        questionSpacing: 24,
+        labelAlignment: "top"
       },
       canvasStyles: {
         backgroundColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
@@ -49,7 +53,9 @@ const FormBuilder: React.FC = () => {
         fontSize: 16,
         formWidth: 752,
         borderRadius: "12px",
-        padding: "32px"
+        padding: "32px",
+        backgroundImage: "",
+        customCSS: ""
       },
       submitButton: {
         text: "Submit Form",
@@ -65,17 +71,16 @@ const FormBuilder: React.FC = () => {
 
   const [selectedElement, setSelectedElement] = useState<FormElement | null>(null);
   const [activePanel, setActivePanel] = useState<'elements' | 'configuration' | 'designer'>('elements');
-  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
-  const [showThemeStudio, setShowThemeStudio] = useState(false);
-  const [customThemes, setCustomThemes] = useState<CustomTheme[]>([]);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [elementFilter, setElementFilter] = useState('all');
 
   // Quick Action Modals
   const [showViewCode, setShowViewCode] = useState(false);
   const [showTestForm, setShowTestForm] = useState(false);
   const [showAIEnhance, setShowAIEnhance] = useState(false);
 
-  // Save form to localStorage
+  // Auto-save functionality
   useEffect(() => {
     const timer = setTimeout(() => {
       localStorage.setItem('formBuilder_current', JSON.stringify(formConfig));
@@ -93,16 +98,6 @@ const FormBuilder: React.FC = () => {
         setFormConfig(parsedConfig);
       } catch (error) {
         console.error('Failed to load saved form:', error);
-      }
-    }
-
-    // Load custom themes
-    const savedThemes = localStorage.getItem('formBuilder_customThemes');
-    if (savedThemes) {
-      try {
-        setCustomThemes(JSON.parse(savedThemes));
-      } catch (error) {
-        console.error('Failed to load custom themes:', error);
       }
     }
   }, []);
@@ -147,16 +142,29 @@ const FormBuilder: React.FC = () => {
   };
 
   const handlePreview = () => {
+    const formId = 'current';
     localStorage.setItem('previewFormConfig', JSON.stringify(formConfig));
-    window.open('/preview', '_blank');
+    navigate(`/form-preview/${formId}`);
   };
 
   const handleSave = () => {
     const formId = `form_${Date.now()}`;
     localStorage.setItem(`formBuilder_${formId}`, JSON.stringify(formConfig));
+    setShowSaveDialog(true);
+  };
+
+  const handlePublish = () => {
+    // Simulate publishing process
+    const formId = 'current';
+    localStorage.setItem(`published_${formId}`, JSON.stringify({
+      ...formConfig,
+      published: true,
+      publishedAt: new Date().toISOString()
+    }));
+    
     toast({
-      title: "Form Saved Successfully!",
-      description: `Your form "${formConfig.name}" has been saved.`,
+      title: "Form Published!",
+      description: "Your form is now live and ready to receive submissions.",
     });
   };
 
@@ -201,29 +209,6 @@ const FormBuilder: React.FC = () => {
     input.click();
   };
 
-  const handleApplyTheme = (theme: CustomTheme) => {
-    const updatedConfig = {
-      ...formConfig,
-      settings: {
-        ...formConfig.settings,
-        canvasStyles: {
-          ...formConfig.settings.canvasStyles,
-          backgroundColor: theme.preview,
-          formBackgroundColor: theme.colors.form,
-          fontColor: theme.colors.text,
-          primaryColor: theme.colors.primary,
-          secondaryColor: theme.colors.secondary,
-          fontFamily: theme.typography.fontFamily,
-          fontSize: theme.typography.fontSize,
-          borderRadius: `${theme.layout.borderRadius}px`,
-          padding: `${theme.layout.padding}px`
-        }
-      }
-    };
-    setFormConfig(updatedConfig);
-    setShowThemeStudio(false);
-  };
-
   const handleQuickAction = (action: string) => {
     switch (action) {
       case 'view-code':
@@ -238,9 +223,23 @@ const FormBuilder: React.FC = () => {
       case 'preview':
         handlePreview();
         break;
+      case 'help':
+        toast({
+          title: "FormCraft Pro Help",
+          description: "Use the floating buttons to switch between Elements, Configuration, and Designer panels. Drag elements from the library to build your form.",
+        });
+        break;
       default:
         break;
     }
+  };
+
+  const handleThemeStudio = () => {
+    navigate('/tools/theme-studio');
+  };
+
+  const handleDesigner = () => {
+    setActivePanel('designer');
   };
 
   const handleAIEnhance = (enhancedConfig: FormConfig) => {
@@ -248,26 +247,46 @@ const FormBuilder: React.FC = () => {
     setShowAIEnhance(false);
   };
 
+  const handlePanelChange = (panel: 'elements' | 'configuration' | 'designer') => {
+    setActivePanel(panel);
+  };
+
+  const handleSaveDialogClose = () => {
+    setShowSaveDialog(false);
+  };
+
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, elementType: string) => {
+    console.log('Setting drag data for element type:', elementType);
+    e.dataTransfer.setData('text/plain', elementType);
+    e.dataTransfer.effectAllowed = 'copy';
+  };
+
   const renderSidePanel = () => {
     switch (activePanel) {
       case 'elements':
-        return <FormElementLibrary onDragStart={() => {}} />;
+        return (
+          <EnhancedFormElementLibrary 
+            onDragStart={handleDragStart} 
+            onClose={() => setActivePanel('configuration')}
+          />
+        );
       case 'configuration':
         return (
-          <FormPropertiesPanel
+          <EnhancedFormPropertiesPanel
             formConfig={formConfig}
             selectedElement={selectedElement}
             onFormConfigUpdate={setFormConfig}
             onElementUpdate={handleElementUpdate}
             onElementDelete={handleDeleteElement}
             onElementDuplicate={handleDuplicateElement}
+            onClose={() => setActivePanel('elements')}
           />
         );
       case 'designer':
         return (
           <FormDesigner
             isOpen={true}
-            onClose={() => {}}
+            onClose={() => setActivePanel('elements')}
             formConfig={formConfig}
             onUpdate={setFormConfig}
           />
@@ -279,7 +298,7 @@ const FormBuilder: React.FC = () => {
 
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-gray-50 to-blue-50">
-      {/* Enhanced Header */}
+      {/* Enhanced Header with Search and Filters */}
       <motion.div 
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -308,6 +327,44 @@ const FormBuilder: React.FC = () => {
               <Badge variant="secondary" className="bg-purple-100 text-purple-700">
                 v3.0 Pro
               </Badge>
+
+              {/* Form Name Input */}
+              <div className="flex items-center gap-2">
+                <Input
+                  value={formConfig.name}
+                  onChange={(e) => setFormConfig(prev => ({ ...prev, name: e.target.value }))}
+                  className="w-48 h-9"
+                  placeholder="Form name"
+                />
+              </div>
+
+              {/* Search and Filter */}
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search elements..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 w-48 h-9"
+                  />
+                </div>
+                
+                <Select value={elementFilter} onValueChange={setElementFilter}>
+                  <SelectTrigger className="w-40 h-9">
+                    <Filter className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder="Filter" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Elements</SelectItem>
+                    <SelectItem value="input">Input Fields</SelectItem>
+                    <SelectItem value="selection">Selection</SelectItem>
+                    <SelectItem value="layout">Layout</SelectItem>
+                    <SelectItem value="media">Media</SelectItem>
+                    <SelectItem value="advanced">Advanced</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Action Buttons */}
@@ -330,7 +387,7 @@ const FormBuilder: React.FC = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={() => setShowThemeStudio(true)}
+                onClick={handleThemeStudio}
                 className="border-purple-200 text-purple-700 hover:bg-purple-50"
               >
                 <Palette className="h-4 w-4 mr-2" />
@@ -394,23 +451,23 @@ const FormBuilder: React.FC = () => {
           initial={{ x: 300, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="w-80 border-l border-gray-200 bg-gradient-to-b from-gray-50/95 to-white/95 backdrop-blur-md p-6 overflow-y-auto shadow-lg"
+          className="w-80 border-l border-gray-200 bg-gradient-to-b from-gray-50/95 to-white/95 backdrop-blur-md overflow-y-auto shadow-lg"
         >
-          <div className="space-y-6">
+          <div className="p-6 space-y-6">
             {/* Form Info */}
             <Card className="p-4 bg-white/80 backdrop-blur-sm border-gray-200/50">
               <div className="flex items-center gap-2 mb-3">
                 <Info className="h-4 w-4 text-blue-500" />
-                <h3 className="font-semibold">Form Information</h3>
+                <h3 className="font-semibold">Form Analytics</h3>
               </div>
-              <div className="space-y-2 text-sm">
+              <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Elements:</span>
+                  <span className="text-gray-600">Total Elements:</span>
                   <Badge variant="outline">{formConfig.elements.length}</Badge>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Required:</span>
-                  <Badge variant="outline">
+                  <span className="text-gray-600">Required Fields:</span>
+                  <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
                     {formConfig.elements.filter(el => el.required).length}
                   </Badge>
                 </div>
@@ -420,6 +477,31 @@ const FormBuilder: React.FC = () => {
                     {formConfig.settings.canvasStyles?.formWidth || 752}px
                   </Badge>
                 </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Completion Rate:</span>
+                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                    Est. 87%
+                  </Badge>
+                </div>
+              </div>
+            </Card>
+
+            {/* Element Breakdown */}
+            <Card className="p-4 bg-white/80 backdrop-blur-sm border-gray-200/50">
+              <div className="flex items-center gap-2 mb-3">
+                <Layers className="h-4 w-4 text-purple-500" />
+                <h3 className="font-semibold">Element Breakdown</h3>
+              </div>
+              <div className="space-y-2 text-sm">
+                {['text', 'email', 'select', 'textarea', 'checkbox'].map(type => {
+                  const count = formConfig.elements.filter(el => el.type === type).length;
+                  return count > 0 ? (
+                    <div key={type} className="flex justify-between">
+                      <span className="text-gray-600 capitalize">{type}:</span>
+                      <Badge variant="outline" className="text-xs">{count}</Badge>
+                    </div>
+                  ) : null;
+                })}
               </div>
             </Card>
 
@@ -430,78 +512,56 @@ const FormBuilder: React.FC = () => {
                 <h3 className="font-semibold">Pro Tips</h3>
               </div>
               <div className="space-y-2 text-sm text-gray-600">
-                <p>💡 Use floating buttons for quick access</p>
-                <p>🎨 Visit Theme Studio for custom designs</p>
-                <p>⚡ Try AI enhancement for smart improvements</p>
-                <p>👀 Test your form before publishing</p>
+                <p>• Use the floating buttons to quickly switch between panels</p>
+                <p>• Drag elements from the library to build your form</p>
+                <p>• Preview your form before publishing</p>
+                <p>• Use validation rules to ensure data quality</p>
               </div>
             </Card>
           </div>
         </motion.div>
       </div>
 
-      {/* Floating Action Buttons */}
+      {/* Enhanced Floating Action Buttons */}
       <FloatingActionButtons
         activePanel={activePanel}
-        onPanelChange={setActivePanel}
+        onPanelChange={handlePanelChange}
         onQuickAction={handleQuickAction}
+        onPreview={handlePreview}
+        onThemeStudio={handleThemeStudio}
+        onDesigner={handleDesigner}
       />
 
       {/* Modals */}
-      <AnimatePresence>
-        {showThemeStudio && (
-          <ThemeStudio
-            onApplyTheme={handleApplyTheme}
-            onClose={() => setShowThemeStudio(false)}
-          />
-        )}
+      <SaveSuccessDialog 
+        open={showSaveDialog} 
+        onOpenChange={setShowSaveDialog}
+        formName={formConfig.name}
+        onPublish={handlePublish}
+        onClose={handleSaveDialogClose}
+      />
 
-        {showViewCode && (
-          <ViewCodeModal
-            formConfig={formConfig}
-            onClose={() => setShowViewCode(false)}
-          />
-        )}
+      {showViewCode && (
+        <ViewCodeModal 
+          formConfig={formConfig}
+          onClose={() => setShowViewCode(false)}
+        />
+      )}
 
-        {showTestForm && (
-          <TestFormModal
-            formConfig={formConfig}
-            onClose={() => setShowTestForm(false)}
-          />
-        )}
+      {showTestForm && (
+        <TestFormModal 
+          formConfig={formConfig}
+          onClose={() => setShowTestForm(false)}
+        />
+      )}
 
-        {showAIEnhance && (
-          <AIEnhanceModal
-            formConfig={formConfig}
-            onEnhance={handleAIEnhance}
-            onClose={() => setShowAIEnhance(false)}
-          />
-        )}
-
-        {showAdvancedSettings && selectedElement && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            onClick={() => setShowAdvancedSettings(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <AdvancedElementSettings
-                element={selectedElement}
-                onUpdate={handleElementUpdate}
-                onClose={() => setShowAdvancedSettings(false)}
-              />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {showAIEnhance && (
+        <AIEnhanceModal 
+          formConfig={formConfig}
+          onEnhance={handleAIEnhance}
+          onClose={() => setShowAIEnhance(false)}
+        />
+      )}
     </div>
   );
 };

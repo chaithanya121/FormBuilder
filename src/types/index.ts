@@ -1,3 +1,4 @@
+
 export type FormElementType = 
   | "text" | "email" | "password" | "number" | "textarea" | "select" | "radio" | "checkbox" 
   | "date" | "time" | "file" | "checkbox-group" | "heading" | "paragraph" | "divider" | "container"
@@ -50,6 +51,27 @@ export interface FormElement {
     rowId?: string;
     rowPosition?: number;
   };
+  // Advanced properties
+  helpText?: string;
+  defaultValue?: any;
+  disabled?: boolean;
+  hidden?: boolean;
+  readOnly?: boolean;
+  autoFocus?: boolean;
+  spellCheck?: boolean;
+  tabIndex?: number;
+  customCSS?: string;
+  customClasses?: string;
+  customAttributes?: Record<string, any>;
+  dataAttributes?: string;
+  customScript?: string;
+  stylePreset?: string;
+  width?: string;
+  animation?: string;
+  conditionalLogic?: string;
+  ariaLabel?: string;
+  ariaDescription?: string;
+  role?: string;
 }
 
 export interface FormConfig {
@@ -74,6 +96,7 @@ export interface FormConfig {
       placeholders: "Default" | "On" | "Off";
       errors: "Default" | "On" | "Off";
       messages: "Default" | "On" | "Off";
+      labelAlignment?: string;
     };
     canvasStyles?: {
       backgroundColor?: string;
@@ -81,6 +104,12 @@ export interface FormConfig {
       padding?: string;
       margin?: string;
       borderRadius?: string;
+    };
+    submitButton?: {
+      text?: string;
+      backgroundColor?: string;
+      textColor?: string;
+      position?: string;
     };
   };
 }
