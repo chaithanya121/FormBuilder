@@ -23,10 +23,16 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { useAppDispatch, useAppSelector } from '@/hooks/redux';
+import { createForm,fetchFormById } from '@/store/slices/formsSlice';
+import { useParams } from 'react-router-dom';
+
+
 
 const FormBuilder: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+   const dispatch = useAppDispatch();
   
   const [formConfig, setFormConfig] = useState<FormConfig>({
     name: "Untitled Form",
@@ -79,28 +85,33 @@ const FormBuilder: React.FC = () => {
   const [showViewCode, setShowViewCode] = useState(false);
   const [showTestForm, setShowTestForm] = useState(false);
   const [showAIEnhance, setShowAIEnhance] = useState(false);
+   const { id } = useParams();
+    const createFormData = useAppSelector((state: FormConfig) => state)
 
+    console.log('createForm',createFormData?.forms?.currentForm)
   // Auto-save functionality
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      localStorage.setItem('formBuilder_current', JSON.stringify(formConfig));
-      localStorage.setItem('currentFormId', 'current');
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [formConfig]);
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     localStorage.setItem('formBuilder_current', JSON.stringify(formConfig));
+  //     localStorage.setItem('currentFormId', 'current');
+  //   }, 500);
+  //   return () => clearTimeout(timer);
+  // }, [formConfig]);
 
   // Load saved form
+
+
   useEffect(() => {
-    const saved = localStorage.getItem('formBuilder_current');
-    if (saved) {
-      try {
-        const parsedConfig = JSON.parse(saved);
-        setFormConfig(parsedConfig);
-      } catch (error) {
-        console.error('Failed to load saved form:', error);
-      }
-    }
+     dispatch(fetchFormById(id))
+  
   }, []);
+
+  useEffect(()=>{
+    if(createFormData?.form?.currentForm){
+
+      setFormConfig(createFormData?.form?.currentForm)
+    }
+  },[createForm])
 
   const handleElementSelect = (element: FormElement) => {
     setSelectedElement(element);
@@ -147,11 +158,17 @@ const FormBuilder: React.FC = () => {
     navigate(`/form-preview/${formId}`);
   };
 
-  const handleSave = () => {
-    const formId = `form_${Date.now()}`;
-    localStorage.setItem(`formBuilder_${formId}`, JSON.stringify(formConfig));
-    setShowSaveDialog(true);
+   const handleSave = async () => {
+
+    await dispatch(createForm(createFormData?.form?.currentForm));
+     setShowSaveDialog(true);
   };
+
+  // const handleSave = () => {
+  //   const formId = `form_${Date.now()}`;
+  //   localStorage.setItem(`formBuilder_${formId}`, JSON.stringify(formConfig));
+  //   setShowSaveDialog(true);
+  // };
 
   const handlePublish = () => {
     // Simulate publishing process

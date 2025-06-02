@@ -1,3 +1,35 @@
+import { 
+  FileText, 
+  Users, 
+  BarChart3, 
+  Plus, 
+  Briefcase,
+  Globe,
+  ShoppingCart,
+  Book,
+  Camera,
+  Layers,
+  Rocket,
+  TrendingUp,
+  Award,
+  Activity,
+  Zap,
+  ArrowUpRight,
+  ArrowDownRight,
+  DollarSign,
+  Download,
+  Star,
+  CheckCircle,
+  Eye,
+  MousePointer,
+  Calendar,
+  Target,
+  Sparkles,
+  PlayCircle,
+  PauseCircle,
+  RefreshCw,
+  Wrench
+} from 'lucide-react';
 
 export type FormElementType = 
   | "text" | "email" | "password" | "number" | "textarea" | "select" | "radio" | "checkbox" 
@@ -133,4 +165,38 @@ export interface ElementSettingsProps {
   element: FormElement;
   onUpdate: (updatedElement: FormElement) => void;
   onClose: () => void;
+}
+
+
+export const icon_map = {
+    "FileText":FileText, 
+  "Users":Users, 
+  "BarChart3":BarChart3, 
+  "Plus":Plus, 
+  "Briefcase":Briefcase,
+  "Globe":Globe,
+  ShoppingCart:ShoppingCart,
+  Book:Book,
+  Camera:Camera,
+  Layers:Layers,
+  Rocket:Rocket,
+  TrendingUp:TrendingUp,
+  Award:Award,
+  Activity:Activity,
+  Zap:Zap,
+  ArrowUpRight : ArrowUpRight,
+  ArrowDownRight:ArrowDownRight,
+  DollarSign:DollarSign,
+  Download:Download,
+  Star:Star,
+  CheckCircle:CheckCircle,
+  Eye:Eye,
+  MousePointer:MousePointer,
+  Calendar:Calendar,
+  Target:Target,
+  Sparkles:Sparkles,
+  PlayCircle:PlayCircle,
+  PauseCircle:PauseCircle,
+  RefreshCw:RefreshCw,
+  Wrench:Wrench
 }

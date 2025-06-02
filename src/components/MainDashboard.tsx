@@ -36,100 +36,36 @@ import {
   RefreshCw,
   Wrench
 } from 'lucide-react';
+import { icon_map } from '@/types';
 import { Link } from 'react-router-dom';
-import { getPlatform } from '@/store/slices/platformSlice';
+import { getPlatform, PlatForm,PlatFormState } from '@/store/slices/platformSlice';
 import {isEmpty} from 'lodash'
 import { useSelector, useDispatch } from 'react-redux'
 import { platformApi } from '@/services/api/platform';
+import { AppDispatch } from '@/store';
+
+
+
+interface Base64ImageProps {
+  base64String: string;
+  contentType: string;
+  alt?: string;
+  className?: string;
+}
+
+
 
 const MainDashboard = () => {
   const { theme } = useTheme();
+  const dispatch = useDispatch<AppDispatch>();
+  // const { forms, loading, error } = useSelector((state: RootState) => state.forms);
   const [platformCards,setPlatFormCards]= useState([])
-  const count = useSelector((state) => state)
+  const platform = useSelector((state: PlatFormState) => state.platform?.platform)
 
-
-  useEffect(()=>{
-   const platform = platformApi.getPlatForm();
-
-   console.log(platform)
-   
-  },[])
-
-  // const platformCards = [
-  //   {
-  //     id: 'forms',
-  //     name: 'Form Builder',
-  //     description: 'Create dynamic forms with AI-powered assistance and advanced analytics',
-  //     icon: FileText,
-  //     gradient: 'from-blue-500 via-cyan-400 to-teal-500',
-  //     bgGradient: theme === 'light' ? 'from-blue-50 via-cyan-50 to-teal-50' : 'from-blue-900/20 via-cyan-900/20 to-teal-900/20',
-  //     stats: { 
-  //       projects: 12, 
-  //       submissions: 2847, 
-  //       active: true,
-  //       growth: '+18%',
-  //       revenue: '$1,240'
-  //     },
-  //     link: '/platform/forms',
-  //     features: ['AI Form Generation', 'Real-time Analytics', 'Custom Themes', 'Team Collaboration'],
-  //     popularity: 95
-  //   },
-  //   {
-  //     id: 'resume',
-  //     name: 'Resume Builder',
-  //     description: 'Professional resume creation with ATS-optimized templates and AI suggestions',
-  //     icon: Briefcase,
-  //     gradient: 'from-emerald-500 via-green-400 to-lime-500',
-  //     bgGradient: theme === 'light' ? 'from-emerald-50 via-green-50 to-lime-50' : 'from-emerald-900/20 via-green-900/20 to-lime-900/20',
-  //     stats: { 
-  //       projects: 5, 
-  //       downloads: 89, 
-  //       active: true,
-  //       growth: '+32%',
-  //       revenue: '$890'
-  //     },
-  //     link: '/platform/resume',
-  //     features: ['ATS Optimization', 'Professional Templates', 'AI Content Suggestions', 'PDF Export'],
-  //     popularity: 88
-  //   },
-  //   {
-  //     id: 'website',
-  //     name: 'Website Builder',
-  //     description: 'Build stunning responsive websites with drag-and-drop simplicity',
-  //     icon: Globe,
-  //     gradient: 'from-purple-500 via-pink-400 to-rose-500',
-  //     bgGradient: theme === 'light' ? 'from-purple-50 via-pink-50 to-rose-50' : 'from-purple-900/20 via-pink-900/20 to-rose-900/20',
-  //     stats: { 
-  //       projects: 8, 
-  //       visitors: 15420, 
-  //       active: true,
-  //       growth: '+45%',
-  //       revenue: '$2,340'
-  //     },
-  //     link: '/platform/website',
-  //     features: ['Drag & Drop Builder', 'Responsive Design', 'SEO Optimization', 'Custom Domains'],
-  //     popularity: 92
-  //   },
-  //   {
-  //     id: 'ecommerce',
-  //     name: 'E-Commerce Builder',
-  //     description: 'Create powerful online stores with integrated payment processing',
-  //     icon: ShoppingCart,
-  //     gradient: 'from-orange-500 via-red-400 to-pink-500',
-  //     bgGradient: theme === 'light' ? 'from-orange-50 via-red-50 to-pink-50' : 'from-orange-900/20 via-red-900/20 to-pink-900/20',
-  //     stats: { 
-  //       stores: 3, 
-  //       sales: '$12,450', 
-  //       active: false,
-  //       growth: 'Coming Soon',
-  //       revenue: '$0'
-  //     },
-  //     link: '/platform/ecommerce',
-  //     features: ['Payment Integration', 'Inventory Management', 'Order Tracking', 'Analytics Dashboard'],
-  //     popularity: 85
-  //   }
-  // ];
-
+  useEffect(() => {
+    dispatch(getPlatform());
+  }, []);
+  
   const overallStats = [
     {
       title: 'Total Revenue',
@@ -259,6 +195,19 @@ const MainDashboard = () => {
       link: '/collaboration'
     }
   ];
+
+  console.log(platform)
+
+function Base64Svg({ base64String, className = "" }) {
+  const svgString = atob(base64String);
+  
+  return (
+    <div 
+      className={className}
+      dangerouslySetInnerHTML={{ __html: svgString }}
+    />
+  );
+}
 
   return (
     <div className={`min-h-screen ${theme === 'light' 
@@ -467,7 +416,7 @@ const MainDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid gap-6">
-                  {!isEmpty(platformCards) && platformCards.map((platform, index) => (
+                  {!isEmpty(platform) && platform.map((platform, index) => (
                     <Link key={platform.id} to={platform.link}>
                       <motion.div
                         initial={{ opacity: 0, x: -20 }}
@@ -488,7 +437,11 @@ const MainDashboard = () => {
                               whileHover={{ rotate: 10, scale: 1.1 }}
                               className={`w-16 h-16 bg-gradient-to-r ${platform.gradient} rounded-xl flex items-center justify-center shadow-lg`}
                             >
-                              <platform.icon className="h-8 w-8 text-white" />
+                                <Base64Svg 
+                                  base64String={platform.icon.data} 
+                                  className="h-8 w-8 text-white flex items-center justify-center"
+                                />
+                              {/* <icon_map.platform.icon.data className="h-8 w-8 text-white" /> */}
                             </motion.div>
                             <div className="flex-1">
                               <div className="flex items-center gap-3 mb-2">

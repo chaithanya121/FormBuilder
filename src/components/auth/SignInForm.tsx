@@ -100,7 +100,8 @@ console.log(response)
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="pl-10 bg-slate-700/50 border-slate-600 text-white focus:ring-blue-500 focus:border-blue-500"
+            // className="pl-10 bg-slate-700/50 border-slate-600 text-white focus:ring-blue-500 focus:border-blue-500"
+            className="pl-10 border-slate-600 text-black focus:ring-blue-500 focus:border-blue-500"
             disabled={isLoading}
           />
         </div>
