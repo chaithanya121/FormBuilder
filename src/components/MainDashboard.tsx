@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -42,7 +43,7 @@ import { getPlatform, PlatForm,PlatFormState } from '@/store/slices/platformSlic
 import {isEmpty} from 'lodash'
 import { useSelector, useDispatch } from 'react-redux'
 import { platformApi } from '@/services/api/platform';
-import { AppDispatch } from '@/store';
+import { AppDispatch, RootState } from '@/store';
 
 
 
@@ -60,7 +61,7 @@ const MainDashboard = () => {
   const dispatch = useDispatch<AppDispatch>();
   // const { forms, loading, error } = useSelector((state: RootState) => state.forms);
   const [platformCards,setPlatFormCards]= useState([])
-  const platform = useSelector((state: PlatFormState) => state.platform?.platform)
+  const platform = useSelector((state: RootState) => state.platform.platform)
 
   useEffect(() => {
     dispatch(getPlatform());
