@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -310,7 +309,7 @@ const MainDashboard = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="inline-flex items-center gap-3 mb-6"
           >
-            <div className="p-4 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-3xl shadow-2xl">
+            <div className="p-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-3xl shadow-2xl">
               <Rocket className="h-10 w-10 text-white" />
             </div>
           </motion.div>
@@ -545,8 +544,9 @@ const MainDashboard = () => {
                             {Object.entries(platform.stats).filter(([key]) => !['active'].includes(key)).map(([key, value]) => (
                               <div key={key} className="text-center">
                                 <div className={`text-lg font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                                  {typeof value === 'string' && value?.includes('$') ? value : 
-                                   typeof value === 'number' ? value.toLocaleString() : value}
+                                  {typeof value === 'string' && value.includes('$') ? value : 
+                                   typeof value === 'number' ? value.toLocaleString() : 
+                                   String(value)}
                                 </div>
                                 <div className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} capitalize`}>
                                   {key.replace(/([A-Z])/g, ' $1').trim()}
