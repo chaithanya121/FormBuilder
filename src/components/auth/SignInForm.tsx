@@ -1,8 +1,8 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Mail, Lock, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -11,7 +11,7 @@ import {
   setShowVerificationModal,
   setVerificationEmail,
 } from "@/store/slices/uiSlice";
-import { useAppDispatch } from "@/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 
 interface SignInFormProps {
   onSuccess: () => void;
@@ -20,64 +20,32 @@ interface SignInFormProps {
 export function SignInForm({ onSuccess }: SignInFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
   const navigate = useNavigate();
   const { login } = useAuth();
   const dispatch = useAppDispatch();
+  const { loading } = useAppSelector((state) => state.auth);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!email || !password) {
-      toast({
-        title: "Error",
-        description: "Please enter both email and password",
-        variant: "destructive",
-      });
       return;
     }
 
-    setIsLoading(true);
-
-    // try {
-    const response = await login(email, password);
-console.log(response)
-    if (response.status === 200 || response.status === 201) {
-      toast({
-        title: "Success",
-        description: "You've been signed in successfully",
-      });
-
-      setIsLoading(false);
-      onSuccess();
-      navigate("/dashboard");
-    } else if (response.response.data.detail[0] === "Account not verified. Please check your email for a verification link.") {
-      setIsLoading(false);
-      onSuccess();
-      dispatch(setVerificationEmail(email));
-      dispatch(setShowVerificationModal(true));
-    } else {
-      console.error("Login error:");
-
-      toast({
-        title: "Error",
-        description: "Failed to sign in. Please check your credentials.",
-        variant: "destructive",
-      });
+    try {
+      const response = await login(email, password);
+      
+      if (response.status === 200 || response.status === 201) {
+        onSuccess();
+        navigate("/dashboard");
+      }
+    } catch (error: any) {
+      if (error === "Account not verified. Please check your email for a verification link.") {
+        onSuccess();
+        dispatch(setVerificationEmail(email));
+        dispatch(setShowVerificationModal(true));
+      }
     }
-    console.log(response);
-    // } catch (error) {
-    //   console.error("Login error:", error);
-
-    //   toast({
-    //     title: "Error",
-    //     description: "Failed to sign in. Please check your credentials.",
-    //     variant: "destructive",
-    //   });
-    // } finally {
-    //   setIsLoading(false);
-    // }
   };
 
   return (
@@ -101,7 +69,7 @@ console.log(response)
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="pl-10 bg-slate-700/50 border-slate-600 text-white focus:ring-blue-500 focus:border-blue-500"
-            disabled={isLoading}
+            disabled={loading}
           />
         </div>
       </div>
@@ -128,7 +96,7 @@ console.log(response)
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
             className="pl-10 bg-slate-700/50 border-slate-600 text-white focus:ring-blue-500 focus:border-blue-500"
-            disabled={isLoading}
+            disabled={loading}
           />
         </div>
       </div>
@@ -136,9 +104,9 @@ console.log(response)
       <Button
         type="submit"
         className="w-full bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 text-white"
-        disabled={isLoading}
+        disabled={loading}
       >
-        {isLoading ? (
+        {loading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Signing in...
