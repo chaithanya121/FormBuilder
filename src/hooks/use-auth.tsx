@@ -11,7 +11,14 @@ import {
   setShowVerificationModal,
   setVerificationEmail,
 } from "@/store/slices/uiSlice";
-import { useAppDispatch } from "@/hooks/redux";
+import {
+  setUser,
+  setTokens,
+  setLoading,
+  setError,
+  clearAuth,
+} from "@/store/slices/authSlice";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -28,82 +35,97 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const dispatch = useAppDispatch();
+  const { user, isAuthenticated, isLoading } = useAppSelector(state => state.auth);
   const { toast } = useToast();
-  const navigate = useNavigate()
-  const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Check if user is logged in
     const loadUser = async () => {
       try {
+        dispatch(setLoading(true));
         const currentUser = await authApi.getCurrentUser();
         if (currentUser) {
-          setUser(currentUser);
-          setIsAuthenticated(true);
+          dispatch(setUser(currentUser));
         }
       } catch (error) {
         console.error("Error loading user:", error);
-        // Don't show error toast on initial load to avoid disrupting user experience
+        dispatch(setError((error as Error).message));
+      } finally {
+        dispatch(setLoading(false));
       }
     };
 
     loadUser();
-  }, []);
+  }, [dispatch]);
 
   const login = async (email: string, password: string) => {
     try {
+      dispatch(setLoading(true));
       const response = await authApi.signIn(email, password);
       console.log(response);
       if (response.status === 200 || response.status === 201) {
         sessionStorage.setItem('auth_token', response.data.access);
-          sessionStorage.setItem('refresh_token', response.data.refresh);
-        setUser(response.user);
-        setIsAuthenticated(true);
+        sessionStorage.setItem('refresh_token', response.data.refresh);
+        dispatch(setTokens({
+          token: response.data.access,
+          refreshToken: response.data.refresh
+        }));
+        dispatch(setUser(response.user));
       }
       return response;
     } catch (error) {
       console.error("Login error:", error);
+      dispatch(setError((error as Error).message));
       toast({
         title: "Login Failed",
         description: (error as Error).message || "An error occurred during login",
         variant: "destructive"
       });
       throw error;
+    } finally {
+      dispatch(setLoading(false));
     }
   };
 
   const logout = async() => {
     try {
-      const response = await authApi.logout( sessionStorage.getItem('refresh_token'));
+      dispatch(setLoading(true));
+      const response = await authApi.logout(sessionStorage.getItem('refresh_token'));
       if (response.status === 200 || response.status === 201 || response.status === 205) {
-          sessionStorage.removeItem('auth_token');
-          sessionStorage.removeItem('refresh_token');
-          setUser(null);
-          setIsAuthenticated(false);
-          navigate('/')
+        sessionStorage.removeItem('auth_token');
+        sessionStorage.removeItem('refresh_token');
+        dispatch(clearAuth());
+        navigate('/');
       }
       return response;
      
     } catch (error) {
       console.error("Logout error:", error);
+      dispatch(setError((error as Error).message));
+    } finally {
+      dispatch(setLoading(false));
     }
   };
 
   const updateUser = async (userData: Partial<User>) => {
     try {
+      dispatch(setLoading(true));
       if (user) {
         const updatedUser = await authApi.updateProfile(userData);
-        setUser(updatedUser);
+        dispatch(setUser(updatedUser));
       }
     } catch (error) {
       console.error("Update user error:", error);
+      dispatch(setError((error as Error).message));
       toast({
         title: "Profile Update Failed",
         description: (error as Error).message || "Failed to update profile",
         variant: "destructive"
       });
       throw error;
+    } finally {
+      dispatch(setLoading(false));
     }
   };
 
