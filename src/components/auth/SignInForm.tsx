@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,10 +40,10 @@ export function SignInForm({ onSuccess }: SignInFormProps) {
 
     setIsLoading(true);
 
-    try {
-      const response = await login(email, password);
-      console.log('Login response:', response);
-      
+    // try {
+    const response = await login(email, password);
+console.log(response)
+    if (response.status === 200 || response.status === 201) {
       toast({
         title: "Success",
         description: "You've been signed in successfully",
@@ -53,23 +52,32 @@ export function SignInForm({ onSuccess }: SignInFormProps) {
       setIsLoading(false);
       onSuccess();
       navigate("/dashboard");
-    } catch (error: any) {
-      console.error("Login error:", error);
+    } else if (response.response.data.detail[0] === "Account not verified. Please check your email for a verification link.") {
       setIsLoading(false);
-      
-      // Check if the error is about email verification
-      if (error.message && error.message.includes("Account not verified")) {
-        onSuccess();
-        dispatch(setVerificationEmail(email));
-        dispatch(setShowVerificationModal(true));
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to sign in. Please check your credentials.",
-          variant: "destructive",
-        });
-      }
+      onSuccess();
+      dispatch(setVerificationEmail(email));
+      dispatch(setShowVerificationModal(true));
+    } else {
+      console.error("Login error:");
+
+      toast({
+        title: "Error",
+        description: "Failed to sign in. Please check your credentials.",
+        variant: "destructive",
+      });
     }
+    console.log(response);
+    // } catch (error) {
+    //   console.error("Login error:", error);
+
+    //   toast({
+    //     title: "Error",
+    //     description: "Failed to sign in. Please check your credentials.",
+    //     variant: "destructive",
+    //   });
+    // } finally {
+    //   setIsLoading(false);
+    // }
   };
 
   return (

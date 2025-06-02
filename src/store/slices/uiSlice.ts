@@ -8,24 +8,6 @@ interface UiState {
   activeDashboardTab: string;
   verificationEmail: string | null;
   showVerificationModal: boolean;
-  loading: boolean;
-  searchQuery: string;
-  filterOptions: {
-    status: string;
-    category: string;
-    dateRange: string;
-  };
-  viewMode: 'grid' | 'list';
-  notifications: Notification[];
-}
-
-interface Notification {
-  id: string;
-  type: 'success' | 'error' | 'warning' | 'info';
-  title: string;
-  message: string;
-  timestamp: number;
-  read: boolean;
 }
 
 const initialState: UiState = {
@@ -35,15 +17,6 @@ const initialState: UiState = {
   activeDashboardTab: 'forms',
   verificationEmail: null,
   showVerificationModal: false,
-  loading: false,
-  searchQuery: '',
-  filterOptions: {
-    status: 'all',
-    category: 'all',
-    dateRange: 'all',
-  },
-  viewMode: 'grid',
-  notifications: [],
 };
 
 export const uiSlice = createSlice({
@@ -74,40 +47,6 @@ export const uiSlice = createSlice({
     setShowVerificationModal: (state, action: PayloadAction<boolean>) => {
       state.showVerificationModal = action.payload;
     },
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.loading = action.payload;
-    },
-    setSearchQuery: (state, action: PayloadAction<string>) => {
-      state.searchQuery = action.payload;
-    },
-    setFilterOptions: (state, action: PayloadAction<Partial<UiState['filterOptions']>>) => {
-      state.filterOptions = { ...state.filterOptions, ...action.payload };
-    },
-    setViewMode: (state, action: PayloadAction<'grid' | 'list'>) => {
-      state.viewMode = action.payload;
-    },
-    addNotification: (state, action: PayloadAction<Omit<Notification, 'id' | 'timestamp' | 'read'>>) => {
-      const notification: Notification = {
-        ...action.payload,
-        id: Date.now().toString(),
-        timestamp: Date.now(),
-        read: false,
-      };
-      state.notifications.unshift(notification);
-    },
-    markNotificationAsRead: (state, action: PayloadAction<string>) => {
-      const notification = state.notifications.find(n => n.id === action.payload);
-      if (notification) {
-        notification.read = true;
-      }
-    },
-    removeNotification: (state, action: PayloadAction<string>) => {
-      state.notifications = state.notifications.filter(n => n.id !== action.payload);
-    },
-    clearAllNotifications: (state) => {
-      state.notifications = [];
-    },
-    resetUiState: () => initialState,
   },
 });
 
@@ -119,16 +58,7 @@ export const {
   setSelectedElementId,
   setActiveDashboardTab,
   setVerificationEmail,
-  setShowVerificationModal,
-  setLoading,
-  setSearchQuery,
-  setFilterOptions,
-  setViewMode,
-  addNotification,
-  markNotificationAsRead,
-  removeNotification,
-  clearAllNotifications,
-  resetUiState
+  setShowVerificationModal
 } = uiSlice.actions;
 
 export default uiSlice.reducer;
