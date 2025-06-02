@@ -35,7 +35,16 @@ import {
   PlayCircle,
   PauseCircle,
   RefreshCw,
-  Wrench
+  Wrench,
+  Heart,
+  MessageSquare,
+  Share2,
+  ThumbsUp,
+  UserPlus,
+  Smartphone,
+  ShoppingBag,
+  CreditCard,
+  Percent
 } from 'lucide-react';
 import { icon_map } from '@/types';
 import { Link } from 'react-router-dom';
@@ -45,8 +54,6 @@ import { useSelector, useDispatch } from 'react-redux'
 import { platformApi } from '@/services/api/platform';
 import { AppDispatch, RootState } from '@/store';
 
-
-
 interface Base64ImageProps {
   base64String: string;
   contentType: string;
@@ -54,12 +61,9 @@ interface Base64ImageProps {
   className?: string;
 }
 
-
-
 const MainDashboard = () => {
   const { theme } = useTheme();
   const dispatch = useDispatch<AppDispatch>();
-  // const { forms, loading, error } = useSelector((state: RootState) => state.forms);
   const [platformCards,setPlatFormCards]= useState([])
   const platform = useSelector((state: RootState) => state.platform.platform)
 
@@ -67,148 +71,162 @@ const MainDashboard = () => {
     dispatch(getPlatform());
   }, []);
   
-  const overallStats = [
+  // B2C-focused stats with customer engagement metrics
+  const b2cStats = [
     {
-      title: 'Total Revenue',
-      value: '$47.2K',
-      change: '+23.5%',
+      title: 'Customer Signups',
+      value: '2.4K',
+      change: '+34.2%',
       changeType: 'positive',
-      icon: DollarSign,
-      gradient: 'from-green-500 to-emerald-400',
-      bgGradient: theme === 'light' ? 'from-green-50 via-emerald-100 to-green-50' : 'from-green-900/20 to-emerald-900/20',
-      subtitle: 'Monthly recurring revenue',
-      trend: [65, 75, 85, 78, 92, 95, 88, 96]
-    },
-    {
-      title: 'Active Projects',
-      value: '47',
-      change: '+18%',
-      changeType: 'positive',
-      icon: Layers,
+      icon: UserPlus,
       gradient: 'from-blue-500 to-cyan-400',
-      bgGradient: theme === 'light' ? 'from-blue-50 via-blue-100 to-cyan-50' : 'from-blue-900/20 to-cyan-900/20',
-      subtitle: 'Across all platforms',
-      trend: [30, 35, 42, 38, 45, 47, 44, 47]
+      bgGradient: theme === 'light' ? 'from-blue-50 via-cyan-100 to-blue-50' : 'from-blue-900/20 to-cyan-900/20',
+      subtitle: 'New customers this month',
+      trend: [1.2, 1.5, 1.8, 2.1, 2.0, 2.3, 2.2, 2.4]
     },
     {
-      title: 'Total Users',
-      value: '12.4K',
-      change: '+15.3%',
-      changeType: 'positive',
-      icon: Users,
-      gradient: 'from-purple-500 to-pink-400',
-      bgGradient: theme === 'light' ? 'from-purple-50 via-pink-100 to-purple-50' : 'from-purple-900/20 to-pink-900/20',
-      subtitle: 'Monthly active users',
-      trend: [8.2, 9.1, 10.5, 11.2, 11.8, 12.1, 12.0, 12.4]
-    },
-    {
-      title: 'Conversion Rate',
-      value: '24.7%',
-      change: '+2.1%',
+      title: 'Form Conversions',
+      value: '87.3%',
+      change: '+12.5%',
       changeType: 'positive',
       icon: Target,
+      gradient: 'from-green-500 to-emerald-400',
+      bgGradient: theme === 'light' ? 'from-green-50 via-emerald-100 to-green-50' : 'from-green-900/20 to-emerald-900/20',
+      subtitle: 'Lead to customer conversion',
+      trend: [75, 78, 82, 79, 85, 86, 84, 87.3]
+    },
+    {
+      title: 'Customer Engagement',
+      value: '94.7%',
+      change: '+8.3%',
+      changeType: 'positive',
+      icon: Heart,
+      gradient: 'from-purple-500 to-pink-400',
+      bgGradient: theme === 'light' ? 'from-purple-50 via-pink-100 to-purple-50' : 'from-purple-900/20 to-pink-900/20',
+      subtitle: 'Active user engagement rate',
+      trend: [85, 88, 91, 89, 92, 94, 93, 94.7]
+    },
+    {
+      title: 'Revenue Per Customer',
+      value: '$156',
+      change: '+18.7%',
+      changeType: 'positive',
+      icon: DollarSign,
       gradient: 'from-amber-500 to-orange-400',
       bgGradient: theme === 'light' ? 'from-amber-50 via-orange-100 to-amber-50' : 'from-amber-900/20 to-orange-900/20',
-      subtitle: 'Average across platforms',
-      trend: [18, 20, 22, 21, 23, 24, 23, 24.7]
+      subtitle: 'Average customer value',
+      trend: [120, 128, 135, 142, 148, 152, 154, 156]
     }
   ];
 
-  const recentActivity = [
+  // B2C Customer Journey Activity
+  const customerActivity = [
     {
-      type: 'form_submission',
-      title: 'New form submission received',
-      description: 'Contact Form - Lead Generation Campaign',
+      type: 'customer_signup',
+      title: 'New customer registration completed',
+      description: 'Sarah Johnson signed up via Contact Form',
       time: '2 minutes ago',
-      icon: FileText,
+      icon: UserPlus,
       status: 'success',
-      avatar: 'bg-gradient-to-r from-blue-500 to-cyan-400'
+      avatar: 'bg-gradient-to-r from-blue-500 to-cyan-400',
+      impact: '+$89 potential revenue'
     },
     {
-      type: 'resume_download',
-      title: 'Resume template downloaded',
-      description: 'Modern Professional Template by Sarah Johnson',
-      time: '15 minutes ago',
-      icon: Download,
+      type: 'form_conversion',
+      title: 'High-value lead converted to customer',
+      description: 'Premium subscription purchased after form submission',
+      time: '8 minutes ago',
+      icon: CreditCard,
+      status: 'success',
+      avatar: 'bg-gradient-to-r from-green-500 to-emerald-400',
+      impact: '+$299 revenue'
+    },
+    {
+      type: 'customer_feedback',
+      title: 'Positive customer feedback received',
+      description: '5-star rating on feedback form with testimonial',
+      time: '25 minutes ago',
+      icon: ThumbsUp,
       status: 'info',
-      avatar: 'bg-gradient-to-r from-emerald-500 to-green-400'
+      avatar: 'bg-gradient-to-r from-purple-500 to-pink-400',
+      impact: 'Brand reputation boost'
     },
     {
-      type: 'website_analytics',
-      title: 'High traffic spike detected',
-      description: 'Portfolio website: +150% unique visitors today',
+      type: 'mobile_engagement',
+      title: 'Mobile form completion spike',
+      description: '78% of submissions from mobile devices today',
       time: '1 hour ago',
-      icon: TrendingUp,
-      status: 'success',
-      avatar: 'bg-gradient-to-r from-purple-500 to-pink-400'
-    },
-    {
-      type: 'system_update',
-      title: 'Platform maintenance completed',
-      description: 'All systems updated with latest security patches',
-      time: '3 hours ago',
-      icon: CheckCircle,
+      icon: Smartphone,
       status: 'info',
-      avatar: 'bg-gradient-to-r from-gray-500 to-gray-600'
+      avatar: 'bg-gradient-to-r from-indigo-500 to-purple-400',
+      impact: 'Mobile optimization success'
     }
   ];
 
-  const quickActions = [
-     {
-          title: 'Professional Tools',
-          description: '40+ advanced tools for power users',
-          icon: Wrench,
-          gradient: 'from-violet-500 to-red-600',
-          link: '/tools',
-          badge: 'NEW',
-          badgeColor: 'from-orange-400 to-purple-500'
-        },
+  // Enhanced B2C Quick Actions
+  const b2cQuickActions = [
     {
-      title: 'AI Content Generator',
-      description: 'Generate content using advanced AI',
+      title: 'AI Form Generator',
+      description: 'Create customer-focused forms with AI',
       icon: Sparkles,
       gradient: 'from-violet-500 to-purple-600',
       link: '/ai-generator',
-      badge: 'NEW',
-      badgeColor: 'from-orange-400 to-red-500'
+      badge: 'AI POWERED',
+      badgeColor: 'from-violet-400 to-purple-500',
+      customerImpact: 'Boost conversions by 40%'
     },
     {
-      title: 'Analytics Center',
-      description: 'Deep insights and advanced reporting',
+      title: 'Customer Analytics',
+      description: 'Deep customer behavior insights',
       icon: BarChart3,
       gradient: 'from-emerald-500 to-teal-600',
       link: '/analytics',
-      badge: 'PRO',
-      badgeColor: 'from-blue-400 to-indigo-500'
+      badge: 'INSIGHTS',
+      badgeColor: 'from-emerald-400 to-teal-500',
+      customerImpact: 'Understand your customers'
     },
     {
-      title: 'Template Library',
-      description: 'Browse professional templates',
-      icon: Star,
+      title: 'Mobile-First Templates',
+      description: 'Mobile-optimized form templates',
+      icon: Smartphone,
       gradient: 'from-blue-500 to-indigo-600',
-      link: '/templates'
+      link: '/templates',
+      badge: 'MOBILE',
+      badgeColor: 'from-blue-400 to-indigo-500',
+      customerImpact: '87% mobile completion rate'
     },
     {
-      title: 'Team Hub',
-      description: 'Collaborate with your team',
+      title: 'Customer Journey Builder',
+      description: 'Design personalized customer flows',
       icon: Users,
       gradient: 'from-cyan-500 to-blue-600',
-      link: '/collaboration'
+      link: '/collaboration',
+      badge: 'JOURNEY',
+      badgeColor: 'from-cyan-400 to-blue-500',
+      customerImpact: 'Personalized experiences'
+    },
+    {
+      title: 'Professional Tools',
+      description: 'Advanced customer engagement tools',
+      icon: Wrench,
+      gradient: 'from-orange-500 to-red-600',
+      link: '/tools',
+      badge: 'PRO',
+      badgeColor: 'from-orange-400 to-red-500',
+      customerImpact: 'Enterprise-grade features'
     }
   ];
 
-  console.log(platform)
-
-function Base64Svg({ base64String, className = "" }) {
-  const svgString = atob(base64String);
-  
-  return (
-    <div 
-      className={className}
-      dangerouslySetInnerHTML={{ __html: svgString }}
-    />
-  );
-}
+  function Base64Svg({ base64String, className = "" }) {
+    const svgString = atob(base64String);
+    
+    return (
+      <div 
+        className={className}
+        dangerouslySetInnerHTML={{ __html: svgString }}
+      />
+    );
+  }
 
   return (
     <div className={`min-h-screen ${theme === 'light' 
@@ -246,7 +264,7 @@ function Base64Svg({ base64String, className = "" }) {
       </div>
 
       <div className="max-w-7xl mx-auto space-y-8 relative z-10 p-6">
-        {/* Welcome Hero Section */}
+        {/* Welcome Hero Section - B2C Focused */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -260,7 +278,7 @@ function Base64Svg({ base64String, className = "" }) {
             className="inline-flex items-center gap-3 mb-6"
           >
             <div className="p-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-3xl shadow-2xl">
-              <Rocket className="h-10 w-10 text-white" />
+              <Heart className="h-10 w-10 text-white" />
             </div>
           </motion.div>
           <motion.h1
@@ -272,7 +290,7 @@ function Base64Svg({ base64String, className = "" }) {
               : 'from-white via-blue-200 to-purple-200'
             } bg-clip-text text-transparent`}
           >
-            Welcome to BuildCraft
+            Customer Experience Hub
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -280,8 +298,8 @@ function Base64Svg({ base64String, className = "" }) {
             transition={{ duration: 0.6, delay: 0.4 }}
             className={`text-xl ${theme === 'light' ? 'text-gray-600' : 'text-gray-300'} mb-8 max-w-2xl mx-auto`}
           >
-            Your all-in-one platform for creating professional forms, resumes, websites, and more. 
-            Build, deploy, and scale with cutting-edge AI assistance.
+            Transform customer interactions with intelligent forms, personalized experiences, and AI-powered insights. 
+            Build meaningful connections that drive growth and loyalty.
           </motion.p>
           
           <motion.div
@@ -290,10 +308,12 @@ function Base64Svg({ base64String, className = "" }) {
             transition={{ duration: 0.6, delay: 0.5 }}
             className="flex items-center justify-center gap-4"
           >
-            <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-xl px-8 py-4 rounded-2xl text-lg hover:scale-105 transition-all duration-300">
-              <Plus className="h-5 w-5 mr-2" />
-              Start Building
-            </Button>
+            <Link to="/ai-generator">
+              <Button className="bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white shadow-xl px-8 py-4 rounded-2xl text-lg hover:scale-105 transition-all duration-300">
+                <Sparkles className="h-5 w-5 mr-2" />
+                Try AI Generator
+              </Button>
+            </Link>
             <Button variant="outline" className={`px-8 py-4 rounded-2xl text-lg hover:scale-105 transition-all duration-300 ${theme === 'light' 
               ? 'border-gray-300 hover:bg-gray-50' 
               : 'border-gray-600 hover:bg-gray-700'
@@ -304,14 +324,14 @@ function Base64Svg({ base64String, className = "" }) {
           </motion.div>
         </motion.div>
 
-        {/* Enhanced Stats Grid */}
+        {/* Enhanced B2C Stats Grid */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
         >
-          {overallStats.map((stat, index) => (
+          {b2cStats.map((stat, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, scale: 0.9 }}
@@ -324,7 +344,6 @@ function Base64Svg({ base64String, className = "" }) {
                 : 'bg-gray-800/50 border-gray-700 shadow-2xl hover:shadow-purple-500/10'
               } backdrop-blur-sm transition-all duration-500 overflow-hidden relative group cursor-pointer`}>
                 
-                {/* Animated background effect */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/10 to-transparent rounded-bl-full opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
                 
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -363,7 +382,6 @@ function Base64Svg({ base64String, className = "" }) {
                     {stat.subtitle}
                   </p>
                   
-                  {/* Mini trend chart */}
                   <div className="flex items-end gap-1 h-8">
                     {stat.trend.map((value, i) => (
                       <motion.div
@@ -402,17 +420,19 @@ function Base64Svg({ base64String, className = "" }) {
                     </div>
                     <div>
                       <CardTitle className={`text-xl ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                        Your Creative Platforms
+                        Customer Experience Platforms
                       </CardTitle>
                       <p className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
-                        Build, create, and deploy across all platforms
+                        Build, engage, and convert customers across all touchpoints
                       </p>
                     </div>
                   </div>
-                  <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg">
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Project
-                  </Button>
+                  <Link to="/ai-generator">
+                    <Button className="bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white shadow-lg">
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      AI Generator
+                    </Button>
+                  </Link>
                 </div>
               </CardHeader>
               <CardContent>
@@ -429,7 +449,6 @@ function Base64Svg({ base64String, className = "" }) {
                           : 'bg-gray-700/50 hover:bg-gray-700 border border-gray-600 hover:border-blue-500'
                         } transition-all duration-500 cursor-pointer group relative overflow-hidden`}
                       >
-                        {/* Animated background */}
                         <div className={`absolute inset-0 bg-gradient-to-r ${platform.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500`}></div>
                         
                         <div className="flex items-center justify-between relative z-10">
@@ -442,7 +461,6 @@ function Base64Svg({ base64String, className = "" }) {
                                   base64String={platform.icon.data} 
                                   className="h-8 w-8 text-white flex items-center justify-center"
                                 />
-                              {/* <icon_map.platform.icon.data className="h-8 w-8 text-white" /> */}
                             </motion.div>
                             <div className="flex-1">
                               <div className="flex items-center gap-3 mb-2">
@@ -519,7 +537,7 @@ function Base64Svg({ base64String, className = "" }) {
 
           {/* Sidebar Content */}
           <div className="space-y-6">
-            {/* Enhanced Recent Activity */}
+            {/* Enhanced Customer Activity */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -533,7 +551,7 @@ function Base64Svg({ base64String, className = "" }) {
                   <div className="flex items-center justify-between">
                     <CardTitle className={`text-lg ${theme === 'light' ? 'text-gray-900' : 'text-white'} flex items-center gap-2`}>
                       <Activity className="h-5 w-5" />
-                      Live Activity Feed
+                      Customer Journey Feed
                     </CardTitle>
                     <Button variant="ghost" size="sm">
                       <RefreshCw className="h-4 w-4" />
@@ -542,7 +560,7 @@ function Base64Svg({ base64String, className = "" }) {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {recentActivity.map((activity, index) => (
+                    {customerActivity.map((activity, index) => (
                       <motion.div
                         key={index}
                         initial={{ opacity: 0, x: -20 }}
@@ -563,16 +581,18 @@ function Base64Svg({ base64String, className = "" }) {
                           <p className={`text-xs ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} mt-1`}>
                             {activity.description}
                           </p>
-                          <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-500'} mt-1 flex items-center gap-1`}>
-                            <Calendar className="h-3 w-3" />
-                            {activity.time}
-                          </p>
+                          <div className="flex items-center justify-between mt-2">
+                            <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-500'} flex items-center gap-1`}>
+                              <Calendar className="h-3 w-3" />
+                              {activity.time}
+                            </p>
+                            <span className={`text-xs px-2 py-1 rounded-full ${
+                              activity.status === 'success' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+                            }`}>
+                              {activity.impact}
+                            </span>
+                          </div>
                         </div>
-                        <div className={`w-2 h-2 rounded-full ${
-                          activity.status === 'success' ? 'bg-green-400' :
-                          activity.status === 'info' ? 'bg-blue-400' :
-                          'bg-gray-400'
-                        }`}></div>
                       </motion.div>
                     ))}
                   </div>
@@ -580,7 +600,7 @@ function Base64Svg({ base64String, className = "" }) {
               </Card>
             </motion.div>
 
-            {/* Enhanced Quick Actions */}
+            {/* Enhanced B2C Quick Actions */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -593,12 +613,12 @@ function Base64Svg({ base64String, className = "" }) {
                 <CardHeader>
                   <CardTitle className={`text-lg ${theme === 'light' ? 'text-gray-900' : 'text-white'} flex items-center gap-2`}>
                     <Zap className="h-5 w-5" />
-                    Quick Actions
+                    Customer Experience Tools
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {quickActions.map((action, index) => (
+                    {b2cQuickActions.map((action, index) => (
                       <Link key={index} to={action.link}>
                         <motion.div
                           initial={{ opacity: 0, scale: 0.9 }}
@@ -628,8 +648,11 @@ function Base64Svg({ base64String, className = "" }) {
                                 </Badge>
                               )}
                             </div>
-                            <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                            <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} mb-1`}>
                               {action.description}
+                            </p>
+                            <p className={`text-xs font-medium ${theme === 'light' ? 'text-blue-600' : 'text-blue-400'}`}>
+                              {action.customerImpact}
                             </p>
                           </div>
                           <motion.div
