@@ -27,7 +27,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useNavigate } from 'react-router-dom';
 import { SignInForm } from '@/components/auth/SignInForm';
 import { SignUpForm } from '@/components/auth/SignUpForm';
-import Dashboard from '@/components/Dashboard';
+import MainDashboard from '@/components/MainDashboard';
 import DemoVideo from '@/components/DemoVideo';
 import GetStarted from '@/components/GetStarted';
 
@@ -45,7 +45,7 @@ const LandingPage = () => {
 
   // Show Dashboard if user is authenticated
   if (isAuthenticated) {
-    return <Dashboard />;
+    return <MainDashboard />;
   }
 
   const platforms = [

@@ -39,6 +39,9 @@ export const API_CONFIG = {
       CHANGE_PASSWORD: '/auth/change-password/',
       PLANS: '/auth/plans/',
     },
+    PLATFROM:{
+      GET_PLATFORM: '/platform/get_platform/'
+    },
     FORMS: {
       GET_ALL: '/form_list/',
       GET_BY_ID: '/form_list/?primary_id=', // Use the same endpoint as GET_ALL and filter client-side

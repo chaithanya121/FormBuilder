@@ -17,7 +17,8 @@ import { FormConfig, FormElement } from './types';
 import { 
   Settings, Eye, Save, Upload, Download, Play, 
   Palette, Layers, Grid, Code, Sparkles, Wand2,
-  HelpCircle, Info, Lightbulb, Zap, Target, Search, Filter
+  HelpCircle, Info, Lightbulb, Zap, Target, Search, Filter,
+  CircleArrowLeft
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -307,9 +308,14 @@ const FormBuilder: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <motion.div 
+              
                 className="flex items-center gap-3"
                 whileHover={{ scale: 1.05 }}
               >
+
+                {/* <div> */}
+                  <CircleArrowLeft className="h-8 w-8 mr-2 stroke-blue-500 dark:stroke-rose-200 cursor-pointer" onClick={()=>{navigate('/platform/forms')}}/>
+                {/* </div> */}
                 <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
                   <Grid className="h-6 w-6 text-white" />
                 </div>
@@ -338,7 +344,7 @@ const FormBuilder: React.FC = () => {
               </div>
 
               {/* Search and Filter */}
-              <div className="flex items-center gap-2">
+              {/* <div className="flex items-center gap-2">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
@@ -363,7 +369,7 @@ const FormBuilder: React.FC = () => {
                     <SelectItem value="advanced">Advanced</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+              </div> */}
             </div>
 
             {/* Action Buttons */}

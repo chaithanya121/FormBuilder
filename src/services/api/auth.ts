@@ -38,31 +38,9 @@ export const authApi = {
       // sessionStorage.setItem('auth_token', response);
     
       return response;
-      
-      // Simulation for demo purposes
-      // const response = await new Promise<AuthResponse>((resolve) => {
-      //   setTimeout(() => {
-      //     resolve({
-      //       user: {
-      //         id: `user-${Date.now()}`,
-      //         email,
-      //         name: email.split('@')[0],
-      //         avatar: null,
-      //         emailVerified: true
-      //       },
-      //       token: `token-${Date.now()}`
-      //     });
-      //   }, 1000);
-      // });
-      
-      // // Store auth token in session storage (not localStorage)
-      // sessionStorage.setItem('auth_token', response.token);
-      // return response;
+    
     } catch (error) {
       console.error("Login error:", error);
-     
-      // throw new Error("Failed to sign in");
-
       return error
     }
   },
@@ -75,11 +53,6 @@ export const authApi = {
       const { data } = await api.post(url, userData);
       return data;
       
-      // Simulation for demo purposes
-      // await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // // Return the email for verification
-      // return { email };
     } catch (error) {
       console.error("Registration error:", error);
       throw new Error("Failed to create account");
@@ -137,17 +110,13 @@ export const authApi = {
   },
 
   // Logout user
-    logout: async (refresh: string): Promise<void> => {
+    logout: async (refresh: string): Promise<any> => {
     try {
       // For real API integration, uncomment this code
       const url = getApiUrl(API_CONFIG.ENDPOINTS.AUTH.LOGOUT);
-      await api.post(url, { refresh });
+      const response = await api.post(url, { refresh });
+      return response
       
-      // Simulation for demo purposes
-      // await new Promise(resolve => setTimeout(resolve, 1000));
-          sessionStorage.removeItem('auth_token');
-
-      // toast.success(`Verification code resent to `);
     } catch (error) {
       console.error("Error resending code:", error);
       throw new Error("Failed to resend verification code");

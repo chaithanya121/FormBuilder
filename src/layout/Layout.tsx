@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import Header from '@/layout/Header';
+// import Header from '@/layout/Header';
+import Header from '@/components/Header';
 import Footer from './Footer';
 import Sidebar from './Sidebar';
 import { useMediaQuery } from '@/hooks/useMediaQuery';

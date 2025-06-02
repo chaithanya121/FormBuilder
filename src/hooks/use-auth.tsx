@@ -12,13 +12,15 @@ import {
   setVerificationEmail,
 } from "@/store/slices/uiSlice";
 import { useAppDispatch } from "@/hooks/redux";
+
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<any>;
-  logout: () => void;
+  logout: () => Promise<any>;
   updateUser: (userData: Partial<User>) => Promise<void>;
 }
 
@@ -27,6 +29,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const dispatch = useAppDispatch();
   const { toast } = useToast();
+  const navigate = useNavigate()
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -54,6 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log(response);
       if (response.status === 200 || response.status === 201) {
         sessionStorage.setItem('auth_token', response.data.access);
+          sessionStorage.setItem('refresh_token', response.data.refresh);
         setUser(response.user);
         setIsAuthenticated(true);
       }
@@ -69,12 +73,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const logout = () => {
+  const logout = async() => {
     try {
-      authApi.logout( localStorage.getItem('refresh_token'));
-      sessionStorage.removeItem('auth_token');
-      setUser(null);
-      setIsAuthenticated(false);
+      const response = await authApi.logout( sessionStorage.getItem('refresh_token'));
+      if (response.status === 200 || response.status === 201 || response.status === 205) {
+          sessionStorage.removeItem('auth_token');
+          sessionStorage.removeItem('refresh_token');
+          setUser(null);
+          setIsAuthenticated(false);
+          navigate('/')
+      }
+      return response;
+     
     } catch (error) {
       console.error("Logout error:", error);
     }

@@ -25,6 +25,7 @@ import ProfessionalTools from './components/ProfessionalTools';
 import ToolRouter from './components/tools/ToolRouter';
 import FormsPage from './pages/platforms/FormsPage';
 import ResumePage from './pages/platforms/ResumePage';
+import { EmailVerification } from './components/auth/EmailVerification';
 
 function App() {
   return (
@@ -66,6 +67,7 @@ function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <EmailVerification />
           <Toaster />
         </Layout>
       </AuthProvider>

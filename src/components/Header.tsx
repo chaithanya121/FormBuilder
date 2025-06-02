@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Home,
@@ -11,8 +12,10 @@ import {
   BadgeAlert,
   Menu as MenuIcon,
   User,
+  Bell
 } from "lucide-react";
-import { Link } from "react-router-dom";
+
+import { Badge } from "@/components/ui/badge";
 import { AuthDialog } from "./auth/AuthDialog";
 import { UserSettings } from "./settings/UserSettings";
 import { useAuth } from "@/hooks/use-auth";
@@ -49,6 +52,9 @@ const Header = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const { toast } = useToast();
   const { theme } = useTheme();
+    const navigate = useNavigate();
+    const [notificationCount] = useState(3);
+  
 
   const isLightTheme = theme === "light";
 
@@ -104,13 +110,9 @@ const Header = () => {
     {
       label: "Home",
       element: <Home className={`h-5 w-5 ${iconClass}`} />,
-      link:'/'
+      link:'/dashboard'
     },
-    {
-      label: "Forms",
-      element: <FerrisWheel className={`h-5 w-5 ${iconClass}`} />,
-      link:'/forms'
-    },
+   
    
   ];
 
@@ -154,6 +156,7 @@ const Header = () => {
       description: "You have been logged out successfully",
     });
   };
+
 
   console.log("auth", authTab);
   return (
@@ -365,120 +368,213 @@ const Header = () => {
           </nav>
 
           {isAuthenticated ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="relative h-10 w-10 rounded-full p-0 overflow-hidden group"
-                >
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-br ${
-                      isLightTheme
-                        ? "from-blue-500/10 to-purple-500/10"
-                        : "from-blue-500/20 to-purple-500/20"
-                    } opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full`}
-                  ></div>
-                  <Avatar
-                    className={`h-9 w-9 border ${
-                      isLightTheme
-                        ? "border-indigo-200 ring-2 ring-indigo-100"
-                        : "border-indigo-500/20 ring-2 ring-indigo-500/10"
-                    } shadow-md transition-all duration-200 group-hover:ring-indigo-400/50`}
-                  >
-                    <AvatarImage
-                      src={user?.avatar || undefined}
-                      alt={user?.name || ""}
-                    />
-                    <AvatarFallback className="bg-gradient-to-br from-indigo-600 to-purple-700 text-white">
-                      {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className={`w-56 ${dropdownBgClass} ${
-                  isLightTheme ? "text-gray-800" : "text-indigo-100"
-                } shadow-xl rounded-xl p-1`}
+             <div className="flex items-center gap-3">
+          <ThemeToggle />
+          
+          {/* Notifications */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative"
               >
-                <div
-                  className={`flex items-center gap-3 p-3 border-b ${
-                    isLightTheme ? "border-gray-200" : "border-indigo-500/20"
-                  }`}
-                >
-                  <Avatar
-                    className={`h-10 w-10 ${
-                      isLightTheme
-                        ? "border border-indigo-200"
-                        : "border border-indigo-500/30"
-                    }`}
+                <Bell className="h-5 w-5" />
+                {notificationCount > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
                   >
-                    <AvatarImage
-                      src={user?.avatar || undefined}
-                      alt={user?.name || ""}
-                    />
-                    <AvatarFallback className="bg-gradient-to-br from-indigo-600 to-purple-700 text-white">
-                      {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      {user?.name}
-                    </p>
-                    <p className="text-xs text-gray-600 dark:text-indigo-300">
-                      {user?.email}
-                    </p>
-                  </div>
-                </div>
-                <DropdownMenuItem
-                  onClick={() => setSettingsOpen(true)}
-                  className={`cursor-pointer ${
-                    isLightTheme
-                      ? "hover:bg-gray-100"
-                      : "hover:bg-indigo-700/30"
-                  } py-2.5 mt-1 rounded-lg transition-colors duration-200`}
-                >
-                  <Settings
-                    className={`mr-2 h-4 w-4 ${
-                      isLightTheme ? "text-indigo-600" : "text-indigo-400"
-                    }`}
-                  />
-                  <span>Settings</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className={`cursor-pointer ${
-                    isLightTheme
-                      ? "hover:bg-gray-100"
-                      : "hover:bg-indigo-700/30"
-                  } py-2.5 rounded-lg transition-colors duration-200`}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <span>Theme</span>
-                    <ThemeToggle variant="switch" />
+                    {notificationCount}
+                  </Badge>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80">
+              <div className="p-3 border-b">
+                <h4 className="font-medium">Notifications</h4>
+              </div>
+              <div className="max-h-64 overflow-y-auto">
+                <DropdownMenuItem className="p-3 cursor-pointer">
+                  <div className="flex flex-col gap-1">
+                    <p className="text-sm font-medium">Form submitted</p>
+                    <p className="text-xs text-gray-500">New submission for Contact Form</p>
+                    <p className="text-xs text-gray-400">2 minutes ago</p>
                   </div>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator
-                  className={
-                    isLightTheme ? "bg-gray-200 my-1" : "bg-indigo-500/20 my-1"
-                  }
-                />
-                <DropdownMenuItem
-                  onClick={handleLogout}
-                  className={`cursor-pointer ${
-                    isLightTheme
-                      ? "hover:bg-red-50 text-red-600"
-                      : "hover:bg-red-900/20 text-red-300"
-                  } py-2.5 rounded-lg transition-colors duration-200`}
-                >
-                  <LogOut
-                    className={`mr-2 h-4 w-4 ${
-                      isLightTheme ? "text-red-600" : "text-red-400"
-                    }`}
-                  />
-                  <span>Log out</span>
+                <DropdownMenuItem className="p-3 cursor-pointer">
+                  <div className="flex flex-col gap-1">
+                    <p className="text-sm font-medium">Resume downloaded</p>
+                    <p className="text-xs text-gray-500">Your resume was downloaded</p>
+                    <p className="text-xs text-gray-400">1 hour ago</p>
+                  </div>
                 </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                <DropdownMenuItem className="p-3 cursor-pointer">
+                  <div className="flex flex-col gap-1">
+                    <p className="text-sm font-medium">System update</p>
+                    <p className="text-xs text-gray-500">New features available</p>
+                    <p className="text-xs text-gray-400">3 hours ago</p>
+                  </div>
+                </DropdownMenuItem>
+              </div>
+              <div className="p-3 border-t">
+                <Button variant="ghost" size="sm" className="w-full">
+                  View all notifications
+                </Button>
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Settings */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/settings')}
+          >
+            <Settings className="h-5 w-5" />
+          </Button>
+
+          {/* Profile */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full"
+              >
+                <User className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => navigate('/profile')}>
+                <User className="h-4 w-4 mr-2" />
+                Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/settings')}>
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={()=>{handleLogout()}}>
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+            // <DropdownMenu>
+            //   <DropdownMenuTrigger asChild>
+            //     <Button
+            //       variant="ghost"
+            //       className="relative h-10 w-10 rounded-full p-0 overflow-hidden group"
+            //     >
+            //       <div
+            //         className={`absolute inset-0 bg-gradient-to-br ${
+            //           isLightTheme
+            //             ? "from-blue-500/10 to-purple-500/10"
+            //             : "from-blue-500/20 to-purple-500/20"
+            //         } opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full`}
+            //       ></div>
+            //       <Avatar
+            //         className={`h-9 w-9 border ${
+            //           isLightTheme
+            //             ? "border-indigo-200 ring-2 ring-indigo-100"
+            //             : "border-indigo-500/20 ring-2 ring-indigo-500/10"
+            //         } shadow-md transition-all duration-200 group-hover:ring-indigo-400/50`}
+            //       >
+            //         <AvatarImage
+            //           src={user?.avatar || undefined}
+            //           alt={user?.name || ""}
+            //         />
+            //         <AvatarFallback className="bg-gradient-to-br from-indigo-600 to-purple-700 text-white">
+            //           {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
+            //         </AvatarFallback>
+            //       </Avatar>
+            //     </Button>
+            //   </DropdownMenuTrigger>
+            //   <DropdownMenuContent
+            //     align="end"
+            //     className={`w-56 ${dropdownBgClass} ${
+            //       isLightTheme ? "text-gray-800" : "text-indigo-100"
+            //     } shadow-xl rounded-xl p-1`}
+            //   >
+            //     <div
+            //       className={`flex items-center gap-3 p-3 border-b ${
+            //         isLightTheme ? "border-gray-200" : "border-indigo-500/20"
+            //       }`}
+            //     >
+            //       <Avatar
+            //         className={`h-10 w-10 ${
+            //           isLightTheme
+            //             ? "border border-indigo-200"
+            //             : "border border-indigo-500/30"
+            //         }`}
+            //       >
+            //         <AvatarImage
+            //           src={user?.avatar || undefined}
+            //           alt={user?.name || ""}
+            //         />
+            //         <AvatarFallback className="bg-gradient-to-br from-indigo-600 to-purple-700 text-white">
+            //           {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
+            //         </AvatarFallback>
+            //       </Avatar>
+            //       <div className="flex flex-col">
+            //         <p className="text-sm font-medium text-gray-900 dark:text-white">
+            //           {user?.name}
+            //         </p>
+            //         <p className="text-xs text-gray-600 dark:text-indigo-300">
+            //           {user?.email}
+            //         </p>
+            //       </div>
+            //     </div>
+            //     <DropdownMenuItem
+            //       onClick={() => setSettingsOpen(true)}
+            //       className={`cursor-pointer ${
+            //         isLightTheme
+            //           ? "hover:bg-gray-100"
+            //           : "hover:bg-indigo-700/30"
+            //       } py-2.5 mt-1 rounded-lg transition-colors duration-200`}
+            //     >
+            //       <Settings
+            //         className={`mr-2 h-4 w-4 ${
+            //           isLightTheme ? "text-indigo-600" : "text-indigo-400"
+            //         }`}
+            //       />
+            //       <span>Settings</span>
+            //     </DropdownMenuItem>
+            //     <DropdownMenuItem
+            //       className={`cursor-pointer ${
+            //         isLightTheme
+            //           ? "hover:bg-gray-100"
+            //           : "hover:bg-indigo-700/30"
+            //       } py-2.5 rounded-lg transition-colors duration-200`}
+            //     >
+            //       <div className="flex items-center justify-between w-full">
+            //         <span>Theme</span>
+            //         <ThemeToggle variant="switch" />
+            //       </div>
+            //     </DropdownMenuItem>
+            //     <DropdownMenuSeparator
+            //       className={
+            //         isLightTheme ? "bg-gray-200 my-1" : "bg-indigo-500/20 my-1"
+            //       }
+            //     />
+            //     <DropdownMenuItem
+            //       onClick={handleLogout}
+            //       className={`cursor-pointer ${
+            //         isLightTheme
+            //           ? "hover:bg-red-50 text-red-600"
+            //           : "hover:bg-red-900/20 text-red-300"
+            //       } py-2.5 rounded-lg transition-colors duration-200`}
+            //     >
+            //       <LogOut
+            //         className={`mr-2 h-4 w-4 ${
+            //           isLightTheme ? "text-red-600" : "text-red-400"
+            //         }`}
+            //       />
+            //       <span>Log out</span>
+            //     </DropdownMenuItem>
+            //   </DropdownMenuContent>
+            // </DropdownMenu>
           ) : (
             <div className="flex items-center gap-2">
               <ThemeToggle variant="icon" className={ghostButtonClass} />

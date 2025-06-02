@@ -69,7 +69,7 @@ export function EmailVerification() {
       // Close the verification modal and navigate to plan selection
       dispatch(setShowVerificationModal(false));
       dispatch(setVerificationEmail(null));
-      navigate("/select-plan");
+      navigate("/dashboard");
     } catch (error) {
       console.error("Verification error:", error);
       toast({
