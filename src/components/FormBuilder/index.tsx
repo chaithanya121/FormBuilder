@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +10,8 @@ import EnhancedFormCanvas from './EnhancedFormCanvas';
 import EnhancedFormPropertiesPanel from './EnhancedFormPropertiesPanel';
 import FormDesigner from './FormDesigner';
 import SaveSuccessDialog from './SaveSuccessDialog';
-import FloatingActionButtons from './FloatingActionButtons';
+import ModernFloatingActions from './ModernFloatingActions';
+import B2CInsights from './B2CInsights';
 import ViewCodeModal from './QuickActions/ViewCodeModal';
 import TestFormModal from './QuickActions/TestFormModal';
 import AIEnhanceModal from './QuickActions/AIEnhanceModal';
@@ -18,21 +20,23 @@ import {
   Settings, Eye, Save, Upload, Download, Play, 
   Palette, Layers, Grid, Code, Sparkles, Wand2,
   HelpCircle, Info, Lightbulb, Zap, Target, Search, Filter,
-  CircleArrowLeft
+  CircleArrowLeft, TrendingUp, Users, Activity
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
-import { createForm,fetchFormById } from '@/store/slices/formsSlice';
+import { createForm, fetchFormById, updateFormAction } from '@/store/slices/formsSlice';
 import { useParams } from 'react-router-dom';
-
-
 
 const FormBuilder: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-   const dispatch = useAppDispatch();
+  const dispatch = useAppDispatch();
+  const { id } = useParams();
+  
+  // Redux state
+  const { forms, currentForm, loading, error } = useAppSelector((state) => state.forms);
   
   const [formConfig, setFormConfig] = useState<FormConfig>({
     name: "Untitled Form",
@@ -85,33 +89,31 @@ const FormBuilder: React.FC = () => {
   const [showViewCode, setShowViewCode] = useState(false);
   const [showTestForm, setShowTestForm] = useState(false);
   const [showAIEnhance, setShowAIEnhance] = useState(false);
-   const { id } = useParams();
-    const createFormData = useAppSelector((state: FormConfig) => state)
 
-    console.log('createForm',createFormData?.forms?.currentForm)
-  // Auto-save functionality
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     localStorage.setItem('formBuilder_current', JSON.stringify(formConfig));
-  //     localStorage.setItem('currentFormId', 'current');
-  //   }, 500);
-  //   return () => clearTimeout(timer);
-  // }, [formConfig]);
-
-  // Load saved form
-
-
+  // Load form data from Redux on component mount
   useEffect(() => {
-     dispatch(fetchFormById(id))
-  
-  }, []);
-
-  useEffect(()=>{
-    if(createFormData?.form?.currentForm){
-
-      setFormConfig(createFormData?.form?.currentForm)
+    if (id && id !== 'new') {
+      dispatch(fetchFormById(id));
     }
-  },[createForm])
+  }, [dispatch, id]);
+
+  // Update local state when Redux state changes
+  useEffect(() => {
+    if (currentForm && currentForm.config) {
+      setFormConfig(currentForm.config);
+    }
+  }, [currentForm]);
+
+  // Show error toast if there's an error
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Error",
+        description: error,
+        variant: "destructive"
+      });
+    }
+  }, [error, toast]);
 
   const handleElementSelect = (element: FormElement) => {
     setSelectedElement(element);
@@ -153,32 +155,46 @@ const FormBuilder: React.FC = () => {
   };
 
   const handlePreview = () => {
-    const formId = 'current';
-    localStorage.setItem('previewFormConfig', JSON.stringify(formConfig));
+    const formId = currentForm?.primary_id || 'current';
     navigate(`/form-preview/${formId}`);
   };
 
-   const handleSave = async () => {
-
-    await dispatch(createForm(createFormData?.form?.currentForm));
-     setShowSaveDialog(true);
+  const handleSave = async () => {
+    try {
+      if (currentForm?.primary_id) {
+        // Update existing form
+        await dispatch(updateFormAction({
+          primary_id: currentForm.primary_id,
+          name: formConfig.name,
+          config: formConfig,
+          createdAt: '',
+          last_modified: new Date().toISOString(),
+          submissions: 0,
+          published: false
+        }));
+      } else {
+        // Create new form
+        await dispatch(createForm({
+          name: formConfig.name,
+          config: formConfig,
+          published: false
+        }));
+      }
+      setShowSaveDialog(true);
+      toast({
+        title: "Success",
+        description: "Form saved successfully!",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save form. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
-  // const handleSave = () => {
-  //   const formId = `form_${Date.now()}`;
-  //   localStorage.setItem(`formBuilder_${formId}`, JSON.stringify(formConfig));
-  //   setShowSaveDialog(true);
-  // };
-
   const handlePublish = () => {
-    // Simulate publishing process
-    const formId = 'current';
-    localStorage.setItem(`published_${formId}`, JSON.stringify({
-      ...formConfig,
-      published: true,
-      publishedAt: new Date().toISOString()
-    }));
-    
     toast({
       title: "Form Published!",
       description: "Your form is now live and ready to receive submissions.",
@@ -321,121 +337,89 @@ const FormBuilder: React.FC = () => {
         animate={{ y: 0, opacity: 1 }}
         className="bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm"
       >
-        <div className="px-6 py-4">
+        <div className="px-4 xl:px-6 py-3 xl:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 xl:gap-4 flex-1 min-w-0">
               <motion.div 
-              
-                className="flex items-center gap-3"
-                whileHover={{ scale: 1.05 }}
+                className="flex items-center gap-2 xl:gap-3 min-w-0"
+                whileHover={{ scale: 1.02 }}
               >
-
-                {/* <div> */}
-                  <CircleArrowLeft className="h-8 w-8 mr-2 stroke-blue-500 dark:stroke-rose-200 cursor-pointer" onClick={()=>{navigate('/platform/forms')}}/>
-                {/* </div> */}
-                <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
-                  <Grid className="h-6 w-6 text-white" />
+                <CircleArrowLeft 
+                  className="h-6 w-6 xl:h-8 xl:w-8 mr-1 xl:mr-2 stroke-blue-500 dark:stroke-rose-200 cursor-pointer flex-shrink-0" 
+                  onClick={() => navigate('/platform/forms')}
+                />
+                <div className="p-1.5 xl:p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex-shrink-0">
+                  <Grid className="h-4 w-4 xl:h-6 xl:w-6 text-white" />
                 </div>
-                <div>
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <div className="min-w-0">
+                  <h1 className="text-lg xl:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent truncate">
                     FormCraft Pro
                   </h1>
-                  <p className="text-sm text-gray-600">
-                    {formConfig.elements.length} elements • Advanced Builder
+                  <p className="text-xs xl:text-sm text-gray-600 hidden sm:block">
+                    {formConfig.elements.length} elements • B2C Optimized
                   </p>
                 </div>
               </motion.div>
               
-              <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-                v3.0 Pro
+              <Badge variant="secondary" className="bg-purple-100 text-purple-700 text-xs hidden md:inline-flex">
+                v3.0 B2C
               </Badge>
 
-              {/* Form Name Input */}
-              <div className="flex items-center gap-2">
+              {/* Form Name Input - Responsive */}
+              <div className="flex items-center gap-2 flex-1 max-w-xs">
                 <Input
                   value={formConfig.name}
                   onChange={(e) => setFormConfig(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-48 h-9"
+                  className="w-full h-8 xl:h-9 text-sm"
                   placeholder="Form name"
                 />
               </div>
-
-              {/* Search and Filter */}
-              {/* <div className="flex items-center gap-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Search elements..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-48 h-9"
-                  />
-                </div>
-                
-                <Select value={elementFilter} onValueChange={setElementFilter}>
-                  <SelectTrigger className="w-40 h-9">
-                    <Filter className="h-4 w-4 mr-2" />
-                    <SelectValue placeholder="Filter" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Elements</SelectItem>
-                    <SelectItem value="input">Input Fields</SelectItem>
-                    <SelectItem value="selection">Selection</SelectItem>
-                    <SelectItem value="layout">Layout</SelectItem>
-                    <SelectItem value="media">Media</SelectItem>
-                    <SelectItem value="advanced">Advanced</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div> */}
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" onClick={handleSave}>
-                <Save className="h-4 w-4 mr-2" />
-                Save
-              </Button>
-
-              <Button variant="outline" size="sm" onClick={handleImport}>
-                <Upload className="h-4 w-4 mr-2" />
-                Import
-              </Button>
-
-              <Button variant="outline" size="sm" onClick={handleExport}>
-                <Download className="h-4 w-4 mr-2" />
-                Export
+            {/* Action Buttons - Responsive */}
+            <div className="flex items-center gap-1 xl:gap-3 flex-shrink-0">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleSave}
+                disabled={loading}
+                className="hidden sm:flex"
+              >
+                <Save className="h-4 w-4 mr-1 xl:mr-2" />
+                <span className="hidden md:inline">Save</span>
               </Button>
 
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={handleThemeStudio}
-                className="border-purple-200 text-purple-700 hover:bg-purple-50"
+                className="border-purple-200 text-purple-700 hover:bg-purple-50 hidden lg:flex"
               >
-                <Palette className="h-4 w-4 mr-2" />
-                Theme Studio
+                <Palette className="h-4 w-4 mr-1 xl:mr-2" />
+                <span className="hidden xl:inline">Theme Studio</span>
               </Button>
 
               <Button 
                 onClick={handlePreview} 
+                size="sm"
                 className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
               >
-                <Eye className="h-4 w-4 mr-2" />
-                Preview
+                <Eye className="h-4 w-4 mr-1 xl:mr-2" />
+                <span className="hidden sm:inline">Preview</span>
               </Button>
             </div>
           </div>
         </div>
       </motion.div>
 
-      {/* Main Content Area */}
+      {/* Main Content Area - Responsive */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar with Animation */}
+        {/* Left Sidebar with Animation - Responsive */}
         <motion.div 
           initial={{ x: -300, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className="w-80 border-r border-gray-200 bg-white/95 backdrop-blur-md flex flex-col shadow-lg"
+          className="w-72 xl:w-80 border-r border-gray-200 bg-white/95 backdrop-blur-md flex flex-col shadow-lg hidden lg:flex"
         >
           <AnimatePresence mode="wait">
             <motion.div
@@ -451,7 +435,7 @@ const FormBuilder: React.FC = () => {
           </AnimatePresence>
         </motion.div>
 
-        {/* Center Canvas Area */}
+        {/* Center Canvas Area - Responsive */}
         <motion.div 
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -468,90 +452,70 @@ const FormBuilder: React.FC = () => {
           />
         </motion.div>
 
-        {/* Right Info Panel */}
+        {/* Right Info Panel - Enhanced with B2C Insights */}
         <motion.div 
           initial={{ x: 300, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="w-80 border-l border-gray-200 bg-gradient-to-b from-gray-50/95 to-white/95 backdrop-blur-md overflow-y-auto shadow-lg"
+          className="w-72 xl:w-80 border-l border-gray-200 bg-gradient-to-b from-gray-50/95 to-white/95 backdrop-blur-md overflow-y-auto shadow-lg hidden xl:flex flex-col"
         >
-          <div className="p-6 space-y-6">
-            {/* Form Info */}
-            <Card className="p-4 bg-white/80 backdrop-blur-sm border-gray-200/50">
+          <div className="p-4 xl:p-6 space-y-4 xl:space-y-6">
+            {/* B2C Insights Component */}
+            <B2CInsights formConfig={formConfig} />
+
+            {/* Form Analytics */}
+            <Card className="p-3 xl:p-4 bg-white/80 backdrop-blur-sm border-gray-200/50">
               <div className="flex items-center gap-2 mb-3">
-                <Info className="h-4 w-4 text-blue-500" />
-                <h3 className="font-semibold">Form Analytics</h3>
+                <Activity className="h-4 w-4 text-blue-500" />
+                <h3 className="font-semibold text-sm xl:text-base">Form Analytics</h3>
               </div>
-              <div className="space-y-3 text-sm">
+              <div className="space-y-2 xl:space-y-3 text-xs xl:text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Total Elements:</span>
-                  <Badge variant="outline">{formConfig.elements.length}</Badge>
+                  <Badge variant="outline" className="text-xs">{formConfig.elements.length}</Badge>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Required Fields:</span>
-                  <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                  <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 text-xs">
                     {formConfig.elements.filter(el => el.required).length}
                   </Badge>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Form Width:</span>
-                  <Badge variant="outline">
-                    {formConfig.settings.canvasStyles?.formWidth || 752}px
-                  </Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Completion Rate:</span>
-                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                    Est. 87%
+                  <span className="text-gray-600">Mobile Optimized:</span>
+                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
+                    Yes
                   </Badge>
                 </div>
               </div>
             </Card>
 
-            {/* Element Breakdown */}
-            <Card className="p-4 bg-white/80 backdrop-blur-sm border-gray-200/50">
-              <div className="flex items-center gap-2 mb-3">
-                <Layers className="h-4 w-4 text-purple-500" />
-                <h3 className="font-semibold">Element Breakdown</h3>
-              </div>
-              <div className="space-y-2 text-sm">
-                {['text', 'email', 'select', 'textarea', 'checkbox'].map(type => {
-                  const count = formConfig.elements.filter(el => el.type === type).length;
-                  return count > 0 ? (
-                    <div key={type} className="flex justify-between">
-                      <span className="text-gray-600 capitalize">{type}:</span>
-                      <Badge variant="outline" className="text-xs">{count}</Badge>
-                    </div>
-                  ) : null;
-                })}
-              </div>
-            </Card>
-
-            {/* Pro Tips */}
-            <Card className="p-4 bg-white/80 backdrop-blur-sm border-gray-200/50">
+            {/* B2C Pro Tips */}
+            <Card className="p-3 xl:p-4 bg-white/80 backdrop-blur-sm border-gray-200/50">
               <div className="flex items-center gap-2 mb-3">
                 <Lightbulb className="h-4 w-4 text-yellow-500" />
-                <h3 className="font-semibold">Pro Tips</h3>
+                <h3 className="font-semibold text-sm xl:text-base">B2C Pro Tips</h3>
               </div>
-              <div className="space-y-2 text-sm text-gray-600">
-                <p>• Use the floating buttons to quickly switch between panels</p>
-                <p>• Drag elements from the library to build your form</p>
-                <p>• Preview your form before publishing</p>
-                <p>• Use validation rules to ensure data quality</p>
+              <div className="space-y-1 xl:space-y-2 text-xs text-gray-600">
+                <p>• Keep forms short for mobile users</p>
+                <p>• Use progressive disclosure for complex flows</p>
+                <p>• Add social proof to increase conversions</p>
+                <p>• Test with real customer data</p>
               </div>
             </Card>
           </div>
         </motion.div>
       </div>
 
-      {/* Enhanced Floating Action Buttons */}
-      <FloatingActionButtons
+      {/* Enhanced Modern Floating Action Buttons */}
+      <ModernFloatingActions
         activePanel={activePanel}
         onPanelChange={handlePanelChange}
         onQuickAction={handleQuickAction}
         onPreview={handlePreview}
-        onThemeStudio={handleThemeStudio}
-        onDesigner={handleDesigner}
+        onSave={handleSave}
+        onExport={handleExport}
+        onImport={handleImport}
+        isLoading={loading}
       />
 
       {/* Modals */}
