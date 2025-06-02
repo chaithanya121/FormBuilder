@@ -77,7 +77,7 @@ const MainDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {forms?.filter(form => form.status === 'published').length || 0}
+                {forms?.filter(form => form.published === true).length || 0}
               </div>
               <p className="text-xs text-muted-foreground">
                 Currently published
@@ -146,7 +146,7 @@ const MainDashboard = () => {
                   {forms.slice(0, 5).map((form, index) => (
                     <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
-                        <h3 className="font-medium text-gray-900">{form.title}</h3>
+                        <h3 className="font-medium text-gray-900">{form.name}</h3>
                         <p className="text-sm text-gray-600">
                           Created {new Date(form.createdAt).toLocaleDateString()}
                         </p>
