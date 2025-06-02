@@ -1,125 +1,96 @@
 
-import {
-  useState,
-  useEffect,
-  createContext,
-  useContext,
-  ReactNode,
-} from "react";
-import { User, authApi } from "@/services/api/auth";
-import {
-  setShowVerificationModal,
-  setVerificationEmail,
-} from "@/store/slices/uiSlice";
-import { useAppDispatch } from "@/hooks/redux";
-
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { 
+  loginUser, 
+  logoutUser, 
+  getCurrentUser, 
+  updateUserProfile,
+  clearError 
+} from "@/store/slices/authSlice";
+import { setShowVerificationModal, setVerificationEmail } from "@/store/slices/uiSlice";
 
-interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<any>;
-  logout: () => Promise<any>;
-  updateUser: (userData: Partial<User>) => Promise<void>;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export const useAuth = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { toast } = useToast();
-  const navigate = useNavigate()
-  const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  const { user, isAuthenticated, loading, error } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
-    // Check if user is logged in
-    const loadUser = async () => {
-      try {
-        const currentUser = await authApi.getCurrentUser();
-        if (currentUser) {
-          setUser(currentUser);
-          setIsAuthenticated(true);
-        }
-      } catch (error) {
-        console.error("Error loading user:", error);
-        // Don't show error toast on initial load to avoid disrupting user experience
-      }
-    };
+    // Check if user is logged in on mount
+    if (!user && sessionStorage.getItem('auth_token')) {
+      dispatch(getCurrentUser());
+    }
+  }, [dispatch, user]);
 
-    loadUser();
-  }, []);
+  useEffect(() => {
+    // Handle auth errors
+    if (error) {
+      toast({
+        title: "Authentication Error",
+        description: error,
+        variant: "destructive"
+      });
+      dispatch(clearError());
+    }
+  }, [error, toast, dispatch]);
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await authApi.signIn(email, password);
-      console.log(response);
-      if (response.status === 200 || response.status === 201) {
-        sessionStorage.setItem('auth_token', response.data.access);
-          sessionStorage.setItem('refresh_token', response.data.refresh);
-        setUser(response.user);
-        setIsAuthenticated(true);
-      }
-      return response;
-    } catch (error) {
-      console.error("Login error:", error);
+      const result = await dispatch(loginUser({ email, password })).unwrap();
       toast({
-        title: "Login Failed",
-        description: (error as Error).message || "An error occurred during login",
-        variant: "destructive"
+        title: "Login Successful",
+        description: "Welcome back!",
+        variant: "default"
       });
-      throw error;
+      return result;
+    } catch (error) {
+      throw error; // Let the component handle the error
     }
   };
 
-  const logout = async() => {
+  const logout = async () => {
     try {
-      const response = await authApi.logout( sessionStorage.getItem('refresh_token'));
-      if (response.status === 200 || response.status === 201 || response.status === 205) {
-          sessionStorage.removeItem('auth_token');
-          sessionStorage.removeItem('refresh_token');
-          setUser(null);
-          setIsAuthenticated(false);
-          navigate('/')
-      }
-      return response;
-     
+      await dispatch(logoutUser()).unwrap();
+      navigate('/');
+      toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out.",
+        variant: "default"
+      });
     } catch (error) {
       console.error("Logout error:", error);
     }
   };
 
-  const updateUser = async (userData: Partial<User>) => {
+  const updateUser = async (userData: Parameters<typeof updateUserProfile>[0]) => {
     try {
-      if (user) {
-        const updatedUser = await authApi.updateProfile(userData);
-        setUser(updatedUser);
-      }
-    } catch (error) {
-      console.error("Update user error:", error);
+      await dispatch(updateUserProfile(userData)).unwrap();
       toast({
-        title: "Profile Update Failed",
-        description: (error as Error).message || "Failed to update profile",
-        variant: "destructive"
+        title: "Profile Updated",
+        description: "Your profile has been successfully updated.",
+        variant: "default"
       });
+    } catch (error) {
       throw error;
     }
   };
 
-  return (
-    <AuthContext.Provider
-      value={{ user, isAuthenticated, login, logout, updateUser }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
-};
+  const showVerificationModal = (email: string) => {
+    dispatch(setVerificationEmail(email));
+    dispatch(setShowVerificationModal(true));
+  };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
+  return {
+    user,
+    isAuthenticated,
+    loading,
+    login,
+    logout,
+    updateUser,
+    showVerificationModal,
+  };
 };

@@ -1,24 +1,27 @@
 import React, { useState, useEffect } from 'react';
-// import Header from '@/layout/Header';
 import Header from '@/components/Header';
 import Footer from './Footer';
 import Sidebar from './Sidebar';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useTheme } from '@/components/theme-provider';
-import { useAuth } from '@/hooks/use-auth';
+import { useAppSelector, useAppDispatch } from '@/hooks/redux';
+import { setSidebarOpen } from '@/store/slices/uiSlice';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 const Layout = ({ children }: LayoutProps) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const dispatch = useAppDispatch();
   const [isScrolled, setIsScrolled] = useState(false);
   const isMobile = useMediaQuery('(max-width: 768px)');
   const { theme } = useTheme();
-  const { user } = useAuth();
   const location = useLocation();
+  
+  // Get state from Redux
+  const { user } = useAppSelector((state) => state.auth);
+  const { sidebarOpen } = useAppSelector((state) => state.ui);
 
   // Check if current route is a published form (starts with /form/)
   const isPublishedForm = location.pathname.startsWith('/form/');
@@ -27,18 +30,18 @@ const Layout = ({ children }: LayoutProps) => {
 
   // Always keep sidebar closed by default
   useEffect(() => {
-    setSidebarOpen(false);
-  }, []);
+    dispatch(setSidebarOpen(false));
+  }, [dispatch]);
 
   // Close sidebar on mobile device detection
   useEffect(() => {
     if (isMobile) {
-      setSidebarOpen(false);
+      dispatch(setSidebarOpen(false));
     }
-  }, [isMobile]);
+  }, [isMobile, dispatch]);
 
   const toggleSidebar = () => {
-    setSidebarOpen(prevState => !prevState);
+    dispatch(setSidebarOpen(!sidebarOpen));
   };
 
   // Add scroll effect
