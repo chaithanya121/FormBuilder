@@ -1,21 +1,23 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+// import Header from '@/layout/Header';
 import Header from '@/components/Header';
 import Footer from './Footer';
 import Sidebar from './Sidebar';
-import { useLocation } from 'react-router-dom';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { Outlet, useLocation } from 'react-router-dom';
 import { useTheme } from '@/components/theme-provider';
-import { useAppDispatch, useAppSelector } from '@/hooks/redux';
-import { setIsScrolled, setIsMobile, setSidebarOpen } from '@/store/slices/uiSlice';
+import { useAuth } from '@/hooks/use-auth';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 const Layout = ({ children }: LayoutProps) => {
-  const dispatch = useAppDispatch();
-  const { sidebarOpen, isScrolled, isMobile } = useAppSelector((state) => state.ui);
-  const { user } = useAppSelector((state) => state.auth);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const isMobile = useMediaQuery('(max-width: 768px)');
   const { theme } = useTheme();
+  const { user } = useAuth();
   const location = useLocation();
 
   // Check if current route is a published form (starts with /form/)
@@ -25,33 +27,28 @@ const Layout = ({ children }: LayoutProps) => {
 
   // Always keep sidebar closed by default
   useEffect(() => {
-    dispatch(setSidebarOpen(false));
-  }, [dispatch]);
+    setSidebarOpen(false);
+  }, []);
 
   // Close sidebar on mobile device detection
   useEffect(() => {
-    const checkMobile = () => {
-      const isMobileDevice = window.innerWidth <= 768;
-      dispatch(setIsMobile(isMobileDevice));
-      
-      if (isMobileDevice) {
-        dispatch(setSidebarOpen(false));
-      }
-    };
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  }, [isMobile]);
 
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => {
-      window.removeEventListener('resize', checkMobile);
-    };
-  }, [dispatch]);
+  const toggleSidebar = () => {
+    setSidebarOpen(prevState => !prevState);
+  };
 
   // Add scroll effect
   useEffect(() => {
     const handleScroll = () => {
-      const scrolled = window.scrollY > 10;
-      dispatch(setIsScrolled(scrolled));
+      if (window.scrollY > 10) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -59,7 +56,7 @@ const Layout = ({ children }: LayoutProps) => {
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [dispatch]);
+  }, []);
 
   // Don't show header or footer on published forms or form builder
   const showHeader = !isPublishedForm && !isFormBuilder;

@@ -1,31 +1,24 @@
 
 import {
+  useState,
   useEffect,
   createContext,
   useContext,
   ReactNode,
 } from "react";
-import { User } from "@/services/api/auth";
+import { User, authApi } from "@/services/api/auth";
 import {
   setShowVerificationModal,
   setVerificationEmail,
-  addNotification,
 } from "@/store/slices/uiSlice";
-import {
-  loginUser,
-  logoutUser,
-  loadCurrentUser,
-  updateUserProfile,
-  clearError,
-} from "@/store/slices/authSlice";
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { useNavigate } from 'react-router-dom';
+import { useAppDispatch } from "@/hooks/redux";
+
+import { Navigate, useNavigate } from 'react-router-dom';
+import { useToast } from "@/hooks/use-toast";
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  loading: boolean;
-  error: string | null;
   login: (email: string, password: string) => Promise<any>;
   logout: () => Promise<any>;
   updateUser: (userData: Partial<User>) => Promise<void>;
@@ -35,84 +28,88 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-  const { user, isAuthenticated, loading, error, token } = useAppSelector((state) => state.auth);
+  const { toast } = useToast();
+  const navigate = useNavigate()
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Load user on app start if token exists
-    if (token && !user) {
-      dispatch(loadCurrentUser());
-    }
-  }, [dispatch, token, user]);
+    // Check if user is logged in
+    const loadUser = async () => {
+      try {
+        const currentUser = await authApi.getCurrentUser();
+        if (currentUser) {
+          setUser(currentUser);
+          setIsAuthenticated(true);
+        }
+      } catch (error) {
+        console.error("Error loading user:", error);
+        // Don't show error toast on initial load to avoid disrupting user experience
+      }
+    };
+
+    loadUser();
+  }, []);
 
   const login = async (email: string, password: string) => {
     try {
-      const result = await dispatch(loginUser({ email, password })).unwrap();
-      
-      dispatch(addNotification({
-        type: 'success',
-        message: 'You\'ve been signed in successfully'
-      }));
-      
-      navigate("/dashboard");
-      return { status: 200, user: result.user };
-    } catch (error: any) {
-      if (error === "Account not verified. Please check your email for a verification link.") {
-        dispatch(setVerificationEmail(email));
-        dispatch(setShowVerificationModal(true));
+      const response = await authApi.signIn(email, password);
+      console.log(response);
+      if (response.status === 200 || response.status === 201) {
+        sessionStorage.setItem('auth_token', response.data.access);
+          sessionStorage.setItem('refresh_token', response.data.refresh);
+        setUser(response.user);
+        setIsAuthenticated(true);
       }
-      
-      dispatch(addNotification({
-        type: 'error',
-        message: error || 'Failed to sign in. Please check your credentials.'
-      }));
-      
+      return response;
+    } catch (error) {
+      console.error("Login error:", error);
+      toast({
+        title: "Login Failed",
+        description: (error as Error).message || "An error occurred during login",
+        variant: "destructive"
+      });
       throw error;
     }
   };
 
-  const logout = async () => {
+  const logout = async() => {
     try {
-      await dispatch(logoutUser()).unwrap();
-      navigate('/');
-      return { status: 200 };
+      const response = await authApi.logout( sessionStorage.getItem('refresh_token'));
+      if (response.status === 200 || response.status === 201 || response.status === 205) {
+          sessionStorage.removeItem('auth_token');
+          sessionStorage.removeItem('refresh_token');
+          setUser(null);
+          setIsAuthenticated(false);
+          navigate('/')
+      }
+      return response;
+     
     } catch (error) {
       console.error("Logout error:", error);
-      return { status: 200 }; // Return success even if server logout fails
     }
   };
 
   const updateUser = async (userData: Partial<User>) => {
     try {
-      await dispatch(updateUserProfile(userData)).unwrap();
-      dispatch(addNotification({
-        type: 'success',
-        message: 'Profile updated successfully'
-      }));
+      if (user) {
+        const updatedUser = await authApi.updateProfile(userData);
+        setUser(updatedUser);
+      }
     } catch (error) {
-      dispatch(addNotification({
-        type: 'error',
-        message: (error as Error).message || 'Failed to update profile'
-      }));
+      console.error("Update user error:", error);
+      toast({
+        title: "Profile Update Failed",
+        description: (error as Error).message || "Failed to update profile",
+        variant: "destructive"
+      });
       throw error;
     }
   };
 
-  const clearAuthError = () => {
-    dispatch(clearError());
-  };
-
   return (
     <AuthContext.Provider
-      value={{ 
-        user, 
-        isAuthenticated, 
-        loading, 
-        error, 
-        login, 
-        logout, 
-        updateUser 
-      }}
+      value={{ user, isAuthenticated, login, logout, updateUser }}
     >
       {children}
     </AuthContext.Provider>
