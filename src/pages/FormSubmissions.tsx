@@ -488,7 +488,7 @@ const FormSubmissions = () => {
                 Close
               </Button>
               <Button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-                <DownloadIcon className="h-4 w-4 mr-2" />
+                <Download className="h-4 w-4 mr-2" />
                 Export
               </Button>
             </div>
