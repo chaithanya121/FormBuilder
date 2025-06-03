@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,7 +23,7 @@ import {
   BarChart3,
   Target,
   Sparkles,
-  Export
+  Download as ExportIcon
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
@@ -230,7 +229,7 @@ const FormSubmissions = () => {
               onClick={handleExportCSV}
               className={`${theme === 'light' ? 'bg-white/80 hover:bg-white' : 'bg-gray-800/50 hover:bg-gray-700'} backdrop-blur-sm`}
             >
-              <Export className="h-4 w-4 mr-2" />
+              <ExportIcon className="h-4 w-4 mr-2" />
               Export Data
             </Button>
             <Button
@@ -489,7 +488,7 @@ const FormSubmissions = () => {
                 Close
               </Button>
               <Button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-                <Download className="h-4 w-4 mr-2" />
+                <DownloadIcon className="h-4 w-4 mr-2" />
                 Export
               </Button>
             </div>

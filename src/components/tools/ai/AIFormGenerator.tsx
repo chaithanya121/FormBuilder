@@ -10,7 +10,7 @@ import { motion } from 'framer-motion';
 import { 
   Zap, ArrowLeft, Wand, Sparkles, Copy, Download, 
   Eye, Settings, RefreshCw, Save, Share2, Brain,
-  Lightbulb, Target, Magic, Stars, Rocket, ChevronRight
+  Lightbulb, Target, Wand2, Stars, Rocket, ChevronRight
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
