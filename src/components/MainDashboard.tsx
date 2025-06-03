@@ -35,7 +35,11 @@ import {
   PlayCircle,
   PauseCircle,
   RefreshCw,
-  Wrench
+  Wrench,
+  Clock,
+  Brain,
+  Workflow,
+  Lightbulb
 } from 'lucide-react';
 import { icon_map } from '@/types';
 import { Link } from 'react-router-dom';
@@ -45,8 +49,6 @@ import { useSelector, useDispatch } from 'react-redux'
 import { platformApi } from '@/services/api/platform';
 import { AppDispatch, RootState } from '@/store';
 
-
-
 interface Base64ImageProps {
   base64String: string;
   contentType: string;
@@ -54,12 +56,9 @@ interface Base64ImageProps {
   className?: string;
 }
 
-
-
 const MainDashboard = () => {
   const { theme } = useTheme();
   const dispatch = useDispatch<AppDispatch>();
-  // const { forms, loading, error } = useSelector((state: RootState) => state.forms);
   const [platformCards,setPlatFormCards]= useState([])
   const platform = useSelector((state: RootState) => state.platform.platform)
 
@@ -67,114 +66,115 @@ const MainDashboard = () => {
     dispatch(getPlatform());
   }, []);
   
+  // Updated stats to focus on work insights rather than revenue
   const overallStats = [
     {
-      title: 'Total Revenue',
-      value: '$47.2K',
-      change: '+23.5%',
-      changeType: 'positive',
-      icon: DollarSign,
-      gradient: 'from-green-500 to-emerald-400',
-      bgGradient: theme === 'light' ? 'from-green-50 via-emerald-100 to-green-50' : 'from-green-900/20 to-emerald-900/20',
-      subtitle: 'Monthly recurring revenue',
-      trend: [65, 75, 85, 78, 92, 95, 88, 96]
-    },
-    {
       title: 'Active Projects',
-      value: '47',
-      change: '+18%',
+      value: '12',
+      change: '+3 this week',
       changeType: 'positive',
       icon: Layers,
       gradient: 'from-blue-500 to-cyan-400',
       bgGradient: theme === 'light' ? 'from-blue-50 via-blue-100 to-cyan-50' : 'from-blue-900/20 to-cyan-900/20',
       subtitle: 'Across all platforms',
-      trend: [30, 35, 42, 38, 45, 47, 44, 47]
+      trend: [8, 9, 10, 9, 11, 12, 11, 12]
     },
     {
-      title: 'Total Users',
-      value: '12.4K',
-      change: '+15.3%',
+      title: 'Form Submissions',
+      value: '847',
+      change: '+23 today',
       changeType: 'positive',
-      icon: Users,
-      gradient: 'from-purple-500 to-pink-400',
-      bgGradient: theme === 'light' ? 'from-purple-50 via-pink-100 to-purple-50' : 'from-purple-900/20 to-pink-900/20',
-      subtitle: 'Monthly active users',
-      trend: [8.2, 9.1, 10.5, 11.2, 11.8, 12.1, 12.0, 12.4]
+      icon: FileText,
+      gradient: 'from-green-500 to-emerald-400',
+      bgGradient: theme === 'light' ? 'from-green-50 via-emerald-100 to-green-50' : 'from-green-900/20 to-emerald-900/20',
+      subtitle: 'Total form responses',
+      trend: [650, 720, 780, 750, 810, 830, 820, 847]
     },
     {
-      title: 'Conversion Rate',
-      value: '24.7%',
-      change: '+2.1%',
+      title: 'Completion Rate',
+      value: '89.2%',
+      change: '+5.1%',
       changeType: 'positive',
       icon: Target,
+      gradient: 'from-purple-500 to-pink-400',
+      bgGradient: theme === 'light' ? 'from-purple-50 via-pink-100 to-purple-50' : 'from-purple-900/20 to-pink-900/20',
+      subtitle: 'Average form completion',
+      trend: [75, 78, 82, 80, 85, 87, 88, 89.2]
+    },
+    {
+      title: 'AI Assists',
+      value: '156',
+      change: '+28 this week',
+      changeType: 'positive',
+      icon: Brain,
       gradient: 'from-amber-500 to-orange-400',
       bgGradient: theme === 'light' ? 'from-amber-50 via-orange-100 to-amber-50' : 'from-amber-900/20 to-orange-900/20',
-      subtitle: 'Average across platforms',
-      trend: [18, 20, 22, 21, 23, 24, 23, 24.7]
+      subtitle: 'AI-powered enhancements',
+      trend: [98, 110, 125, 120, 135, 145, 150, 156]
     }
   ];
 
   const recentActivity = [
     {
-      type: 'form_submission',
-      title: 'New form submission received',
-      description: 'Contact Form - Lead Generation Campaign',
-      time: '2 minutes ago',
-      icon: FileText,
+      type: 'form_creation',
+      title: 'New form created',
+      description: 'Customer Feedback Survey - Marketing Team',
+      time: '5 minutes ago',
+      icon: Plus,
       status: 'success',
       avatar: 'bg-gradient-to-r from-blue-500 to-cyan-400'
     },
     {
-      type: 'resume_download',
-      title: 'Resume template downloaded',
-      description: 'Modern Professional Template by Sarah Johnson',
-      time: '15 minutes ago',
-      icon: Download,
+      type: 'ai_enhancement',
+      title: 'AI enhancement applied',
+      description: 'Smart validation added to Contact Form',
+      time: '12 minutes ago',
+      icon: Brain,
       status: 'info',
-      avatar: 'bg-gradient-to-r from-emerald-500 to-green-400'
-    },
-    {
-      type: 'website_analytics',
-      title: 'High traffic spike detected',
-      description: 'Portfolio website: +150% unique visitors today',
-      time: '1 hour ago',
-      icon: TrendingUp,
-      status: 'success',
       avatar: 'bg-gradient-to-r from-purple-500 to-pink-400'
     },
     {
-      type: 'system_update',
-      title: 'Platform maintenance completed',
-      description: 'All systems updated with latest security patches',
-      time: '3 hours ago',
-      icon: CheckCircle,
+      type: 'workflow_completed',
+      title: 'Workflow automation triggered',
+      description: 'Lead generation form → CRM integration',
+      time: '25 minutes ago',
+      icon: Workflow,
+      status: 'success',
+      avatar: 'bg-gradient-to-r from-emerald-500 to-green-400'
+    },
+    {
+      type: 'insight_generated',
+      title: 'New insight available',
+      description: 'Form performance analysis ready for review',
+      time: '1 hour ago',
+      icon: Lightbulb,
       status: 'info',
-      avatar: 'bg-gradient-to-r from-gray-500 to-gray-600'
+      avatar: 'bg-gradient-to-r from-amber-500 to-orange-400'
     }
   ];
 
   const quickActions = [
-     {
-          title: 'Professional Tools',
-          description: '40+ advanced tools for power users',
-          icon: Wrench,
-          gradient: 'from-violet-500 to-red-600',
-          link: '/tools',
-          badge: 'NEW',
-          badgeColor: 'from-orange-400 to-purple-500'
-        },
     {
-      title: 'AI Content Generator',
-      description: 'Generate content using advanced AI',
-      icon: Sparkles,
+      title: 'AI Form Generator',
+      description: 'Create forms with advanced AI assistance',
+      icon: Brain,
       gradient: 'from-violet-500 to-purple-600',
-      link: '/ai-generator',
+      link: '/tools/ai-form-generator',
+      badge: 'AI',
+      badgeColor: 'from-purple-400 to-violet-500'
+    },
+    {
+      title: 'Professional Tools',
+      description: '40+ advanced tools for power users',
+      icon: Wrench,
+      gradient: 'from-blue-500 to-indigo-600',
+      link: '/tools',
       badge: 'NEW',
       badgeColor: 'from-orange-400 to-red-500'
     },
     {
       title: 'Analytics Center',
-      description: 'Deep insights and advanced reporting',
+      description: 'Deep insights and performance metrics',
       icon: BarChart3,
       gradient: 'from-emerald-500 to-teal-600',
       link: '/analytics',
@@ -183,17 +183,17 @@ const MainDashboard = () => {
     },
     {
       title: 'Template Library',
-      description: 'Browse professional templates',
+      description: 'Browse professional form templates',
       icon: Star,
-      gradient: 'from-blue-500 to-indigo-600',
+      gradient: 'from-cyan-500 to-blue-600',
       link: '/templates'
     },
     {
-      title: 'Team Hub',
-      description: 'Collaborate with your team',
-      icon: Users,
-      gradient: 'from-cyan-500 to-blue-600',
-      link: '/collaboration'
+      title: 'Workflow Builder',
+      description: 'Automate your form processes',
+      icon: Workflow,
+      gradient: 'from-pink-500 to-rose-600',
+      link: '/tools/workflow-builder'
     }
   ];
 
@@ -272,7 +272,7 @@ function Base64Svg({ base64String, className = "" }) {
               : 'from-white via-blue-200 to-purple-200'
             } bg-clip-text text-transparent`}
           >
-            Welcome to BuildCraft
+            Your Creative Workspace
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -280,8 +280,8 @@ function Base64Svg({ base64String, className = "" }) {
             transition={{ duration: 0.6, delay: 0.4 }}
             className={`text-xl ${theme === 'light' ? 'text-gray-600' : 'text-gray-300'} mb-8 max-w-2xl mx-auto`}
           >
-            Your all-in-one platform for creating professional forms, resumes, websites, and more. 
-            Build, deploy, and scale with cutting-edge AI assistance.
+            Build powerful forms, track insights, and optimize your workflow with AI-powered tools. 
+            Your productivity hub for creating professional digital experiences.
           </motion.p>
           
           <motion.div
@@ -290,18 +290,22 @@ function Base64Svg({ base64String, className = "" }) {
             transition={{ duration: 0.6, delay: 0.5 }}
             className="flex items-center justify-center gap-4"
           >
-            <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-xl px-8 py-4 rounded-2xl text-lg hover:scale-105 transition-all duration-300">
-              <Plus className="h-5 w-5 mr-2" />
-              Start Building
-            </Button>
-            <Button variant="outline" className={`px-8 py-4 rounded-2xl text-lg hover:scale-105 transition-all duration-300 ${theme === 'light' 
-              ? 'border-gray-300 hover:bg-gray-50' 
-              : 'border-gray-600 hover:bg-gray-700'
-            }`}>
-              <PlayCircle className="h-5 w-5 mr-2" />
-              Watch Demo
-            </Button>
-          </motion.div>
+            <Link to="/platform/forms">
+              <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-xl px-8 py-4 rounded-2xl text-lg hover:scale-105 transition-all duration-300">
+                <Plus className="h-5 w-5 mr-2" />
+                Create Form
+              </Button>
+            </Link>
+            <Link to="/tools/ai-form-generator">
+              <Button variant="outline" className={`px-8 py-4 rounded-2xl text-lg hover:scale-105 transition-all duration-300 ${theme === 'light' 
+                ? 'border-gray-300 hover:bg-gray-50' 
+                : 'border-gray-600 hover:bg-gray-700'
+              }`}>
+                <Brain className="h-5 w-5 mr-2" />
+                Try AI Generator
+              </Button>
+            </Link>
+          </div>
         </motion.div>
 
         {/* Enhanced Stats Grid */}
@@ -409,10 +413,12 @@ function Base64Svg({ base64String, className = "" }) {
                       </p>
                     </div>
                   </div>
-                  <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg">
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Project
-                  </Button>
+                  <Link to="/platform/forms">
+                    <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg">
+                      <Plus className="h-4 w-4 mr-2" />
+                      New Project
+                    </Button>
+                  </Link>
                 </div>
               </CardHeader>
               <CardContent>
@@ -442,7 +448,6 @@ function Base64Svg({ base64String, className = "" }) {
                                   base64String={platform.icon.data} 
                                   className="h-8 w-8 text-white flex items-center justify-center"
                                 />
-                              {/* <icon_map.platform.icon.data className="h-8 w-8 text-white" /> */}
                             </motion.div>
                             <div className="flex-1">
                               <div className="flex items-center gap-3 mb-2">
@@ -533,7 +538,7 @@ function Base64Svg({ base64String, className = "" }) {
                   <div className="flex items-center justify-between">
                     <CardTitle className={`text-lg ${theme === 'light' ? 'text-gray-900' : 'text-white'} flex items-center gap-2`}>
                       <Activity className="h-5 w-5" />
-                      Live Activity Feed
+                      Recent Activity
                     </CardTitle>
                     <Button variant="ghost" size="sm">
                       <RefreshCw className="h-4 w-4" />
@@ -564,7 +569,7 @@ function Base64Svg({ base64String, className = "" }) {
                             {activity.description}
                           </p>
                           <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-500'} mt-1 flex items-center gap-1`}>
-                            <Calendar className="h-3 w-3" />
+                            <Clock className="h-3 w-3" />
                             {activity.time}
                           </p>
                         </div>
