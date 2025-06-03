@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -305,7 +304,7 @@ function Base64Svg({ base64String, className = "" }) {
                 Try AI Generator
               </Button>
             </Link>
-          </div>
+          </motion.div>
         </motion.div>
 
         {/* Enhanced Stats Grid */}
