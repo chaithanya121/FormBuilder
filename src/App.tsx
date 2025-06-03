@@ -1,82 +1,44 @@
-import { Routes, Route } from 'react-router-dom';
-import Layout from '@/layout/Layout';
-import LandingPage from '@/pages/LandingPage';
-import About from '@/pages/About';
-import Contact from '@/pages/Contact';
-import Features from '@/pages/Features';
-import NotFound from '@/pages/NotFound';
-import MainDashboard from '@/components/MainDashboard';
-import FormBuilder from '@/components/FormBuilder';
-import Forms from '@/components/Forms';
-import Submissions from '@/components/Submissions';
-import FormSubmission from '@/components/FormSubmission';
-import FormPreview from '@/pages/FormPreview';
-import FormSubmissions from '@/pages/FormSubmissions';
-import ProfilePage from '@/pages/ProfilePage';
-import { ThemeProvider } from '@/components/theme-provider';
-import { Toaster } from '@/components/ui/toaster';
-import { AuthProvider } from '@/hooks/use-auth';
-import PlanSelection from './components/PlanSelection';
-import PaymentMethod from './components/PaymentMethod';
-import PaymentSuccess from './components/PaymentSuccess';
-import { EnhancedUserSettings } from './components/settings/EnhancedUserSettings';
-import ProfessionalTools from './components/ProfessionalTools';
-import ToolRouter from './components/tools/ToolRouter';
-import FormsPage from './pages/platforms/FormsPage';
-import ResumePage from './pages/platforms/ResumePage';
-import { EmailVerification } from './components/auth/EmailVerification';
-import ResumeBuilderStudio from './components/ResumeBuilder/ResumeBuilderStudio';
 
-function App() {
-  return (
-    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-      <AuthProvider>
-        <Layout>
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Provider } from 'react-redux';
+import { store } from './store';
+import Index from "./pages/Index";
+import FormBuilder from "./components/FormBuilder";
+import FormPreview from "./pages/FormPreview";
+import PlatformDashboard from "./pages/PlatformDashboard";
+import PersonalizedDashboard from "./pages/PersonalizedDashboard";
+import AdminDashboard from "./components/Enhanced/AdminDashboard";
+import EnhancedFormWizard from "./components/Enhanced/EnhancedFormWizard";
+import RealtimeTracker from "./components/Enhanced/RealtimeTracker";
+
+const queryClient = new QueryClient();
+
+const App = () => (
+  <Provider store={store}>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
           <Routes>
-            <Route path="/" element={<LandingPage/>} />
-            <Route path="/dashboard" element={<MainDashboard />} />
-            
-            {/* Platform Routes */}
-            <Route path="/platform/forms" element={<FormsPage />} />
-            <Route path="/platform/resume" element={<ResumePage />} />
-            <Route path="/platform/website" element={<div>Website Builder Coming Soon</div>} />
-            <Route path="/platform/ecommerce" element={<div>E-Commerce Builder Coming Soon</div>} />
-            <Route path="/platform/presentation" element={<div>Presentation Builder Coming Soon</div>} />
-            <Route path="/platform/portfolio" element={<div>Portfolio Builder Coming Soon</div>} />
-            
-            {/* Resume Builder Studio */}
-            <Route path="/resume-builder" element={<ResumeBuilderStudio />} />
-            <Route path="/resume-builder/:id" element={<ResumeBuilderStudio />} />
-            
-            {/* Form Submissions Route */}
-            <Route path="/form-submissions/:formId" element={<FormSubmissions />} />
-            
-            {/* Profile and Settings */}
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/settings" element={<EnhancedUserSettings />} />
-            
-            {/* Legacy Form Builder Routes */}
-            <Route path="/forms" element={<Forms />} />
-            <Route path="/create" element={<FormBuilder />} />
-            <Route path="/form-builder/:id" element={<FormBuilder />} />
-            <Route path="/form/:id" element={<FormSubmission />} />
-            <Route path="/form-preview/:formId" element={<FormPreview />} />
-            <Route path="/select-plan" element={<PlanSelection />} />
-            <Route path="/payment" element={<PaymentMethod />} />
-            <Route path="/payment-success" element={<PaymentSuccess />} />
-            <Route path="/tools" element={<ProfessionalTools />} />
-            <Route path="/tools/:toolId" element={<ToolRouter />} />
-            <Route path="/features" element={<Features />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="*" element={<NotFound />} />
+            <Route path="/" element={<Index />} />
+            <Route path="/form-builder/:id?" element={<FormBuilder />} />
+            <Route path="/form-preview/:id" element={<FormPreview />} />
+            <Route path="/platform/forms" element={<PlatformDashboard />} />
+            <Route path="/platform/dashboard" element={<PersonalizedDashboard />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/form-wizard" element={<EnhancedFormWizard />} />
+            <Route path="/realtime-tracker" element={<RealtimeTracker />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-          <EmailVerification />
-          <Toaster />
-        </Layout>
-      </AuthProvider>
-    </ThemeProvider>
-  );
-}
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </Provider>
+);
 
 export default App;

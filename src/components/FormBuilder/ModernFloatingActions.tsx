@@ -1,18 +1,19 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Layers, Settings, Palette, Eye, HelpCircle, 
-  Code, Play, Wand2, Zap, Plus, ChevronUp, ChevronDown,
-  Save, Download, Upload, Sparkles, Target, Activity,
-  Grid, Compass, Lightbulb, Rocket
+  Grid, Settings, Palette, Eye, Save, Download, Upload,
+  Code, Sparkles, HelpCircle, Layers, Activity, Calculator,
+  Bell, Cloud, Database, Smartphone, Accessibility, MessageSquare,
+  TrendingUp, Users, Brain, Zap, Target
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface ModernFloatingActionsProps {
-  activePanel: 'elements' | 'configuration' | 'designer';
-  onPanelChange: (panel: 'elements' | 'configuration' | 'designer') => void;
+  activePanel: string;
+  onPanelChange: (panel: 'elements' | 'configuration' | 'designer' | 'advanced') => void;
   onQuickAction: (action: string) => void;
   onPreview: () => void;
   onSave: () => void;
@@ -29,358 +30,300 @@ const ModernFloatingActions: React.FC<ModernFloatingActionsProps> = ({
   onSave,
   onExport,
   onImport,
-  isLoading = false
+  isLoading
 }) => {
-  const [isExpanded, setIsExpanded] = useState(true);
-  const [hoveredAction, setHoveredAction] = useState<string | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [showQuickActions, setShowQuickActions] = useState(false);
 
-  const panels = [
+  const panelButtons = [
     {
-      id: 'elements' as const,
-      label: 'Elements Library',
-      icon: Layers,
-      gradient: 'from-blue-500 via-blue-600 to-indigo-600',
-      shadow: 'shadow-blue-500/30',
+      id: 'elements',
+      label: 'Elements',
+      icon: <Grid className="h-4 w-4" />,
+      color: 'from-blue-500 to-blue-600',
       description: 'Drag & drop form elements'
     },
     {
-      id: 'configuration' as const,
-      label: 'Configuration',
-      icon: Settings,
-      gradient: 'from-emerald-500 via-emerald-600 to-teal-600',
-      shadow: 'shadow-emerald-500/30',
-      description: 'Configure form settings'
+      id: 'configuration',
+      label: 'Configure',
+      icon: <Settings className="h-4 w-4" />,
+      color: 'from-purple-500 to-purple-600',
+      description: 'Element properties & settings'
     },
     {
-      id: 'designer' as const,
-      label: 'Designer Studio',
-      icon: Palette,
-      gradient: 'from-purple-500 via-purple-600 to-pink-600',
-      shadow: 'shadow-purple-500/30',
-      description: 'Customize form appearance'
+      id: 'designer',
+      label: 'Designer',
+      icon: <Palette className="h-4 w-4" />,
+      color: 'from-pink-500 to-pink-600',
+      description: 'Visual design & themes'
+    },
+    {
+      id: 'advanced',
+      label: 'Advanced',
+      icon: <Zap className="h-4 w-4" />,
+      color: 'from-orange-500 to-orange-600',
+      description: 'Enhanced capabilities'
     }
   ];
 
-  const primaryActions = [
-    {
-      id: 'save',
-      label: 'Save Form',
-      icon: Save,
-      action: onSave,
-      gradient: 'from-green-500 via-green-600 to-emerald-600',
-      shadow: 'shadow-green-500/30',
-      description: 'Save your progress'
-    },
-    {
-      id: 'preview',
-      label: 'Live Preview',
-      icon: Eye,
-      action: onPreview,
-      gradient: 'from-orange-500 via-orange-600 to-red-600',
-      shadow: 'shadow-orange-500/30',
-      description: 'Preview your form'
-    }
-  ];
-
-  const secondaryActions = [
+  const quickActions = [
     {
       id: 'view-code',
       label: 'View Code',
-      icon: Code,
-      action: () => onQuickAction('view-code'),
-      gradient: 'from-slate-500 via-slate-600 to-gray-600',
-      shadow: 'shadow-slate-500/30'
+      icon: <Code className="h-4 w-4" />,
+      color: 'bg-gray-600'
+    },
+    {
+      id: 'ai-enhance',
+      label: 'AI Enhance',
+      icon: <Brain className="h-4 w-4" />,
+      color: 'bg-purple-600'
     },
     {
       id: 'test-form',
       label: 'Test Form',
-      icon: Play,
-      action: () => onQuickAction('test-form'),
-      gradient: 'from-blue-500 via-blue-600 to-indigo-600',
-      shadow: 'shadow-blue-500/30'
+      icon: <Target className="h-4 w-4" />,
+      color: 'bg-green-600'
     },
     {
-      id: 'ai-enhance',
-      label: 'AI Enhancement',
-      icon: Sparkles,
-      action: () => onQuickAction('ai-enhance'),
-      gradient: 'from-pink-500 via-rose-600 to-purple-600',
-      shadow: 'shadow-pink-500/30'
+      id: 'admin-dashboard',
+      label: 'Admin',
+      icon: <Activity className="h-4 w-4" />,
+      color: 'bg-indigo-600'
     },
     {
-      id: 'export',
-      label: 'Export',
-      icon: Download,
-      action: onExport,
-      gradient: 'from-indigo-500 via-indigo-600 to-purple-600',
-      shadow: 'shadow-indigo-500/30'
+      id: 'realtime-tracker',
+      label: 'Live Tracker',
+      icon: <TrendingUp className="h-4 w-4" />,
+      color: 'bg-orange-600'
     },
     {
-      id: 'import',
-      label: 'Import',
-      icon: Upload,
-      action: onImport,
-      gradient: 'from-teal-500 via-teal-600 to-cyan-600',
-      shadow: 'shadow-teal-500/30'
+      id: 'form-wizard',
+      label: 'Wizard',
+      icon: <Sparkles className="h-4 w-4" />,
+      color: 'bg-pink-600'
     }
   ];
 
-  const ActionButton = ({ action, index, type = 'secondary', size = 'large' }: any) => {
-    const isActive = type === 'panel' && activePanel === action.id;
-    const buttonSize = size === 'large' ? 'w-16 h-16' : 'w-12 h-12';
-    const iconSize = size === 'large' ? 'h-6 w-6' : 'h-5 w-5';
-    
-    return (
-      <motion.div
-        initial={{ x: 100, opacity: 0, scale: 0.8 }}
-        animate={{ x: 0, opacity: 1, scale: 1 }}
-        exit={{ x: 100, opacity: 0, scale: 0.8 }}
-        transition={{ 
-          duration: 0.4, 
-          delay: index * 0.08,
-          type: "spring",
-          stiffness: 300,
-          damping: 25
-        }}
-        className="relative group"
-        onMouseEnter={() => setHoveredAction(action.id)}
-        onMouseLeave={() => setHoveredAction(null)}
-      >
-        <motion.button
-          whileHover={{ scale: 1.1, rotate: isActive ? 0 : 5 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={type === 'panel' ? () => onPanelChange(action.id) : action.action}
-          disabled={isLoading}
-          className={`
-            relative ${buttonSize} rounded-2xl flex items-center justify-center
-            bg-gradient-to-br ${action.gradient} text-white
-            shadow-xl ${action.shadow} hover:shadow-2xl
-            transition-all duration-300 transform
-            ${isActive ? 'ring-4 ring-white/40 scale-110 shadow-2xl' : ''}
-            ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-2xl'}
-            backdrop-blur-sm border border-white/20
-            overflow-hidden group
-          `}
-        >
-          {/* Animated background */}
-          <motion.div
-            className="absolute inset-0 bg-white/10"
-            initial={false}
-            animate={{ 
-              scale: isActive ? [1, 1.2, 1] : 1,
-              opacity: isActive ? [0.1, 0.3, 0.1] : 0.1
-            }}
-            transition={{ duration: 2, repeat: isActive ? Infinity : 0 }}
-          />
-          
-          {/* Hover ripple effect */}
-          <motion.div
-            className="absolute inset-0 bg-white/20 rounded-2xl"
-            initial={{ scale: 0, opacity: 0 }}
-            whileHover={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.3 }}
-          />
-          
-          <motion.div
-            animate={isLoading && action.id === 'save' ? { rotate: 360 } : { rotate: 0 }}
-            transition={{ duration: 1, repeat: isLoading && action.id === 'save' ? Infinity : 0, ease: "linear" }}
-          >
-            <action.icon className={iconSize} />
-          </motion.div>
-          
-          {/* Active indicator pulse */}
-          {isActive && (
-            <motion.div
-              className="absolute inset-0 rounded-2xl border-2 border-white/50"
-              animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-          )}
-          
-          {/* Loading spinner overlay */}
-          {isLoading && action.id === 'save' && (
-            <motion.div
-              className="absolute inset-0 border-2 border-white/30 border-t-white rounded-2xl"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            />
-          )}
-        </motion.button>
-        
-        {/* Enhanced Tooltip */}
-        <AnimatePresence>
-          {hoveredAction === action.id && (
-            <motion.div
-              initial={{ opacity: 0, x: 20, scale: 0.8 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: 20, scale: 0.8 }}
-              transition={{ duration: 0.2 }}
-              className="absolute right-20 top-1/2 transform -translate-y-1/2 z-50"
-            >
-              <div className="bg-gray-900/95 backdrop-blur-md text-white text-sm px-4 py-3 rounded-xl whitespace-nowrap shadow-2xl border border-white/10 max-w-xs">
-                <div className="font-medium">{action.label}</div>
-                {action.description && (
-                  <div className="text-xs text-gray-300 mt-1">{action.description}</div>
-                )}
-                <div className="absolute left-full top-1/2 transform -translate-y-1/2">
-                  <div className="border-8 border-transparent border-l-gray-900/95"></div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-    );
-  };
+  const enhancedFeatures = [
+    {
+      id: 'calculations',
+      label: 'Calculations',
+      icon: <Calculator className="h-3 w-3" />,
+      enabled: true
+    },
+    {
+      id: 'notifications',
+      label: 'Notifications',
+      icon: <Bell className="h-3 w-3" />,
+      enabled: true
+    },
+    {
+      id: 'cloud-storage',
+      label: 'Cloud Storage',
+      icon: <Cloud className="h-3 w-3" />,
+      enabled: false
+    },
+    {
+      id: 'database',
+      label: 'Database',
+      icon: <Database className="h-3 w-3" />,
+      enabled: false
+    },
+    {
+      id: 'mobile',
+      label: 'Mobile',
+      icon: <Smartphone className="h-3 w-3" />,
+      enabled: true
+    },
+    {
+      id: 'accessibility',
+      label: 'Accessibility',
+      icon: <Accessibility className="h-3 w-3" />,
+      enabled: true
+    },
+    {
+      id: 'collaboration',
+      label: 'Collaboration',
+      icon: <MessageSquare className="h-3 w-3" />,
+      enabled: true
+    }
+  ];
 
   return (
-    <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-50 flex flex-col items-center">
+    <>
+      {/* Main Floating Panel */}
       <motion.div
-        initial={{ x: 100, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
-        className="flex flex-col items-center gap-5"
+        initial={{ opacity: 0, y: 100 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50"
       >
-        {/* Expandable Content */}
-        <AnimatePresence>
-          {isExpanded && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.8, y: 20 }}
-              transition={{ duration: 0.4, type: "spring" }}
-              className="flex flex-col items-center gap-5"
-            >
-              {/* Panel Navigation Section */}
-              <div className="flex flex-col gap-4">
+        <Card className="bg-white/95 backdrop-blur-md border border-gray-200/50 shadow-2xl">
+          <div className="p-3">
+            {/* Panel Selector */}
+            <div className="flex items-center gap-2 mb-3">
+              {panelButtons.map((panel) => (
                 <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                  className="text-center"
+                  key={panel.id}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <div className="w-0.5 h-8 bg-gradient-to-b from-transparent via-blue-300 to-transparent mx-auto mb-3" />
-                  <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs px-2 py-1">
-                    <Grid className="h-3 w-3 mr-1" />
-                    Panels
-                  </Badge>
+                  <Button
+                    size="sm"
+                    variant={activePanel === panel.id ? 'default' : 'outline'}
+                    onClick={() => onPanelChange(panel.id as any)}
+                    className={`relative ${
+                      activePanel === panel.id 
+                        ? `bg-gradient-to-r ${panel.color} text-white border-0` 
+                        : 'hover:bg-gray-50'
+                    }`}
+                  >
+                    {panel.icon}
+                    <span className="ml-1 hidden md:inline">{panel.label}</span>
+                    {activePanel === panel.id && (
+                      <motion.div
+                        layoutId="activePanel"
+                        className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent rounded-md"
+                      />
+                    )}
+                  </Button>
                 </motion.div>
-                
-                {panels.map((panel, index) => (
-                  <ActionButton key={panel.id} action={panel} index={index} type="panel" />
-                ))}
-              </div>
+              ))}
+            </div>
 
-              {/* Animated Separator */}
-              <motion.div
-                initial={{ scaleY: 0, opacity: 0 }}
-                animate={{ scaleY: 1, opacity: 1 }}
-                exit={{ scaleY: 0, opacity: 0 }}
-                transition={{ delay: 0.3 }}
-                className="flex flex-col items-center gap-2"
-              >
-                <div className="w-0.5 h-6 bg-gradient-to-b from-gray-300 via-gray-400 to-gray-300 rounded-full" />
-                <Badge className="bg-green-100 text-green-700 border-green-200 text-xs px-2 py-1">
-                  <Zap className="h-3 w-3 mr-1" />
-                  Actions
+            {/* Enhanced Features Status */}
+            <div className="flex items-center gap-1 mb-3 overflow-x-auto">
+              {enhancedFeatures.map((feature) => (
+                <Badge
+                  key={feature.id}
+                  variant="secondary"
+                  className={`text-xs whitespace-nowrap ${
+                    feature.enabled 
+                      ? 'bg-green-100 text-green-700 border-green-200' 
+                      : 'bg-gray-100 text-gray-500 border-gray-200'
+                  }`}
+                >
+                  {feature.icon}
+                  <span className="ml-1">{feature.label}</span>
                 </Badge>
-              </motion.div>
+              ))}
+            </div>
 
-              {/* Primary Actions */}
-              <div className="flex flex-col gap-4">
-                {primaryActions.map((action, index) => (
-                  <ActionButton key={action.id} action={action} index={panels.length + index} />
-                ))}
-              </div>
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowQuickActions(!showQuickActions)}
+                className="hover:bg-blue-50"
+              >
+                <Layers className="h-4 w-4" />
+                <span className="ml-1 hidden lg:inline">Quick Actions</span>
+              </Button>
 
-              {/* Secondary Actions */}
-              <div className="flex flex-col gap-3">
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                  className="text-center mb-2"
-                >
-                  <Badge className="bg-purple-100 text-purple-700 border-purple-200 text-xs px-2 py-1">
-                    <Compass className="h-3 w-3 mr-1" />
-                    Tools
-                  </Badge>
-                </motion.div>
-                
-                {secondaryActions.map((action, index) => (
-                  <ActionButton 
-                    key={action.id} 
-                    action={action} 
-                    index={panels.length + primaryActions.length + index}
-                    size="small"
-                  />
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              <Button
+                size="sm"
+                onClick={onSave}
+                disabled={isLoading}
+                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
+              >
+                <Save className="h-4 w-4" />
+                <span className="ml-1 hidden md:inline">Save</span>
+              </Button>
+
+              <Button
+                size="sm"
+                onClick={onPreview}
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+              >
+                <Eye className="h-4 w-4" />
+                <span className="ml-1 hidden md:inline">Preview</span>
+              </Button>
+
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onQuickAction('help')}
+                className="hover:bg-gray-50"
+              >
+                <HelpCircle className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </Card>
       </motion.div>
 
-      {/* Enhanced Toggle Button */}
-      <div className="flex flex-col items-center gap-4 mt-6">
-        <motion.button
-          whileHover={{ scale: 1.1, rotate: 10 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 via-purple-600 to-indigo-600 text-white shadow-2xl hover:shadow-3xl transition-all duration-300 flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-violet-500/30 relative overflow-hidden group"
-        >
-          {/* Background animation */}
+      {/* Quick Actions Panel */}
+      <AnimatePresence>
+        {showQuickActions && (
           <motion.div
-            className="absolute inset-0 bg-white/10"
-            animate={{ 
-              scale: [1, 1.2, 1],
-              opacity: [0.1, 0.3, 0.1]
-            }}
-            transition={{ duration: 3, repeat: Infinity }}
-          />
-          
-          <motion.div
-            animate={{ rotate: isExpanded ? 180 : 0 }}
-            transition={{ duration: 0.3, type: "spring" }}
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.9 }}
+            className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-40"
           >
-            {isExpanded ? (
-              <ChevronUp className="h-6 w-6" />
-            ) : (
-              <Rocket className="h-6 w-6" />
-            )}
+            <Card className="bg-white/95 backdrop-blur-md border border-gray-200/50 shadow-2xl">
+              <div className="p-4">
+                <h3 className="font-semibold mb-3 text-center">Quick Actions</h3>
+                <div className="grid grid-cols-3 gap-2 max-w-sm">
+                  {quickActions.map((action) => (
+                    <motion.div
+                      key={action.id}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          onQuickAction(action.id);
+                          setShowQuickActions(false);
+                        }}
+                        className="w-full flex flex-col items-center gap-1 h-16 text-xs hover:bg-gray-50"
+                      >
+                        <div className={`p-1.5 rounded ${action.color} text-white`}>
+                          {action.icon}
+                        </div>
+                        {action.label}
+                      </Button>
+                    </motion.div>
+                  ))}
+                </div>
+                
+                <div className="flex gap-2 mt-3 pt-3 border-t">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={onImport}
+                    className="flex-1 text-xs"
+                  >
+                    <Upload className="h-3 w-3 mr-1" />
+                    Import
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={onExport}
+                    className="flex-1 text-xs"
+                  >
+                    <Download className="h-3 w-3 mr-1" />
+                    Export
+                  </Button>
+                </div>
+              </div>
+            </Card>
           </motion.div>
-          
-          {/* Pulse effect */}
-          <motion.div
-            className="absolute inset-0 rounded-2xl border-2 border-white/30"
-            animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0, 0.3] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          />
-        </motion.button>
+        )}
+      </AnimatePresence>
 
-        {/* Enhanced Status Indicators */}
-        <motion.div
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.5, type: "spring" }}
-          className="flex flex-col items-center gap-2"
-        >
-          <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 shadow-lg shadow-orange-500/25 px-3 py-1">
-            <Zap className="h-3 w-3 mr-1" />
-            B2C Pro
-          </Badge>
-          
-          <motion.div
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="flex items-center gap-1"
-          >
-            <div className="w-2 h-2 bg-green-500 rounded-full" />
-            <span className="text-xs text-gray-600 font-medium">Online</span>
-          </motion.div>
-        </motion.div>
-      </div>
-    </div>
+      {/* Click outside to close */}
+      {showQuickActions && (
+        <div
+          className="fixed inset-0 z-30"
+          onClick={() => setShowQuickActions(false)}
+        />
+      )}
+    </>
   );
 };
 

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,11 +15,15 @@ import ViewCodeModal from './QuickActions/ViewCodeModal';
 import TestFormModal from './QuickActions/TestFormModal';
 import AIEnhanceModal from './QuickActions/AIEnhanceModal';
 import { FormConfig, FormElement } from './types';
+import { CalculationEngine } from '@/services/calculation-engine';
+import { NotificationService } from '@/services/notification-service';
+import { CloudStorageManager } from '@/services/cloud-storage';
 import { 
   Settings, Eye, Save, Upload, Download, Play, 
   Palette, Layers, Grid, Code, Sparkles, Wand2,
   HelpCircle, Info, Lightbulb, Zap, Target, Search, Filter,
-  CircleArrowLeft, TrendingUp, Users, Activity
+  CircleArrowLeft, TrendingUp, Users, Activity, Calculator,
+  Bell, Cloud, Database, Smartphone, Accessibility, MessageSquare
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -75,20 +78,60 @@ const FormBuilder: React.FC = () => {
         enabled: false,
         required: false,
         text: "I accept the Terms & Conditions"
+      },
+      // Enhanced capabilities
+      calculations: {
+        enabled: false,
+        fields: []
+      },
+      notifications: {
+        enabled: false,
+        rules: []
+      },
+      integrations: {
+        api: false,
+        cloudStorage: [],
+        database: false,
+        realTimeTracking: true
+      },
+      accessibility: {
+        screenReader: true,
+        wcagCompliant: true,
+        highContrast: false
+      },
+      collaboration: {
+        comments: true,
+        assignments: true,
+        workflow: false
+      },
+      mobileLayout: {
+        responsive: true,
+        customBreakpoints: {
+          mobile: 768,
+          tablet: 1024,
+          desktop: 1200
+        },
+        mobileSpecificElements: []
       }
     }
   });
 
   const [selectedElement, setSelectedElement] = useState<FormElement | null>(null);
-  const [activePanel, setActivePanel] = useState<'elements' | 'configuration' | 'designer'>('elements');
+  const [activePanel, setActivePanel] = useState<'elements' | 'configuration' | 'designer' | 'advanced'>('elements');
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [elementFilter, setElementFilter] = useState('all');
 
-  // Quick Action Modals
+  // Enhanced modal states
   const [showViewCode, setShowViewCode] = useState(false);
   const [showTestForm, setShowTestForm] = useState(false);
   const [showAIEnhance, setShowAIEnhance] = useState(false);
+  const [showCalculationBuilder, setShowCalculationBuilder] = useState(false);
+  const [showNotificationBuilder, setShowNotificationBuilder] = useState(false);
+
+  // Services
+  const [calculationEngine] = useState(new CalculationEngine());
+  const [cloudStorageManager] = useState(new CloudStorageManager());
 
   // Load form data from Redux on component mount
   useEffect(() => {
@@ -128,6 +171,46 @@ const FormBuilder: React.FC = () => {
       )
     }));
     setSelectedElement(updatedElement);
+  };
+
+  // Enhanced calculation handling
+  const handleAddCalculation = () => {
+    setShowCalculationBuilder(true);
+  };
+
+  const handleSaveCalculation = (calculation: any) => {
+    setFormConfig(prev => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        calculations: {
+          ...prev.settings.calculations,
+          enabled: true,
+          fields: [...(prev.settings.calculations?.fields || []), calculation]
+        }
+      }
+    }));
+    setShowCalculationBuilder(false);
+  };
+
+  // Enhanced notification handling
+  const handleAddNotification = () => {
+    setShowNotificationBuilder(true);
+  };
+
+  const handleSaveNotification = (rule: any) => {
+    setFormConfig(prev => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        notifications: {
+          ...prev.settings.notifications,
+          enabled: true,
+          rules: [...(prev.settings.notifications?.rules || []), rule]
+        }
+      }
+    }));
+    setShowNotificationBuilder(false);
   };
 
   const handleDeleteElement = () => {
@@ -257,10 +340,19 @@ const FormBuilder: React.FC = () => {
       case 'preview':
         handlePreview();
         break;
+      case 'admin-dashboard':
+        navigate('/admin/dashboard');
+        break;
+      case 'realtime-tracker':
+        navigate('/realtime-tracker');
+        break;
+      case 'form-wizard':
+        navigate('/form-wizard');
+        break;
       case 'help':
         toast({
           title: "FormCraft Pro Help",
-          description: "Use the floating buttons to switch between Elements, Configuration, and Designer panels. Drag elements from the library to build your form.",
+          description: "Use the enhanced floating buttons to access all powerful features including calculations, notifications, and real-time tracking.",
         });
         break;
       default:
@@ -281,7 +373,7 @@ const FormBuilder: React.FC = () => {
     setShowAIEnhance(false);
   };
 
-  const handlePanelChange = (panel: 'elements' | 'configuration' | 'designer') => {
+  const handlePanelChange = (panel: 'elements' | 'configuration' | 'designer' | 'advanced') => {
     setActivePanel(panel);
   };
 
@@ -295,7 +387,7 @@ const FormBuilder: React.FC = () => {
     e.dataTransfer.effectAllowed = 'copy';
   };
 
-  const renderSidePanel = () => {
+  const renderEnhancedSidePanel = () => {
     switch (activePanel) {
       case 'elements':
         return (
@@ -325,6 +417,90 @@ const FormBuilder: React.FC = () => {
             onUpdate={setFormConfig}
           />
         );
+      case 'advanced':
+        return (
+          <div className="p-4 space-y-4">
+            <h3 className="text-lg font-semibold">Advanced Features</h3>
+            
+            <Card className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Calculator className="h-4 w-4" />
+                  <span className="font-medium">Calculations</span>
+                </div>
+                <Button size="sm" onClick={handleAddCalculation}>
+                  Add
+                </Button>
+              </div>
+              <p className="text-sm text-gray-600">Auto-calculate totals and scores</p>
+            </Card>
+
+            <Card className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Bell className="h-4 w-4" />
+                  <span className="font-medium">Notifications</span>
+                </div>
+                <Button size="sm" onClick={handleAddNotification}>
+                  Add
+                </Button>
+              </div>
+              <p className="text-sm text-gray-600">Email/SMS alerts on submission</p>
+            </Card>
+
+            <Card className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Cloud className="h-4 w-4" />
+                  <span className="font-medium">Cloud Storage</span>
+                </div>
+                <Button size="sm">
+                  Configure
+                </Button>
+              </div>
+              <p className="text-sm text-gray-600">Google Drive, Dropbox integration</p>
+            </Card>
+
+            <Card className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Database className="h-4 w-4" />
+                  <span className="font-medium">Database</span>
+                </div>
+                <Button size="sm">
+                  Setup
+                </Button>
+              </div>
+              <p className="text-sm text-gray-600">Advanced data storage & search</p>
+            </Card>
+
+            <Card className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Accessibility className="h-4 w-4" />
+                  <span className="font-medium">Accessibility</span>
+                </div>
+                <Button size="sm">
+                  Enable
+                </Button>
+              </div>
+              <p className="text-sm text-gray-600">WCAG compliance & screen readers</p>
+            </Card>
+
+            <Card className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" />
+                  <span className="font-medium">Collaboration</span>
+                </div>
+                <Button size="sm">
+                  Configure
+                </Button>
+              </div>
+              <p className="text-sm text-gray-600">Comments & team assignments</p>
+            </Card>
+          </div>
+        );
       default:
         return null;
     }
@@ -332,7 +508,7 @@ const FormBuilder: React.FC = () => {
 
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-gray-50 to-blue-50">
-      {/* Enhanced Header with Search and Filters */}
+      {/* Enhanced Header */}
       <motion.div 
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -346,7 +522,7 @@ const FormBuilder: React.FC = () => {
                 whileHover={{ scale: 1.02 }}
               >
                 <CircleArrowLeft 
-                  className="h-6 w-6 xl:h-8 xl:w-8 mr-1 xl:mr-2 stroke-blue-500 dark:stroke-rose-200 cursor-pointer flex-shrink-0" 
+                  className="h-6 w-6 xl:h-8 xl:w-8 mr-1 xl:mr-2 stroke-blue-500 cursor-pointer flex-shrink-0" 
                   onClick={() => navigate('/platform/forms')}
                 />
                 <div className="p-1.5 xl:p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex-shrink-0">
@@ -354,19 +530,24 @@ const FormBuilder: React.FC = () => {
                 </div>
                 <div className="min-w-0">
                   <h1 className="text-lg xl:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent truncate">
-                    FormCraft Pro
+                    FormCraft Pro Enhanced
                   </h1>
                   <p className="text-xs xl:text-sm text-gray-600 hidden sm:block">
-                    {formConfig.elements.length} elements • B2C Optimized
+                    {formConfig.elements.length} elements • AI-Powered • Real-time
                   </p>
                 </div>
               </motion.div>
               
-              <Badge variant="secondary" className="bg-purple-100 text-purple-700 text-xs hidden md:inline-flex">
-                v3.0 B2C
-              </Badge>
+              <div className="flex gap-1">
+                <Badge variant="secondary" className="bg-purple-100 text-purple-700 text-xs">
+                  v4.0 Enterprise
+                </Badge>
+                <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs">
+                  AI Enhanced
+                </Badge>
+              </div>
 
-              {/* Form Name Input - Responsive */}
+              {/* Form Name Input */}
               <div className="flex items-center gap-2 flex-1 max-w-xs">
                 <Input
                   value={formConfig.name}
@@ -377,8 +558,28 @@ const FormBuilder: React.FC = () => {
               </div>
             </div>
 
-            {/* Action Buttons - Responsive */}
+            {/* Enhanced Action Buttons */}
             <div className="flex items-center gap-1 xl:gap-3 flex-shrink-0">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => navigate('/admin/dashboard')}
+                className="hidden lg:flex border-green-200 text-green-700 hover:bg-green-50"
+              >
+                <Activity className="h-4 w-4 mr-1 xl:mr-2" />
+                <span className="hidden xl:inline">Admin</span>
+              </Button>
+
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => navigate('/realtime-tracker')}
+                className="hidden lg:flex border-orange-200 text-orange-700 hover:bg-orange-50"
+              >
+                <TrendingUp className="h-4 w-4 mr-1 xl:mr-2" />
+                <span className="hidden xl:inline">Live</span>
+              </Button>
+
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -388,16 +589,6 @@ const FormBuilder: React.FC = () => {
               >
                 <Save className="h-4 w-4 mr-1 xl:mr-2" />
                 <span className="hidden md:inline">Save</span>
-              </Button>
-
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleThemeStudio}
-                className="border-purple-200 text-purple-700 hover:bg-purple-50 hidden lg:flex"
-              >
-                <Palette className="h-4 w-4 mr-1 xl:mr-2" />
-                <span className="hidden xl:inline">Theme Studio</span>
               </Button>
 
               <Button 
@@ -413,9 +604,9 @@ const FormBuilder: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* Main Content Area - Responsive */}
+      {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar with Animation - Responsive */}
+        {/* Enhanced Left Sidebar */}
         <motion.div 
           initial={{ x: -300, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
@@ -431,12 +622,12 @@ const FormBuilder: React.FC = () => {
               transition={{ duration: 0.3 }}
               className="flex-1 overflow-hidden"
             >
-              {renderSidePanel()}
+              {renderEnhancedSidePanel()}
             </motion.div>
           </AnimatePresence>
         </motion.div>
 
-        {/* Center Canvas Area - Responsive */}
+        {/* Center Canvas Area */}
         <motion.div 
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -453,7 +644,7 @@ const FormBuilder: React.FC = () => {
           />
         </motion.div>
 
-        {/* Right Info Panel - Enhanced with B2C Insights */}
+        {/* Enhanced Right Info Panel */}
         <motion.div 
           initial={{ x: 300, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
@@ -461,14 +652,14 @@ const FormBuilder: React.FC = () => {
           className="w-72 xl:w-80 border-l border-gray-200 bg-gradient-to-b from-gray-50/95 to-white/95 backdrop-blur-md overflow-y-auto shadow-lg hidden xl:flex flex-col"
         >
           <div className="p-4 xl:p-6 space-y-4 xl:space-y-6">
-            {/* B2C Insights Component */}
+            {/* Enhanced B2C Insights */}
             <B2CInsights formConfig={formConfig} />
 
-            {/* Form Analytics */}
+            {/* Enhanced Analytics */}
             <Card className="p-3 xl:p-4 bg-white/80 backdrop-blur-sm border-gray-200/50">
               <div className="flex items-center gap-2 mb-3">
                 <Activity className="h-4 w-4 text-blue-500" />
-                <h3 className="font-semibold text-sm xl:text-base">Form Analytics</h3>
+                <h3 className="font-semibold text-sm xl:text-base">Enhanced Analytics</h3>
               </div>
               <div className="space-y-2 xl:space-y-3 text-xs xl:text-sm">
                 <div className="flex justify-between">
@@ -476,38 +667,56 @@ const FormBuilder: React.FC = () => {
                   <Badge variant="outline" className="text-xs">{formConfig.elements.length}</Badge>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Required Fields:</span>
-                  <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 text-xs">
-                    {formConfig.elements.filter(el => el.required).length}
+                  <span className="text-gray-600">Calculations:</span>
+                  <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 text-xs">
+                    {formConfig.settings.calculations?.fields?.length || 0}
                   </Badge>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Mobile Optimized:</span>
+                  <span className="text-gray-600">Notifications:</span>
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
+                    {formConfig.settings.notifications?.rules?.length || 0}
+                  </Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Cloud Storage:</span>
                   <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
-                    Yes
+                    {formConfig.settings.integrations?.cloudStorage?.length || 0}
                   </Badge>
                 </div>
               </div>
             </Card>
 
-            {/* B2C Pro Tips */}
+            {/* Enhanced Features Status */}
             <Card className="p-3 xl:p-4 bg-white/80 backdrop-blur-sm border-gray-200/50">
               <div className="flex items-center gap-2 mb-3">
-                <Lightbulb className="h-4 w-4 text-yellow-500" />
-                <h3 className="font-semibold text-sm xl:text-base">B2C Pro Tips</h3>
+                <Zap className="h-4 w-4 text-yellow-500" />
+                <h3 className="font-semibold text-sm xl:text-base">Enhanced Features</h3>
               </div>
-              <div className="space-y-1 xl:space-y-2 text-xs text-gray-600">
-                <p>• Keep forms short for mobile users</p>
-                <p>• Use progressive disclosure for complex flows</p>
-                <p>• Add social proof to increase conversions</p>
-                <p>• Test with real customer data</p>
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span>Real-time Tracking</span>
+                  <Badge className="bg-green-100 text-green-700 text-xs">Active</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Mobile Optimized</span>
+                  <Badge className="bg-green-100 text-green-700 text-xs">Enabled</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>WCAG Compliant</span>
+                  <Badge className="bg-green-100 text-green-700 text-xs">Active</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>AI Enhanced</span>
+                  <Badge className="bg-purple-100 text-purple-700 text-xs">Ready</Badge>
+                </div>
               </div>
             </Card>
           </div>
         </motion.div>
       </div>
 
-      {/* Enhanced Modern Floating Action Buttons */}
+      {/* Enhanced Modern Floating Actions */}
       <ModernFloatingActions
         activePanel={activePanel}
         onPanelChange={handlePanelChange}
@@ -519,7 +728,7 @@ const FormBuilder: React.FC = () => {
         isLoading={loading}
       />
 
-      {/* Modals */}
+      {/* Enhanced Modals */}
       <SaveSuccessDialog 
         open={showSaveDialog} 
         onOpenChange={setShowSaveDialog}
