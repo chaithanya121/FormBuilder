@@ -1,4 +1,3 @@
-
 import { Routes, Route } from 'react-router-dom';
 import Layout from '@/layout/Layout';
 import LandingPage from '@/pages/LandingPage';
@@ -26,6 +25,7 @@ import ToolRouter from './components/tools/ToolRouter';
 import FormsPage from './pages/platforms/FormsPage';
 import ResumePage from './pages/platforms/ResumePage';
 import { EmailVerification } from './components/auth/EmailVerification';
+import ResumeBuilderStudio from './components/ResumeBuilder/ResumeBuilderStudio';
 
 function App() {
   return (
@@ -43,6 +43,10 @@ function App() {
             <Route path="/platform/ecommerce" element={<div>E-Commerce Builder Coming Soon</div>} />
             <Route path="/platform/presentation" element={<div>Presentation Builder Coming Soon</div>} />
             <Route path="/platform/portfolio" element={<div>Portfolio Builder Coming Soon</div>} />
+            
+            {/* Resume Builder Studio */}
+            <Route path="/resume-builder" element={<ResumeBuilderStudio />} />
+            <Route path="/resume-builder/:id" element={<ResumeBuilderStudio />} />
             
             {/* Form Submissions Route */}
             <Route path="/form-submissions/:formId" element={<FormSubmissions />} />
