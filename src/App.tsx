@@ -26,6 +26,7 @@ import ToolRouter from './components/tools/ToolRouter';
 import FormsPage from './pages/platforms/FormsPage';
 import ResumePage from './pages/platforms/ResumePage';
 import { EmailVerification } from './components/auth/EmailVerification';
+import { EnhancedAIFormGenerator } from './components/tools/ai/EnhancedAIFormGenerator';
 
 function App() {
   return (
@@ -50,6 +51,9 @@ function App() {
             {/* Profile and Settings */}
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/settings" element={<EnhancedUserSettings />} />
+            
+            {/* AI Form Generator Route */}
+            <Route path="/tools/ai-form-generator" element={<EnhancedAIFormGenerator />} />
             
             {/* Legacy Form Builder Routes */}
             <Route path="/forms" element={<Forms />} />
