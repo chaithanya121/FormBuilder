@@ -75,10 +75,40 @@ const FormsPage = () => {
             name: "Untitled Form",
             elements: [],
             settings: {
+              preview: { width: "Full", nesting: false },
+              validation: { liveValidation: "Default" },
+              layout: {
+                size: "Default",
+                columns: { default: true, tablet: true, desktop: true },
+                labels: "Default",
+                placeholders: "Default",
+                errors: "Default",
+                messages: "Default",
+                questionSpacing: 24,
+                labelAlignment: "top",
+              },
               canvasStyles: {
-                backgroundColor: "#ffffff",
+                backgroundColor:
+                  "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                formBackgroundColor: "#ffffff",
+                fontColor: "#321f16",
+                primaryColor: "#3b82f6",
                 fontFamily: "Inter",
-                fontSize: 14,
+                fontSize: 16,
+                formWidth: 752,
+                borderRadius: "12px",
+                padding: "32px",
+                backgroundImage: "",
+                customCSS: "",
+              },
+              submitButton: {
+                text: "Submit Form",
+                position: "bottom",
+              },
+              termsAndConditions: {
+                enabled: false,
+                required: false,
+                text: "I accept the Terms & Conditions",
               },
             },
           },
@@ -736,7 +766,7 @@ const FormsPage = () => {
                               </Link>
 
                               <Tooltip>
-                                <TooltipTrigger >
+                                <TooltipTrigger>
                                   <Button
                                     variant="outline"
                                     size="sm"
@@ -747,11 +777,13 @@ const FormsPage = () => {
                                     <Eye className="h-4 w-4" />
                                   </Button>
                                 </TooltipTrigger>
-                                <TooltipContent side="top">Preview Form</TooltipContent>
+                                <TooltipContent side="top">
+                                  Preview Form
+                                </TooltipContent>
                               </Tooltip>
 
                               <Tooltip>
-                                <TooltipTrigger >
+                                <TooltipTrigger>
                                   <Button
                                     variant="outline"
                                     size="sm"
@@ -768,7 +800,7 @@ const FormsPage = () => {
                               </Tooltip>
 
                               <Tooltip>
-                                <TooltipTrigger >
+                                <TooltipTrigger>
                                   <Button
                                     variant="outline"
                                     size="sm"
@@ -783,7 +815,7 @@ const FormsPage = () => {
                               </Tooltip>
 
                               <Tooltip>
-                                <TooltipTrigger >
+                                <TooltipTrigger>
                                   <Button
                                     variant="outline"
                                     size="sm"
@@ -796,7 +828,7 @@ const FormsPage = () => {
                               </Tooltip>
 
                               <Tooltip>
-                                <TooltipTrigger >
+                                <TooltipTrigger>
                                   <Button
                                     variant="outline"
                                     size="sm"

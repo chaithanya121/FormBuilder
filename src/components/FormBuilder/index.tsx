@@ -160,6 +160,7 @@ const FormBuilder: React.FC = () => {
   };
 
   const handleSave = async () => {
+    console.log(currentForm)
     try {
       if (currentForm?.primary_id) {
         // Update existing form

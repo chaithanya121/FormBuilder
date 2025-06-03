@@ -4,8 +4,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useAppSelector,useAppDispatch } from '@/hooks/redux';
 import { ArrowLeft, ExternalLink, Smartphone, Tablet, Monitor, Play } from 'lucide-react';
 import { FormConfig } from '@/components/FormBuilder/types';
+import { fetchFormPrvById } from '@/store/slices/formsSlice';
 
 const FormPreview: React.FC = () => {
   const { formId } = useParams();
@@ -13,21 +15,16 @@ const FormPreview: React.FC = () => {
   const [formConfig, setFormConfig] = useState<FormConfig | null>(null);
   const [previewMode, setPreviewMode] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
   const [loading, setLoading] = useState(true);
+  // Redux state
+  const { forms, currentForm, error ,preview_form} = useAppSelector((state) => state.forms);
+    const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    // Load form from localStorage or API
-    const loadForm = () => {
+
+  const loadForm = () => {
       try {
-        let config;
-        if (formId === 'current') {
-          config = localStorage.getItem('formBuilder_current');
-        } else {
-          config = localStorage.getItem(`formBuilder_${formId}`);
-        }
-        
-        if (config) {
-          setFormConfig(JSON.parse(config));
-        }
+      
+       dispatch(fetchFormPrvById(formId))
+       
       } catch (error) {
         console.error('Failed to load form for preview:', error);
       } finally {
@@ -35,7 +32,16 @@ const FormPreview: React.FC = () => {
       }
     };
 
-    loadForm();
+   
+  useEffect(() => {
+   loadForm()
+  }, [formId]);
+
+  console.log('form_pre',preview_form)
+
+  useEffect(() => {
+    setFormConfig(preview_form)
+  
   }, [formId]);
 
   const getPreviewWidth = () => {

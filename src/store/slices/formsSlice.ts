@@ -2,6 +2,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { FormConfig } from '@/components/FormBuilder/types';
 import { formsApi, FormData } from '@/services/api/forms';
+// import { FormConfig } from '@/components/FormBuilder/types';
 
 interface FormsState {
   forms: FormData[];
@@ -11,6 +12,7 @@ interface FormsState {
   } | null;
   loading: boolean;
   error: string | null;
+  preview_form:FormConfig[]
 }
 
 const initialState: FormsState = {
@@ -18,6 +20,7 @@ const initialState: FormsState = {
   currentForm: null,
   loading: false,
   error: null,
+  preview_form:[]
 };
 
 // Async thunks
@@ -37,6 +40,20 @@ export const fetchForms = createAsyncThunk(
 
 export const fetchFormById = createAsyncThunk(
   'forms/fetchFormById',
+  async (formId: string, { rejectWithValue }) => {
+    try {
+      const form = await formsApi.getFormById(formId);
+      console.log('Redux fetchFormById result:', form);
+      return form;
+    } catch (error) {
+      console.error('fetchFormById error:', error);
+      return rejectWithValue((error as Error).message);
+    }
+  }
+);
+
+export const fetchFormPrvById = createAsyncThunk(
+  'forms/fetchFormPrvById',
   async (formId: string, { rejectWithValue }) => {
     try {
       const form = await formsApi.getFormById(formId);
@@ -203,6 +220,22 @@ export const formsSlice = createSlice({
       state.error = null;
     });
     builder.addCase(deleteFormAction.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string || 'Failed to delete form';
+    });
+
+     builder.addCase(fetchFormPrvById.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(fetchFormPrvById.fulfilled, (state, action) => {
+      state.loading = false;
+      state.preview_form =  action.payload
+        state.currentForm = null;
+      
+      state.error = null;
+    });
+    builder.addCase(fetchFormPrvById.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload as string || 'Failed to delete form';
     });
