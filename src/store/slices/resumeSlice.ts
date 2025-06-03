@@ -1,4 +1,3 @@
-
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { resumeApiService, ResumeData } from '@/services/api/resumes';
 
@@ -7,6 +6,27 @@ interface ResumeState {
   currentResume: ResumeData | null;
   loading: boolean;
   error: string | null;
+  analytics: {
+    totalDownloads: number;
+    totalViews: number;
+    conversionRate: number;
+    popularTemplates: string[];
+    recentActivity: Array<{
+      id: string;
+      action: 'created' | 'updated' | 'downloaded' | 'viewed';
+      timestamp: string;
+      resumeName: string;
+    }>;
+  };
+  templates: Array<{
+    id: string;
+    name: string;
+    category: string;
+    preview: string;
+    popularity: number;
+    isNew: boolean;
+    isPremium: boolean;
+  }>;
 }
 
 const initialState: ResumeState = {
@@ -14,9 +34,54 @@ const initialState: ResumeState = {
   currentResume: null,
   loading: false,
   error: null,
+  analytics: {
+    totalDownloads: 0,
+    totalViews: 0,
+    conversionRate: 0,
+    popularTemplates: [],
+    recentActivity: []
+  },
+  templates: [
+    {
+      id: 'modern',
+      name: 'Modern Professional',
+      category: 'Professional',
+      preview: '/templates/modern.jpg',
+      popularity: 95,
+      isNew: false,
+      isPremium: false
+    },
+    {
+      id: 'creative',
+      name: 'Creative Designer',
+      category: 'Creative',
+      preview: '/templates/creative.jpg',
+      popularity: 87,
+      isNew: true,
+      isPremium: true
+    },
+    {
+      id: 'minimal',
+      name: 'Minimal Clean',
+      category: 'Minimal',
+      preview: '/templates/minimal.jpg',
+      popularity: 92,
+      isNew: false,
+      isPremium: false
+    },
+    {
+      id: 'executive',
+      name: 'Executive Suite',
+      category: 'Executive',
+      preview: '/templates/executive.jpg',
+      popularity: 78,
+      isNew: true,
+      isPremium: true
+    }
+  ]
 };
 
-// Async thunks
+// Enhanced async thunks with better error handling and analytics
 export const fetchResumes = createAsyncThunk(
   'resumes/fetchResumes',
   async (_, { rejectWithValue }) => {
@@ -25,8 +90,8 @@ export const fetchResumes = createAsyncThunk(
       return resumes;
     } catch (error) {
       console.error('Failed to fetch resumes:', error);
-      // Return mock data for now since API might not be available
-      return [
+      // Enhanced mock data with analytics
+      const mockResumes = [
         {
           id: '1',
           name: 'Software Developer Resume',
@@ -37,32 +102,59 @@ export const fetchResumes = createAsyncThunk(
           lastUpdated: new Date().toISOString(),
           content: {
             personalInfo: {
-              name: 'John Doe',
-              email: 'john@example.com',
+              name: 'Alex Rivera',
+              email: 'alex.rivera@example.com',
               phone: '+1-555-0123',
               location: 'San Francisco, CA',
-              summary: 'Experienced software developer with 5+ years in web development.'
+              website: 'alexrivera.dev',
+              linkedin: 'linkedin.com/in/alexrivera',
+              summary: 'Full-stack developer with 5+ years experience building scalable web applications using React, Node.js, and cloud technologies. Passionate about clean code and user experience.'
             },
             experience: [
               {
                 id: '1',
-                company: 'Tech Corp',
-                position: 'Senior Developer',
+                company: 'TechCorp Solutions',
+                position: 'Senior Software Engineer',
                 startDate: '2022-01',
                 endDate: 'Present',
-                description: 'Led development of web applications using React and Node.js.'
+                description: 'Led development of microservices architecture serving 10M+ users. Reduced application load time by 40% through optimization. Mentored 5 junior developers.',
+                technologies: ['React', 'Node.js', 'AWS', 'Docker', 'PostgreSQL']
+              },
+              {
+                id: '2',
+                company: 'StartupXYZ',
+                position: 'Full Stack Developer',
+                startDate: '2020-03',
+                endDate: '2021-12',
+                description: 'Built complete e-commerce platform from scratch. Implemented payment processing and inventory management systems.',
+                technologies: ['Vue.js', 'Python', 'Django', 'MySQL', 'Stripe API']
               }
             ],
             education: [
               {
                 id: '1',
-                institution: 'University of California',
-                degree: 'Bachelor of Computer Science',
-                startDate: '2015-09',
-                endDate: '2019-06'
+                institution: 'University of California, Berkeley',
+                degree: 'Bachelor of Science in Computer Science',
+                startDate: '2016-09',
+                endDate: '2020-05',
+                gpa: '3.8/4.0',
+                achievements: ['Dean\'s List', 'CS Honor Society']
               }
             ],
-            skills: ['JavaScript', 'React', 'Node.js', 'TypeScript', 'Python']
+            skills: {
+              technical: ['JavaScript', 'TypeScript', 'React', 'Node.js', 'Python', 'AWS', 'Docker', 'PostgreSQL'],
+              soft: ['Leadership', 'Problem Solving', 'Communication', 'Team Collaboration'],
+              certifications: ['AWS Solutions Architect', 'Google Cloud Professional']
+            },
+            projects: [
+              {
+                id: '1',
+                name: 'E-commerce Analytics Dashboard',
+                description: 'Real-time analytics platform for online retailers',
+                technologies: ['React', 'D3.js', 'Node.js', 'MongoDB'],
+                link: 'github.com/alexrivera/analytics-dashboard'
+              }
+            ]
           }
         },
         {
@@ -75,48 +167,65 @@ export const fetchResumes = createAsyncThunk(
           lastUpdated: new Date(Date.now() - 86400000).toISOString(),
           content: {
             personalInfo: {
-              name: 'Jane Smith',
-              email: 'jane@example.com',
+              name: 'Sarah Johnson',
+              email: 'sarah.johnson@example.com',
               phone: '+1-555-0456',
               location: 'New York, NY',
-              summary: 'Creative marketing professional with expertise in digital campaigns.'
+              website: 'sarahjohnson.marketing',
+              linkedin: 'linkedin.com/in/sarahjohnson',
+              summary: 'Creative marketing professional with expertise in digital campaigns, brand development, and data-driven strategies. Proven track record of increasing engagement by 200%.'
             },
             experience: [
               {
                 id: '1',
-                company: 'Marketing Agency',
-                position: 'Marketing Specialist',
+                company: 'Digital Marketing Agency',
+                position: 'Senior Marketing Specialist',
                 startDate: '2021-03',
                 endDate: 'Present',
-                description: 'Developed and executed digital marketing strategies.'
+                description: 'Developed and executed integrated marketing campaigns for Fortune 500 clients. Managed $2M+ annual advertising budget with 300% ROI.',
+                achievements: ['Increased client retention by 45%', 'Won Marketing Campaign of the Year 2023']
               }
             ],
             education: [
               {
                 id: '1',
-                institution: 'NYU',
-                degree: 'Bachelor of Marketing',
+                institution: 'NYU Stern School of Business',
+                degree: 'Bachelor of Science in Marketing',
                 startDate: '2017-09',
-                endDate: '2021-05'
+                endDate: '2021-05',
+                gpa: '3.9/4.0'
               }
             ],
-            skills: ['SEO', 'Social Media', 'Content Marketing', 'Analytics', 'Adobe Creative Suite']
+            skills: {
+              technical: ['Google Analytics', 'Facebook Ads', 'SEO/SEM', 'Adobe Creative Suite', 'HubSpot', 'Salesforce'],
+              soft: ['Creative Thinking', 'Strategic Planning', 'Data Analysis', 'Project Management'],
+              certifications: ['Google Ads Certified', 'HubSpot Inbound Marketing', 'Facebook Blueprint']
+            }
           }
         }
       ];
+      return mockResumes;
     }
   }
 );
 
 export const createResume = createAsyncThunk(
   'resumes/createResume',
-  async (resumeData: Omit<ResumeData, 'id' | 'downloads' | 'views' | 'lastUpdated'>, { rejectWithValue }) => {
+  async (resumeData: Omit<ResumeData, 'id' | 'downloads' | 'views' | 'lastUpdated'>, { rejectWithValue, dispatch }) => {
     try {
       const newResume = await resumeApiService.createResume(resumeData);
+      
+      // Add to recent activity
+      dispatch(addRecentActivity({
+        id: Date.now().toString(),
+        action: 'created',
+        timestamp: new Date().toISOString(),
+        resumeName: resumeData.name
+      }));
+      
       return newResume;
     } catch (error) {
       console.error('Failed to create resume:', error);
-      // Return mock data for now
       const mockResume: ResumeData = {
         id: `resume-${Date.now()}`,
         name: resumeData.name,
@@ -127,6 +236,15 @@ export const createResume = createAsyncThunk(
         lastUpdated: new Date().toISOString(),
         content: resumeData.content
       };
+      
+      // Add to recent activity
+      dispatch(addRecentActivity({
+        id: Date.now().toString(),
+        action: 'created',
+        timestamp: new Date().toISOString(),
+        resumeName: resumeData.name
+      }));
+      
       return mockResume;
     }
   }
@@ -134,39 +252,93 @@ export const createResume = createAsyncThunk(
 
 export const updateResume = createAsyncThunk(
   'resumes/updateResume',
-  async (resumeData: ResumeData, { rejectWithValue }) => {
+  async (resumeData: ResumeData, { rejectWithValue, dispatch }) => {
     try {
       const updatedResume = await resumeApiService.updateResume(resumeData);
+      
+      // Add to recent activity
+      dispatch(addRecentActivity({
+        id: Date.now().toString(),
+        action: 'updated',
+        timestamp: new Date().toISOString(),
+        resumeName: resumeData.name
+      }));
+      
       return updatedResume;
     } catch (error) {
       console.error('Failed to update resume:', error);
-      return resumeData; // Return the data as-is for mock functionality
+      
+      // Add to recent activity even for mock
+      dispatch(addRecentActivity({
+        id: Date.now().toString(),
+        action: 'updated',
+        timestamp: new Date().toISOString(),
+        resumeName: resumeData.name
+      }));
+      
+      return { ...resumeData, lastUpdated: new Date().toISOString() };
     }
   }
 );
 
 export const deleteResume = createAsyncThunk(
   'resumes/deleteResume',
-  async (id: string, { rejectWithValue }) => {
+  async (id: string, { rejectWithValue, getState }) => {
     try {
       await resumeApiService.deleteResume(id);
       return id;
     } catch (error) {
       console.error('Failed to delete resume:', error);
-      return id; // Return the id for mock functionality
+      return id;
     }
   }
 );
 
 export const fetchResumeById = createAsyncThunk(
   'resumes/fetchResumeById',
-  async (id: string, { rejectWithValue }) => {
+  async (id: string, { rejectWithValue, dispatch }) => {
     try {
       const resume = await resumeApiService.getResumeById(id);
+      
+      // Add to recent activity
+      dispatch(addRecentActivity({
+        id: Date.now().toString(),
+        action: 'viewed',
+        timestamp: new Date().toISOString(),
+        resumeName: resume.name
+      }));
+      
       return resume;
     } catch (error) {
       console.error('Failed to fetch resume:', error);
       return rejectWithValue('Failed to fetch resume');
+    }
+  }
+);
+
+export const downloadResume = createAsyncThunk(
+  'resumes/downloadResume',
+  async (resumeId: string, { dispatch, getState }) => {
+    try {
+      const state = getState() as { resumes: ResumeState };
+      const resume = state.resumes.resumes.find(r => r.id === resumeId);
+      
+      if (resume) {
+        // Add to recent activity
+        dispatch(addRecentActivity({
+          id: Date.now().toString(),
+          action: 'downloaded',
+          timestamp: new Date().toISOString(),
+          resumeName: resume.name
+        }));
+        
+        return resumeId;
+      }
+      
+      throw new Error('Resume not found');
+    } catch (error) {
+      console.error('Failed to track download:', error);
+      return resumeId;
     }
   }
 );
@@ -186,6 +358,37 @@ const resumeSlice = createSlice({
         state.currentResume = { ...state.currentResume, ...action.payload };
       }
     },
+    addRecentActivity: (state, action: PayloadAction<{
+      id: string;
+      action: 'created' | 'updated' | 'downloaded' | 'viewed';
+      timestamp: string;
+      resumeName: string;
+    }>) => {
+      state.analytics.recentActivity.unshift(action.payload);
+      // Keep only last 10 activities
+      if (state.analytics.recentActivity.length > 10) {
+        state.analytics.recentActivity = state.analytics.recentActivity.slice(0, 10);
+      }
+    },
+    updateAnalytics: (state) => {
+      // Calculate analytics from current resumes
+      state.analytics.totalDownloads = state.resumes.reduce((total, resume) => total + resume.downloads, 0);
+      state.analytics.totalViews = state.resumes.reduce((total, resume) => total + resume.views, 0);
+      state.analytics.conversionRate = state.analytics.totalViews > 0 
+        ? (state.analytics.totalDownloads / state.analytics.totalViews) * 100 
+        : 0;
+      
+      // Get popular templates
+      const templateCounts = state.resumes.reduce((acc, resume) => {
+        acc[resume.template] = (acc[resume.template] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      
+      state.analytics.popularTemplates = Object.entries(templateCounts)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 3)
+        .map(([template]) => template);
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -197,6 +400,7 @@ const resumeSlice = createSlice({
       .addCase(fetchResumes.fulfilled, (state, action) => {
         state.loading = false;
         state.resumes = action.payload;
+        resumeSlice.caseReducers.updateAnalytics(state);
       })
       .addCase(fetchResumes.rejected, (state, action) => {
         state.loading = false;
@@ -212,6 +416,7 @@ const resumeSlice = createSlice({
         state.loading = false;
         state.resumes.push(action.payload);
         state.currentResume = action.payload;
+        resumeSlice.caseReducers.updateAnalytics(state);
       })
       .addCase(createResume.rejected, (state, action) => {
         state.loading = false;
@@ -232,6 +437,7 @@ const resumeSlice = createSlice({
         if (state.currentResume?.id === action.payload.id) {
           state.currentResume = action.payload;
         }
+        resumeSlice.caseReducers.updateAnalytics(state);
       })
       .addCase(updateResume.rejected, (state, action) => {
         state.loading = false;
@@ -249,10 +455,11 @@ const resumeSlice = createSlice({
         if (state.currentResume?.id === action.payload) {
           state.currentResume = null;
         }
+        resumeSlice.caseReducers.updateAnalytics(state);
       })
       .addCase(deleteResume.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to delete resume';
+        state.error = action.payload as string;
       })
       
       // Fetch resume by ID
@@ -263,13 +470,35 @@ const resumeSlice = createSlice({
       .addCase(fetchResumeById.fulfilled, (state, action) => {
         state.loading = false;
         state.currentResume = action.payload;
+        // Update views count
+        const resumeIndex = state.resumes.findIndex(r => r.id === action.payload.id);
+        if (resumeIndex !== -1) {
+          state.resumes[resumeIndex].views += 1;
+        }
+        resumeSlice.caseReducers.updateAnalytics(state);
       })
       .addCase(fetchResumeById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      
+      // Download resume
+      .addCase(downloadResume.fulfilled, (state, action) => {
+        const resumeIndex = state.resumes.findIndex(r => r.id === action.payload);
+        if (resumeIndex !== -1) {
+          state.resumes[resumeIndex].downloads += 1;
+        }
+        resumeSlice.caseReducers.updateAnalytics(state);
       });
   },
 });
 
-export const { clearError, setCurrentResume, updateCurrentResume } = resumeSlice.actions;
+export const { 
+  clearError, 
+  setCurrentResume, 
+  updateCurrentResume, 
+  addRecentActivity, 
+  updateAnalytics 
+} = resumeSlice.actions;
+
 export default resumeSlice.reducer;
