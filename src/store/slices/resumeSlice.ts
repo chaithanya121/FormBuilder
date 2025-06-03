@@ -90,7 +90,7 @@ export const fetchResumes = createAsyncThunk(
       return resumes;
     } catch (error) {
       console.error('Failed to fetch resumes:', error);
-      // Enhanced mock data with analytics - Fix skills type structure
+      // Enhanced mock data with analytics - Fix to match type definitions
       const mockResumes: ResumeData[] = [
         {
           id: '1',
@@ -106,8 +106,6 @@ export const fetchResumes = createAsyncThunk(
               email: 'alex.rivera@example.com',
               phone: '+1-555-0123',
               location: 'San Francisco, CA',
-              website: 'alexrivera.dev',
-              linkedin: 'linkedin.com/in/alexrivera',
               summary: 'Full-stack developer with 5+ years experience building scalable web applications using React, Node.js, and cloud technologies. Passionate about clean code and user experience.'
             },
             experience: [
@@ -117,8 +115,7 @@ export const fetchResumes = createAsyncThunk(
                 position: 'Senior Software Engineer',
                 startDate: '2022-01',
                 endDate: 'Present',
-                description: 'Led development of microservices architecture serving 10M+ users. Reduced application load time by 40% through optimization. Mentored 5 junior developers.',
-                technologies: ['React', 'Node.js', 'AWS', 'Docker', 'PostgreSQL']
+                description: 'Led development of microservices architecture serving 10M+ users. Reduced application load time by 40% through optimization. Mentored 5 junior developers.'
               },
               {
                 id: '2',
@@ -126,8 +123,7 @@ export const fetchResumes = createAsyncThunk(
                 position: 'Full Stack Developer',
                 startDate: '2020-03',
                 endDate: '2021-12',
-                description: 'Built complete e-commerce platform from scratch. Implemented payment processing and inventory management systems.',
-                technologies: ['Vue.js', 'Python', 'Django', 'MySQL', 'Stripe API']
+                description: 'Built complete e-commerce platform from scratch. Implemented payment processing and inventory management systems.'
               }
             ],
             education: [
@@ -136,9 +132,7 @@ export const fetchResumes = createAsyncThunk(
                 institution: 'University of California, Berkeley',
                 degree: 'Bachelor of Science in Computer Science',
                 startDate: '2016-09',
-                endDate: '2020-05',
-                gpa: '3.8/4.0',
-                achievements: ['Dean\'s List', 'CS Honor Society']
+                endDate: '2020-05'
               }
             ],
             skills: ['JavaScript', 'TypeScript', 'React', 'Node.js', 'Python', 'AWS', 'Docker', 'PostgreSQL', 'Leadership', 'Problem Solving', 'Communication', 'Team Collaboration', 'AWS Solutions Architect', 'Google Cloud Professional'],
@@ -167,8 +161,6 @@ export const fetchResumes = createAsyncThunk(
               email: 'sarah.johnson@example.com',
               phone: '+1-555-0456',
               location: 'New York, NY',
-              website: 'sarahjohnson.marketing',
-              linkedin: 'linkedin.com/in/sarahjohnson',
               summary: 'Creative marketing professional with expertise in digital campaigns, brand development, and data-driven strategies. Proven track record of increasing engagement by 200%.'
             },
             experience: [
@@ -178,8 +170,7 @@ export const fetchResumes = createAsyncThunk(
                 position: 'Senior Marketing Specialist',
                 startDate: '2021-03',
                 endDate: 'Present',
-                description: 'Developed and executed integrated marketing campaigns for Fortune 500 clients. Managed $2M+ annual advertising budget with 300% ROI.',
-                achievements: ['Increased client retention by 45%', 'Won Marketing Campaign of the Year 2023']
+                description: 'Developed and executed integrated marketing campaigns for Fortune 500 clients. Managed $2M+ annual advertising budget with 300% ROI.'
               }
             ],
             education: [
@@ -188,8 +179,7 @@ export const fetchResumes = createAsyncThunk(
                 institution: 'NYU Stern School of Business',
                 degree: 'Bachelor of Science in Marketing',
                 startDate: '2017-09',
-                endDate: '2021-05',
-                gpa: '3.9/4.0'
+                endDate: '2021-05'
               }
             ],
             skills: ['Google Analytics', 'Facebook Ads', 'SEO/SEM', 'Adobe Creative Suite', 'HubSpot', 'Salesforce', 'Creative Thinking', 'Strategic Planning', 'Data Analysis', 'Project Management', 'Google Ads Certified', 'HubSpot Inbound Marketing', 'Facebook Blueprint']
