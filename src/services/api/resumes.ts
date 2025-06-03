@@ -79,6 +79,13 @@ export interface ResumeData {
       endDate: string;
     }>;
     skills: string[];
+    projects?: Array<{
+      id: string;
+      name: string;
+      description: string;
+      technologies: string[];
+      link?: string;
+    }>;
   };
 }
 
