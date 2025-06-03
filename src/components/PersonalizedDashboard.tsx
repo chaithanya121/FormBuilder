@@ -76,7 +76,15 @@ const PersonalizedDashboard = () => {
     { type: 'view', form: 'Event Registration', time: '12 minutes ago', status: 'active' }
   ];
 
-  const MetricCard = ({ title, value, change, icon: Icon, trend, subtitle, isLive = false }) => (
+  const MetricCard = ({ title, value, change, icon: Icon, trend, subtitle, isLive = false }: {
+    title: string;
+    value: string | number;
+    change?: number;
+    icon: any;
+    trend?: string;
+    subtitle?: string;
+    isLive?: boolean;
+  }) => (
     <motion.div
       whileHover={{ scale: 1.02, y: -2 }}
       transition={{ duration: 0.2 }}

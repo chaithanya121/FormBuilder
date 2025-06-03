@@ -43,7 +43,12 @@ const FormPreview: React.FC = () => {
   }, [formId]);
 
   useEffect(() => {
-    setFormConfig(preview_form)
+    // Fix: Handle the array type properly
+    if (preview_form && Array.isArray(preview_form) && preview_form.length > 0) {
+      setFormConfig(preview_form[0]);
+    } else if (preview_form && !Array.isArray(preview_form)) {
+      setFormConfig(preview_form as FormConfig);
+    }
   }, [preview_form]);
 
   // Simulate live stats updates

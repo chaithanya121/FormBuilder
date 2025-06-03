@@ -90,8 +90,8 @@ export const fetchResumes = createAsyncThunk(
       return resumes;
     } catch (error) {
       console.error('Failed to fetch resumes:', error);
-      // Enhanced mock data with analytics
-      const mockResumes = [
+      // Enhanced mock data with analytics - Fix skills type structure
+      const mockResumes: ResumeData[] = [
         {
           id: '1',
           name: 'Software Developer Resume',
@@ -141,11 +141,7 @@ export const fetchResumes = createAsyncThunk(
                 achievements: ['Dean\'s List', 'CS Honor Society']
               }
             ],
-            skills: {
-              technical: ['JavaScript', 'TypeScript', 'React', 'Node.js', 'Python', 'AWS', 'Docker', 'PostgreSQL'],
-              soft: ['Leadership', 'Problem Solving', 'Communication', 'Team Collaboration'],
-              certifications: ['AWS Solutions Architect', 'Google Cloud Professional']
-            },
+            skills: ['JavaScript', 'TypeScript', 'React', 'Node.js', 'Python', 'AWS', 'Docker', 'PostgreSQL', 'Leadership', 'Problem Solving', 'Communication', 'Team Collaboration', 'AWS Solutions Architect', 'Google Cloud Professional'],
             projects: [
               {
                 id: '1',
@@ -196,11 +192,7 @@ export const fetchResumes = createAsyncThunk(
                 gpa: '3.9/4.0'
               }
             ],
-            skills: {
-              technical: ['Google Analytics', 'Facebook Ads', 'SEO/SEM', 'Adobe Creative Suite', 'HubSpot', 'Salesforce'],
-              soft: ['Creative Thinking', 'Strategic Planning', 'Data Analysis', 'Project Management'],
-              certifications: ['Google Ads Certified', 'HubSpot Inbound Marketing', 'Facebook Blueprint']
-            }
+            skills: ['Google Analytics', 'Facebook Ads', 'SEO/SEM', 'Adobe Creative Suite', 'HubSpot', 'Salesforce', 'Creative Thinking', 'Strategic Planning', 'Data Analysis', 'Project Management', 'Google Ads Certified', 'HubSpot Inbound Marketing', 'Facebook Blueprint']
           }
         }
       ];

@@ -1,4 +1,3 @@
-
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { FormConfig } from '@/components/FormBuilder/types';
 import { formsApi, FormData } from '@/services/api/forms';
@@ -12,7 +11,7 @@ interface FormsState {
   } | null;
   loading: boolean;
   error: string | null;
-  preview_form:FormConfig[]
+  preview_form: FormConfig | null;
 }
 
 const initialState: FormsState = {
@@ -20,7 +19,7 @@ const initialState: FormsState = {
   currentForm: null,
   loading: false,
   error: null,
-  preview_form:[]
+  preview_form: null
 };
 
 // Async thunks
@@ -230,14 +229,17 @@ export const formsSlice = createSlice({
     });
     builder.addCase(fetchFormPrvById.fulfilled, (state, action) => {
       state.loading = false;
-      state.preview_form =  action.payload
-        state.currentForm = null;
-      
+      // Fix: Set preview_form as a single FormConfig object, not an array
+      if (action.payload && typeof action.payload === 'object' && 'config' in action.payload) {
+        state.preview_form = action.payload.config as FormConfig;
+      } else {
+        state.preview_form = action.payload as FormConfig;
+      }
       state.error = null;
     });
     builder.addCase(fetchFormPrvById.rejected, (state, action) => {
       state.loading = false;
-      state.error = action.payload as string || 'Failed to delete form';
+      state.error = action.payload as string || 'Failed to fetch form for preview';
     });
   },
 });
