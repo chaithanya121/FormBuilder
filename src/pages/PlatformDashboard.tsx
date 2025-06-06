@@ -1,407 +1,409 @@
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ModernPagination from '@/components/ui/modern-pagination';
+import ToolsFloatingActions from '@/components/tools/ToolsFloatingActions';
 import { 
-  Plus, Star, Activity, TrendingUp, Users, BarChart3,
-  FileText, Calendar, Clock, CheckCircle2, Zap,
-  ArrowRight, Sparkles, Target, Globe, Shield,
-  Brain, Rocket, Layers, Award, PieChart,
-  MessageSquare, Settings, Download, Upload,
-  Database, Cloud, Smartphone, Monitor
+  Plus, Search, Filter, Grid, List, MoreVertical, 
+  Eye, Edit, Trash2, Copy, Share2, BarChart3,
+  Calendar, Users, Activity, TrendingUp, Star,
+  FileText, Settings, Zap
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import PlatformNavigation from '@/components/PlatformNavigation';
-import FormBuilderDashboard from '@/components/FormBuilder/FormBuilderDashboard';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useToast } from '@/hooks/use-toast';
+
+// Mock data for forms
+const mockForms = Array.from({ length: 47 }, (_, i) => ({
+  id: i + 1,
+  name: `Form ${i + 1}`,
+  description: `Description for form ${i + 1}`,
+  status: Math.random() > 0.5 ? 'published' : 'draft',
+  submissions: Math.floor(Math.random() * 100),
+  created: new Date(Date.now() - Math.random() * 10000000000).toLocaleDateString(),
+  lastModified: new Date(Date.now() - Math.random() * 1000000000).toLocaleDateString(),
+  type: ['Contact', 'Survey', 'Registration', 'Feedback'][Math.floor(Math.random() * 4)],
+  rating: (Math.random() * 5).toFixed(1)
+}));
 
 const PlatformDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [activeView, setActiveView] = useState<'overview' | 'forms'>('overview');
+  const { toast } = useToast();
+  
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [sortBy, setSortBy] = useState('lastModified');
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
+  
+  // Filter and sort forms
+  const filteredForms = mockForms
+    .filter(form => {
+      const matchesSearch = form.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           form.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = filterStatus === 'all' || form.status === filterStatus;
+      return matchesSearch && matchesStatus;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return a.name.localeCompare(b.name);
+        case 'submissions':
+          return b.submissions - a.submissions;
+        case 'created':
+          return new Date(b.created).getTime() - new Date(a.created).getTime();
+        default:
+          return new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime();
+      }
+    });
 
-  // Enhanced platform insights with more comprehensive data
-  const platformInsights = {
-    totalProjects: 24,
-    activeUsers: 1250,
-    totalViews: 45600,
-    conversionRate: 18.7,
-    growthRate: 23.5,
-    totalRevenue: 12450,
-    satisfaction: 4.8,
-    uptime: 99.9,
-    apiCalls: 89234,
-    storageUsed: 2.4,
-    recentActivity: [
-      { type: 'form_submission', message: 'New submission on Customer Survey', time: '2 minutes ago', icon: FileText, color: 'text-blue-600' },
-      { type: 'form_created', message: 'Event Registration form created', time: '1 hour ago', icon: Plus, color: 'text-green-600' },
-      { type: 'user_signup', message: '5 new users joined', time: '3 hours ago', icon: Users, color: 'text-purple-600' },
-      { type: 'milestone', message: 'Reached 1000 total submissions!', time: '1 day ago', icon: Award, color: 'text-orange-600' },
-      { type: 'ai_generated', message: 'AI form generated successfully', time: '2 days ago', icon: Brain, color: 'text-pink-600' }
-    ],
-    performanceMetrics: [
-      { label: 'Response Time', value: '142ms', change: '-12%', color: 'text-green-600' },
-      { label: 'Error Rate', value: '0.02%', change: '-45%', color: 'text-green-600' },
-      { label: 'Success Rate', value: '99.8%', change: '+2%', color: 'text-green-600' },
-      { label: 'User Retention', value: '94%', change: '+8%', color: 'text-green-600' }
-    ],
-    topCountries: [
-      { name: 'United States', users: 456, flag: '🇺🇸' },
-      { name: 'Canada', users: 234, flag: '🇨🇦' },
-      { name: 'United Kingdom', users: 189, flag: '🇬🇧' },
-      { name: 'Australia', users: 145, flag: '🇦🇺' }
-    ],
-    deviceBreakdown: {
-      desktop: 52,
-      mobile: 41,
-      tablet: 7
-    },
-    upcomingFeatures: [
-      { name: 'AI Form Builder', status: 'Coming Soon', color: 'from-purple-500 to-pink-400', progress: 85 },
-      { name: 'Advanced Analytics', status: 'In Development', color: 'from-blue-500 to-cyan-400', progress: 65 },
-      { name: 'Team Collaboration', status: 'Beta', color: 'from-green-500 to-emerald-400', progress: 90 },
-      { name: 'Mobile App', status: 'Planning', color: 'from-orange-500 to-red-400', progress: 25 }
-    ]
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredForms.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedForms = filteredForms.slice(startIndex, startIndex + itemsPerPage);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterStatus, sortBy, itemsPerPage]);
+
+  const handleFloatingAction = (action: string) => {
+    switch (action) {
+      case 'save':
+        toast({ title: "Forms saved", description: "All changes have been saved successfully." });
+        break;
+      case 'preview':
+        navigate('/form-preview/current');
+        break;
+      case 'share':
+        toast({ title: "Share link copied", description: "Form share link copied to clipboard." });
+        break;
+      case 'theme-studio':
+        navigate('/tools/theme-studio');
+        break;
+      case 'code-export':
+        toast({ title: "Code exported", description: "Form code has been exported successfully." });
+        break;
+      case 'ai-enhance':
+        toast({ title: "AI Enhancement", description: "AI is analyzing your forms for improvements." });
+        break;
+      case 'integrations':
+        navigate('/platform/integrations');
+        break;
+      case 'analytics':
+        navigate('/platform/analytics');
+        break;
+      default:
+        toast({ title: action, description: `${action} feature activated.` });
+    }
   };
 
-  const quickActions = [
-    {
-      title: 'Create New Form',
-      description: 'Start with AI or blank form',
-      icon: Plus,
-      color: 'from-blue-500 to-cyan-400',
-      action: () => navigate('/platform/forms')
-    },
-    {
-      title: 'AI Form Generator',
-      description: 'Generate with AI power',
-      icon: Brain,
-      color: 'from-purple-500 to-pink-400',
-      action: () => navigate('/tools/ai-form-generator')
-    },
-    {
-      title: 'View Analytics',
-      description: 'Deep insights & reports',
-      icon: BarChart3,
-      color: 'from-green-500 to-emerald-400',
-      action: () => setActiveView('forms')
-    },
-    {
-      title: 'Team Settings',
-      description: 'Manage collaboration',
-      icon: Users,
-      color: 'from-orange-500 to-red-400',
-      action: () => navigate('/team')
+  const handleFormAction = (action: string, formId: number) => {
+    switch (action) {
+      case 'edit':
+        navigate(`/form-builder/${formId}`);
+        break;
+      case 'preview':
+        navigate(`/form-preview/${formId}`);
+        break;
+      case 'duplicate':
+        toast({ title: "Form duplicated", description: "Form has been duplicated successfully." });
+        break;
+      case 'delete':
+        toast({ title: "Form deleted", description: "Form has been deleted successfully.", variant: "destructive" });
+        break;
+      default:
+        break;
     }
-  ];
-
-  if (activeView === 'forms') {
-    return <FormBuilderDashboard />;
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
-        {/* Enhanced Header */}
-        <motion.div
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
+          className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
         >
-          <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-6 py-3 border border-white/50 shadow-lg mb-6">
-            <Zap className="h-5 w-5 text-purple-600" />
-            <span className="text-sm font-medium text-gray-700">FormCraft Pro Platform</span>
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Forms Dashboard
+            </h1>
+            <p className="text-gray-600 mt-1">Create, manage, and analyze your forms</p>
           </div>
-          <h1 className="text-4xl lg:text-6xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent mb-4">
-            Welcome to Your Creative Hub
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Build, manage, and analyze your digital projects with powerful tools and beautiful design
-          </p>
+          <Button 
+            onClick={() => navigate('/form-wizard')}
+            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Create New Form
+          </Button>
         </motion.div>
 
-        {/* Enhanced Platform Insights Dashboard */}
-        <motion.div
+        {/* Stats Cards */}
+        <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
         >
-          {[
-            { title: 'Total Projects', value: platformInsights.totalProjects, change: '+12%', icon: FileText, color: 'blue' },
-            { title: 'Active Users', value: platformInsights.activeUsers.toLocaleString(), change: `+${platformInsights.growthRate}%`, icon: Users, color: 'green' },
-            { title: 'Total Views', value: platformInsights.totalViews.toLocaleString(), change: '+8.3%', icon: Globe, color: 'purple' },
-            { title: 'Revenue', value: `$${platformInsights.totalRevenue.toLocaleString()}`, change: '+15%', icon: Target, color: 'orange' }
-          ].map((stat, index) => (
-            <motion.div
-              key={stat.title}
-              whileHover={{ scale: 1.02, y: -2 }}
-              className="group"
-            >
-              <Card className="bg-white/90 backdrop-blur-sm border-white/50 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden">
-                <div className={`absolute top-0 right-0 w-20 h-20 bg-${stat.color}-500/10 rounded-full -translate-y-10 translate-x-10`}></div>
-                <CardContent className="p-6 relative">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className={`text-sm font-medium text-${stat.color}-700`}>{stat.title}</p>
-                      <p className={`text-3xl font-bold text-${stat.color}-800`}>{stat.value}</p>
-                      <div className="flex items-center text-sm text-green-600 mt-1">
-                        <TrendingUp className="h-4 w-4 mr-1" />
-                        <span>{stat.change} this month</span>
-                      </div>
-                    </div>
-                    <div className={`w-12 h-12 bg-${stat.color}-500/20 rounded-xl flex items-center justify-center`}>
-                      <stat.icon className={`h-6 w-6 text-${stat.color}-600`} />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {/* Enhanced Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mb-8"
-        >
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <Rocket className="h-6 w-6 text-blue-600" />
-            Quick Actions
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {quickActions.map((action, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ scale: 1.05, y: -5 }}
-                className="group cursor-pointer"
-                onClick={action.action}
-              >
-                <Card className="h-full bg-white/90 backdrop-blur-sm border-white/50 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden">
-                  <div className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
-                  <CardContent className="p-6 relative">
-                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${action.color} flex items-center justify-center shadow-lg mb-4`}>
-                      <action.icon className="h-6 w-6 text-white" />
-                    </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">{action.title}</h3>
-                    <p className="text-sm text-gray-600 mb-4">{action.description}</p>
-                    <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Enhanced Analytics Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8"
-        >
-          {/* Performance Metrics */}
-          <Card className="bg-white/90 backdrop-blur-sm border-white/50 shadow-lg lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <PieChart className="h-5 w-5 text-blue-600" />
-                Performance Metrics
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                {platformInsights.performanceMetrics.map((metric, index) => (
-                  <motion.div
-                    key={metric.label}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4"
-                  >
-                    <div className="text-sm text-gray-600 mb-1">{metric.label}</div>
-                    <div className="text-2xl font-bold text-gray-900">{metric.value}</div>
-                    <div className={`text-sm ${metric.color} flex items-center`}>
-                      <TrendingUp className="h-3 w-3 mr-1" />
-                      {metric.change}
-                    </div>
-                  </motion.div>
-                ))}
+          <Card className="border-l-4 border-l-blue-500">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Forms</p>
+                  <p className="text-2xl font-bold">{mockForms.length}</p>
+                </div>
+                <FileText className="h-8 w-8 text-blue-500" />
               </div>
             </CardContent>
           </Card>
-
-          {/* Device Breakdown */}
-          <Card className="bg-white/90 backdrop-blur-sm border-white/50 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Monitor className="h-5 w-5 text-purple-600" />
-                Device Usage
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {[
-                { name: 'Desktop', value: platformInsights.deviceBreakdown.desktop, icon: Monitor, color: 'blue' },
-                { name: 'Mobile', value: platformInsights.deviceBreakdown.mobile, icon: Smartphone, color: 'green' },
-                { name: 'Tablet', value: platformInsights.deviceBreakdown.tablet, icon: Monitor, color: 'purple' }
-              ].map((device, index) => (
-                <div key={device.name} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <device.icon className={`h-4 w-4 text-${device.color}-600`} />
-                    <span className="text-sm font-medium">{device.name}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-16 bg-gray-200 rounded-full h-2">
-                      <div 
-                        className={`bg-${device.color}-500 h-2 rounded-full transition-all duration-500`}
-                        style={{ width: `${device.value}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-sm font-semibold w-8">{device.value}%</span>
-                  </div>
+          
+          <Card className="border-l-4 border-l-green-500">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Submissions</p>
+                  <p className="text-2xl font-bold">{mockForms.reduce((acc, form) => acc + form.submissions, 0)}</p>
                 </div>
-              ))}
+                <BarChart3 className="h-8 w-8 text-green-500" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-l-4 border-l-purple-500">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Published Forms</p>
+                  <p className="text-2xl font-bold">{mockForms.filter(f => f.status === 'published').length}</p>
+                </div>
+                <Activity className="h-8 w-8 text-purple-500" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-l-4 border-l-orange-500">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Avg. Rating</p>
+                  <p className="text-2xl font-bold">4.2</p>
+                </div>
+                <Star className="h-8 w-8 text-orange-500" />
+              </div>
             </CardContent>
           </Card>
         </motion.div>
 
-        {/* Platform Navigation */}
-        <motion.div
+        {/* Filters and Controls */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="flex flex-col lg:flex-row gap-4 bg-white p-4 rounded-lg shadow-sm border"
+        >
+          <div className="flex-1 flex gap-4">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search forms..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border shadow-lg">
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="published">Published</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border shadow-lg">
+                <SelectItem value="lastModified">Last Modified</SelectItem>
+                <SelectItem value="name">Name</SelectItem>
+                <SelectItem value="submissions">Submissions</SelectItem>
+                <SelectItem value="created">Created Date</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="flex gap-2">
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('grid')}
+            >
+              <Grid className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+            >
+              <List className="h-4 w-4" />
+            </Button>
+          </div>
+        </motion.div>
+
+        {/* Forms Grid/List */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <AnimatePresence mode="wait">
+            {viewMode === 'grid' ? (
+              <motion.div 
+                key="grid"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+              >
+                {paginatedForms.map((form, index) => (
+                  <motion.div
+                    key={form.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <Card className="hover:shadow-lg transition-all duration-200 group">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <CardTitle className="text-lg truncate">{form.name}</CardTitle>
+                            <p className="text-sm text-gray-600 mt-1 line-clamp-2">{form.description}</p>
+                          </div>
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button variant="ghost" size="sm" onClick={() => handleFormAction('edit', form.id)}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => handleFormAction('preview', form.id)}>
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Badge variant={form.status === 'published' ? 'default' : 'secondary'}>
+                              {form.status}
+                            </Badge>
+                            <span className="text-sm text-gray-600">{form.submissions} submissions</span>
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            Modified: {form.lastModified}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="list"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="bg-white rounded-lg shadow-sm border overflow-hidden"
+              >
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b">
+                      <tr>
+                        <th className="text-left p-4 font-medium text-gray-700">Name</th>
+                        <th className="text-left p-4 font-medium text-gray-700">Status</th>
+                        <th className="text-left p-4 font-medium text-gray-700">Submissions</th>
+                        <th className="text-left p-4 font-medium text-gray-700">Modified</th>
+                        <th className="text-left p-4 font-medium text-gray-700">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginatedForms.map((form, index) => (
+                        <motion.tr
+                          key={form.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.03 }}
+                          className="border-b hover:bg-gray-50 transition-colors"
+                        >
+                          <td className="p-4">
+                            <div>
+                              <div className="font-medium">{form.name}</div>
+                              <div className="text-sm text-gray-600">{form.description}</div>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <Badge variant={form.status === 'published' ? 'default' : 'secondary'}>
+                              {form.status}
+                            </Badge>
+                          </td>
+                          <td className="p-4">{form.submissions}</td>
+                          <td className="p-4 text-sm text-gray-600">{form.lastModified}</td>
+                          <td className="p-4">
+                            <div className="flex items-center gap-2">
+                              <Button variant="ghost" size="sm" onClick={() => handleFormAction('edit', form.id)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => handleFormAction('preview', form.id)}>
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => handleFormAction('duplicate', form.id)}>
+                                <Copy className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* Pagination */}
+        <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <PlatformNavigation />
-        </motion.div>
-
-        {/* Enhanced Recent Activity & Geographic Insights */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-6"
-        >
-          {/* Recent Activity */}
-          <Card className="bg-white/90 backdrop-blur-sm border-white/50 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5 text-blue-600" />
-                Recent Activity
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {platformInsights.recentActivity.map((activity, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
-                >
-                  <div className={`w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0`}>
-                    <activity.icon className={`h-4 w-4 ${activity.color}`} />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">{activity.message}</p>
-                    <p className="text-xs text-gray-500">{activity.time}</p>
-                  </div>
-                </motion.div>
-              ))}
-              <Button variant="outline" className="w-full">
-                View All Activity
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Geographic Distribution */}
-          <Card className="bg-white/90 backdrop-blur-sm border-white/50 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Globe className="h-5 w-5 text-green-600" />
-                Top Countries
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {platformInsights.topCountries.map((country, index) => (
-                <motion.div
-                  key={country.name}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex items-center justify-between p-3 rounded-lg bg-gray-50"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-xl">{country.flag}</span>
-                    <span className="font-medium text-gray-900">{country.name}</span>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-bold text-gray-900">{country.users}</div>
-                    <div className="text-xs text-gray-500">users</div>
-                  </div>
-                </motion.div>
-              ))}
-              <Button variant="outline" className="w-full">
-                View Geographic Report
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Enhanced Call to Action */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-        >
-          <Card className="bg-gradient-to-r from-blue-500 via-purple-600 to-pink-600 text-white border-0 shadow-xl relative overflow-hidden">
-            <div className="absolute inset-0 opacity-20">
-              <svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-                <g fill="none" fillRule="evenodd">
-                  <g fill="#ffffff" fillOpacity="0.1">
-                    <circle cx="30" cy="30" r="2"/>
-                  </g>
-                </g>
-              </svg>
-            </div>
-            <CardContent className="p-8 text-center relative">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                className="w-16 h-16 mx-auto mb-4 opacity-80"
-              >
-                <Zap className="w-full h-full" />
-              </motion.div>
-              <h3 className="text-2xl font-bold mb-4">Ready to Build Something Amazing?</h3>
-              <p className="text-lg opacity-90 mb-6 max-w-2xl mx-auto">
-                Join thousands of creators who are building beautiful, functional projects with our platform
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button 
-                  size="lg" 
-                  className="bg-white text-blue-600 hover:bg-gray-100"
-                  onClick={() => setActiveView('forms')}
-                >
-                  <FileText className="h-5 w-5 mr-2" />
-                  Start Building Forms
-                </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="border-white text-white hover:bg-white hover:text-blue-600"
-                  onClick={() => navigate('/tools/ai-form-generator')}
-                >
-                  <Brain className="h-5 w-5 mr-2" />
-                  Try AI Generator
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <ModernPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            itemsPerPage={itemsPerPage}
+            totalItems={filteredForms.length}
+            onPageChange={setCurrentPage}
+            onItemsPerPageChange={setItemsPerPage}
+          />
         </motion.div>
       </div>
+
+      {/* Floating Actions */}
+      <ToolsFloatingActions onAction={handleFloatingAction} />
     </div>
   );
 };
