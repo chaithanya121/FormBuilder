@@ -215,19 +215,13 @@ export interface CustomTheme {
     surface: string;
     text: string;
     accent: string;
+    form?: string;
   };
   typography: {
     fontFamily: string;
-    fontSize: {
-      small: string;
-      medium: string;
-      large: string;
-    };
-    fontWeight: {
-      normal: string;
-      medium: string;
-      bold: string;
-    };
+    fontSize: number;
+    fontWeight: string;
+    lineHeight?: number;
   };
   spacing: {
     small: string;
