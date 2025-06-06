@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -333,7 +332,7 @@ const FormConfigurationPanel: React.FC<FormConfigurationPanelProps> = ({
             <div className="h-full overflow-y-auto p-4">
               <div className="bg-slate-900 rounded-lg p-4 h-fit">
                 <pre className="text-xs text-green-400 font-mono whitespace-pre-wrap">
-                  {formatJson(formConfig)}
+                  {JSON.stringify(formConfig, null, 2)}
                 </pre>
               </div>
             </div>
