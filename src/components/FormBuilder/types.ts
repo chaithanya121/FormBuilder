@@ -1,3 +1,4 @@
+
 export interface FormElement {
   id: string;
   type: string;
@@ -147,8 +148,15 @@ export interface FormConfig {
     };
     integrations?: {
       api?: boolean;
-      cloudStorage?: string[];
-      database?: boolean;
+      cloudStorage?: {
+        enabled?: boolean;
+        providers?: string[];
+      };
+      database?: {
+        enabled?: boolean;
+        type?: string;
+        connectionString?: string;
+      };
       realTimeTracking?: boolean;
       email?: {
         enabled?: boolean;
