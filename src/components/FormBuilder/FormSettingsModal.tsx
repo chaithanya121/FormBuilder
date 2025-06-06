@@ -24,7 +24,7 @@ const FormSettingsModal: React.FC<FormSettingsModalProps> = ({ isOpen, onClose, 
       settings: {
         ...formConfig.settings,
         [category]: {
-          ...formConfig.settings[category as keyof typeof formConfig.settings],
+          ...(formConfig.settings[category as keyof typeof formConfig.settings] || {}),
           [field]: value
         }
       }

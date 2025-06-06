@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -45,7 +44,7 @@ const EnhancedFormPropertiesPanel: React.FC<EnhancedFormPropertiesPanelProps> = 
       settings: {
         ...formConfig.settings,
         [category]: {
-          ...formConfig.settings[category as keyof typeof formConfig.settings],
+          ...(formConfig.settings[category as keyof typeof formConfig.settings] || {}),
           [field]: value
         }
       }

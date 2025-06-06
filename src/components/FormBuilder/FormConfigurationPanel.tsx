@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -65,31 +64,12 @@ const FormConfigurationPanel: React.FC<FormConfigurationPanelProps> = ({
       settings: {
         ...formConfig.settings,
         [category]: {
-          ...formConfig.settings[category as keyof typeof formConfig.settings],
+          ...(formConfig.settings[category as keyof typeof formConfig.settings] || {}),
           [field]: value
         }
       }
     };
     onUpdate(updatedConfig);
-  };
-
-  const formatJson = (obj: any, indent = 0) => {
-    const spaces = '  '.repeat(indent);
-    if (typeof obj !== 'object' || obj === null) {
-      return JSON.stringify(obj);
-    }
-    
-    if (Array.isArray(obj)) {
-      if (obj.length === 0) return '[]';
-      return `[\n${obj.map(item => `${spaces}  ${formatJson(item, indent + 1)}`).join(',\n')}\n${spaces}]`;
-    }
-    
-    const entries = Object.entries(obj);
-    if (entries.length === 0) return '{}';
-    
-    return `{\n${entries.map(([key, value]) => 
-      `${spaces}  "${key}": ${formatJson(value, indent + 1)}`
-    ).join(',\n')}\n${spaces}}`;
   };
 
   // Convert width value to string for Select component
