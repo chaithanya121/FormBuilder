@@ -92,8 +92,15 @@ const FormBuilder: React.FC = () => {
       },
       integrations: {
         api: false,
-        cloudStorage: [],
-        database: false,
+        cloudStorage: {
+          enabled: false,
+          providers: []
+        },
+        database: {
+          enabled: false,
+          type: "",
+          connectionString: ""
+        },
         realTimeTracking: true
       },
       accessibility: {

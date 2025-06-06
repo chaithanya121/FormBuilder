@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -53,8 +52,8 @@ const EnhancedRightSidebar: React.FC<EnhancedRightSidebarProps> = ({
       description: 'Google Drive, Dropbox integration',
       icon: Cloud,
       color: 'purple',
-      enabled: formConfig.settings?.integrations?.cloudStorage?.length > 0,
-      count: formConfig.settings?.integrations?.cloudStorage?.length || 0
+      enabled: formConfig.settings?.integrations?.cloudStorage?.enabled || false,
+      count: formConfig.settings?.integrations?.cloudStorage?.providers?.length || 0
     },
     {
       id: 'database',
@@ -62,7 +61,7 @@ const EnhancedRightSidebar: React.FC<EnhancedRightSidebarProps> = ({
       description: 'Advanced data storage & search',
       icon: Database,
       color: 'orange',
-      enabled: formConfig.settings?.integrations?.database || false,
+      enabled: formConfig.settings?.integrations?.database?.enabled || false,
       count: 0
     },
     {
