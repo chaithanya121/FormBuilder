@@ -1,4 +1,3 @@
-
 export interface FormElement {
   id: string;
   type: string;
@@ -151,6 +150,31 @@ export interface FormConfig {
       cloudStorage?: string[];
       database?: boolean;
       realTimeTracking?: boolean;
+      email?: {
+        enabled?: boolean;
+        from?: string;
+        fromName?: string;
+        recipients?: string;
+        subject?: string;
+        template?: string;
+      };
+      webhook?: {
+        enabled?: boolean;
+        url?: string;
+        method?: string;
+        headers?: string;
+        retryOnFailure?: boolean;
+      };
+      zapier?: {
+        enabled?: boolean;
+        webhookUrl?: string;
+      };
+      slack?: {
+        enabled?: boolean;
+        webhookUrl?: string;
+        channel?: string;
+        botToken?: string;
+      };
     };
     accessibility?: {
       screenReader?: boolean;
