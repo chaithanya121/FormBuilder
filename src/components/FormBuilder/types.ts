@@ -194,6 +194,18 @@ export interface ElementSettingsProps {
 export interface CustomTheme {
   id: string;
   name: string;
+  category?: string;
+  preview?: string;
+  backgroundColor?: string;
+  formBackgroundColor?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  fontColor?: string;
+  fontFamily?: string;
+  fontSize?: number;
+  borderRadius?: string;
+  padding?: string;
+  created?: string;
   colors: {
     primary: string;
     secondary: string;
@@ -230,5 +242,16 @@ export interface CustomTheme {
     medium: string;
     large: string;
   };
+  layout?: {
+    borderRadius?: number;
+    padding?: number;
+    spacing?: number;
+    shadow?: string;
+  };
+  effects?: {
+    animations?: boolean;
+    gradients?: boolean;
+    blurEffects?: boolean;
+    darkMode?: boolean;
+  };
 }
-
