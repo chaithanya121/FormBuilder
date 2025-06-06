@@ -1,4 +1,5 @@
 
+
 export interface FormElement {
   id: string;
   type: string;
@@ -44,9 +45,26 @@ export interface FormElement {
   stylePreset?: string;
   width?: string;
   animation?: string;
+  tooltip?: string;
   fieldStyles?: {
     className?: string;
     customCSS?: string;
+    backgroundColor?: string;
+    borderColor?: string;
+    borderRadius?: string;
+    padding?: string;
+    fontSize?: string;
+    fontFamily?: string;
+    color?: string;
+    width?: string;
+  };
+  labelStyles?: {
+    className?: string;
+    customCSS?: string;
+    color?: string;
+    fontSize?: string;
+    fontWeight?: string;
+    fontFamily?: string;
   };
   decorators?: {
     readonly?: boolean;
@@ -87,10 +105,12 @@ export interface FormConfig {
       formBackgroundColor?: string;
       borderRadius?: string;
       padding?: string;
+      margin?: string;
       fontFamily?: string;
       fontSize?: number;
       fontColor?: string;
       primaryColor?: string;
+      secondaryColor?: string;
       formWidth?: number;
       containerClass?: string;
       customCSS?: string;
@@ -170,3 +190,45 @@ export interface ElementSettingsProps {
   onClose: () => void;
   onDelete: () => void;
 }
+
+export interface CustomTheme {
+  id: string;
+  name: string;
+  colors: {
+    primary: string;
+    secondary: string;
+    background: string;
+    surface: string;
+    text: string;
+    accent: string;
+  };
+  typography: {
+    fontFamily: string;
+    fontSize: {
+      small: string;
+      medium: string;
+      large: string;
+    };
+    fontWeight: {
+      normal: string;
+      medium: string;
+      bold: string;
+    };
+  };
+  spacing: {
+    small: string;
+    medium: string;
+    large: string;
+  };
+  borderRadius: {
+    small: string;
+    medium: string;
+    large: string;
+  };
+  shadows: {
+    small: string;
+    medium: string;
+    large: string;
+  };
+}
+
