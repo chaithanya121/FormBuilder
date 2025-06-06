@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Copy, Upload, Download, Eye, Code, Settings, Expand, Minus } from 'lucide-react';
 import { FormConfig } from './types';
 import { useToast } from '@/hooks/use-toast';
+import { formatJson } from '@/components/utils/jsonUtils';
 
 interface FormConfigurationPanelProps {
   formConfig: FormConfig;
@@ -59,12 +61,13 @@ const FormConfigurationPanel: React.FC<FormConfigurationPanelProps> = ({
   };
 
   const handleSettingsUpdate = (category: string, field: string, value: any) => {
+    const categorySettings = formConfig.settings[category as keyof typeof formConfig.settings];
     const updatedConfig = {
       ...formConfig,
       settings: {
         ...formConfig.settings,
         [category]: {
-          ...(formConfig.settings[category as keyof typeof formConfig.settings] || {}),
+          ...(typeof categorySettings === 'object' && categorySettings !== null ? categorySettings : {}),
           [field]: value
         }
       }

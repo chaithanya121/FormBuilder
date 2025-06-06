@@ -19,12 +19,13 @@ interface FormSettingsModalProps {
 
 const FormSettingsModal: React.FC<FormSettingsModalProps> = ({ isOpen, onClose, formConfig, onUpdate }) => {
   const handleSettingChange = (category: string, field: string, value: any) => {
+    const categorySettings = formConfig.settings[category as keyof typeof formConfig.settings];
     const updatedConfig = {
       ...formConfig,
       settings: {
         ...formConfig.settings,
         [category]: {
-          ...(formConfig.settings[category as keyof typeof formConfig.settings] || {}),
+          ...(typeof categorySettings === 'object' && categorySettings !== null ? categorySettings : {}),
           [field]: value
         }
       }

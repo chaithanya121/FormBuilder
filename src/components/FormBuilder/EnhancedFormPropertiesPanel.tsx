@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -39,12 +40,13 @@ const EnhancedFormPropertiesPanel: React.FC<EnhancedFormPropertiesPanelProps> = 
   const [activeTab, setActiveTab] = useState('form');
 
   const handleFormSettingChange = (category: string, field: string, value: any) => {
+    const categorySettings = formConfig.settings[category as keyof typeof formConfig.settings];
     const updatedConfig = {
       ...formConfig,
       settings: {
         ...formConfig.settings,
         [category]: {
-          ...(formConfig.settings[category as keyof typeof formConfig.settings] || {}),
+          ...(typeof categorySettings === 'object' && categorySettings !== null ? categorySettings : {}),
           [field]: value
         }
       }
