@@ -1,5 +1,4 @@
 
-
 export interface FormElement {
   id: string;
   type: string;
@@ -206,6 +205,9 @@ export interface CustomTheme {
   borderRadius?: string;
   padding?: string;
   created?: string;
+  rating?: number;
+  popular?: boolean;
+  formWidth?: number;
   colors: {
     primary: string;
     secondary: string;
@@ -232,7 +234,7 @@ export interface CustomTheme {
     medium: string;
     large: string;
   };
-  borderRadius: {
+  borderRadiusStyles: {
     small: string;
     medium: string;
     large: string;
