@@ -60,8 +60,24 @@ const EnhancedFormCanvas: React.FC<EnhancedFormCanvasProps> = ({
     e.preventDefault();
     setDraggedOver(null);
     
-    const elementType = e.dataTransfer.getData('text/plain');
+    // Try different data transfer types to get the element type
+    let elementType = e.dataTransfer.getData('text/plain') || 
+                     e.dataTransfer.getData('text') || 
+                     e.dataTransfer.getData('application/json') ||
+                     e.dataTransfer.getData('element-type');
+    
     console.log('Dropped element type:', elementType);
+    console.log('All data transfer types:', e.dataTransfer.types);
+    
+    // If we still don't have an element type, try to parse from JSON
+    if (!elementType && e.dataTransfer.types.includes('application/json')) {
+      try {
+        const data = JSON.parse(e.dataTransfer.getData('application/json'));
+        elementType = data.type || data.elementType;
+      } catch (error) {
+        console.error('Error parsing drag data:', error);
+      }
+    }
     
     if (elementType) {
       const newElement: FormElement = {
@@ -81,13 +97,21 @@ const EnhancedFormCanvas: React.FC<EnhancedFormCanvasProps> = ({
       const insertIndex = dropIndex !== undefined ? dropIndex : newElements.length;
       newElements.splice(insertIndex, 0, newElement);
 
-      setFormConfig(prev => ({
-        ...prev,
+      // Update the form config
+      const updatedConfig = {
+        ...formConfig,
         elements: newElements
-      }));
+      };
+
+      setFormConfig(updatedConfig);
+      onUpdate(updatedConfig);
 
       // Auto-select the new element
       onSelectElement(newElement);
+      
+      console.log('Element added successfully, total elements:', newElements.length);
+    } else {
+      console.error('No element type found in drag data');
     }
   };
 
@@ -177,17 +201,24 @@ const EnhancedFormCanvas: React.FC<EnhancedFormCanvasProps> = ({
     const newElements = [...elements];
     newElements.splice(elementIndex + 1, 0, newElement);
     
-    setFormConfig(prev => ({
-      ...prev,
+    const updatedConfig = {
+      ...formConfig,
       elements: newElements
-    }));
+    };
+    
+    setFormConfig(updatedConfig);
+    onUpdate(updatedConfig);
   };
 
   const deleteElement = (elementId: string) => {
-    setFormConfig(prev => ({
-      ...prev,
-      elements: prev.elements.filter(el => el.id !== elementId)
-    }));
+    const newElements = elements.filter(el => el.id !== elementId);
+    const updatedConfig = {
+      ...formConfig,
+      elements: newElements
+    };
+    
+    setFormConfig(updatedConfig);
+    onUpdate(updatedConfig);
     
     if (selectedElement?.id === elementId) {
       onSelectElement(null as any);
@@ -205,10 +236,13 @@ const EnhancedFormCanvas: React.FC<EnhancedFormCanvasProps> = ({
     const [movedElement] = newElements.splice(currentIndex, 1);
     newElements.splice(newIndex, 0, movedElement);
     
-    setFormConfig(prev => ({
-      ...prev,
+    const updatedConfig = {
+      ...formConfig,
       elements: newElements
-    }));
+    };
+    
+    setFormConfig(updatedConfig);
+    onUpdate(updatedConfig);
   };
 
   const getCanvasWidth = () => {
@@ -220,7 +254,7 @@ const EnhancedFormCanvas: React.FC<EnhancedFormCanvasProps> = ({
     }
   };
 
-  const canvasStyles = formConfig.settings.canvasStyles || {};
+  const canvasStyles = formConfig.settings?.canvasStyles || {};
 
   return (
     <div className="h-full flex flex-col">
@@ -399,7 +433,7 @@ const EnhancedFormCanvas: React.FC<EnhancedFormCanvasProps> = ({
 
                         {/* Element Renderer */}
                         <div className="p-2">
-                          <FormElementRenderer element={element} />
+                          <FormElementRenderer element={element} formConfig={formConfig} />
                         </div>
                       </div>
                     </motion.div>
