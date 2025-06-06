@@ -61,6 +61,7 @@ const ThemeCreator: React.FC<ThemeCreatorProps> = ({ onSaveTheme, existingThemes
       primary: '#3b82f6',
       secondary: '#64748b',
       background: '#ffffff',
+      surface: '#f8fafc',
       form: '#ffffff',
       text: '#1a1a1a',
       accent: '#f59e0b'
@@ -70,6 +71,21 @@ const ThemeCreator: React.FC<ThemeCreatorProps> = ({ onSaveTheme, existingThemes
       fontSize: 16,
       fontWeight: '400',
       lineHeight: 1.5
+    },
+    spacing: {
+      small: '8px',
+      medium: '16px',
+      large: '24px'
+    },
+    borderRadiusStyles: {
+      small: '4px',
+      medium: '8px',
+      large: '12px'
+    },
+    shadows: {
+      small: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+      medium: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+      large: '0 10px 15px -3px rgb(0 0 0 / 0.1)'
     },
     layout: {
       borderRadius: 8,
@@ -322,7 +338,7 @@ const ThemeCreator: React.FC<ThemeCreatorProps> = ({ onSaveTheme, existingThemes
 
               <TabsContent value="layout" className="space-y-4">
                 <div>
-                  <Label>Border Radius: {theme.layout?.borderRadius || theme.borderRadius || 8}px</Label>
+                  <Label>Border Radius: {theme.layout?.borderRadius || (theme.borderRadius ? parseInt(theme.borderRadius) : 8)}px</Label>
                   <Slider
                     value={[theme.layout?.borderRadius || (theme.borderRadius ? parseInt(theme.borderRadius) : 8)]}
                     onValueChange={(value) => {

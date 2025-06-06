@@ -204,6 +204,7 @@ export interface CustomTheme {
   fontSize?: number;
   borderRadius?: string;
   padding?: string;
+  margin?: string;
   created?: string;
   rating?: number;
   popular?: boolean;
