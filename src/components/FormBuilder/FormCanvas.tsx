@@ -1,4 +1,3 @@
-
 import React, { useEffect, useCallback } from 'react';
 import { FormCanvasProps } from './types';
 import FormElementRenderer from './FormElementRenderer';
@@ -21,10 +20,9 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
     console.log('Drop event triggered');
     
     // Try both data transfer methods
-    let elementType = e.dataTransfer.getData('text/plain');
-    if (!elementType) {
-      elementType = e.dataTransfer.getData('application/json');
-    }
+    let elementType = e.dataTransfer.getData('application/x-form-element') || 
+                     e.dataTransfer.getData('text/plain') || 
+                     e.dataTransfer.getData('application/json');
     
     console.log('Element type from dataTransfer:', elementType);
     
@@ -32,14 +30,13 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
       const newElement = {
         id: Date.now().toString(),
         type: elementType as any,
-        label: `${elementType.charAt(0).toUpperCase() + elementType.slice(1)} Field`,
+        label: getDefaultLabel(elementType),
+        placeholder: getDefaultPlaceholder(elementType),
         required: false,
-        placeholder: `Enter ${elementType}`,
-        options: ['select', 'radio', 'checkbox-group'].includes(elementType) ? 
-          ['Option 1', 'Option 2', 'Option 3'] : undefined,
+        validation: {},
+        options: getDefaultOptions(elementType),
+        settings: getDefaultSettings(elementType),
         containerId: containerId,
-        value: elementType === 'youtube' ? 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' : '',
-        url: elementType === 'youtube' ? 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' : undefined,
       };
 
       console.log('Creating new element:', newElement);
@@ -55,6 +52,85 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
     }
   }, [setFormConfig]);
 
+  const getDefaultLabel = (elementType: string): string => {
+    const labels: { [key: string]: string } = {
+      'text': 'Text Input',
+      'email': 'Email Address',
+      'tel': 'Phone Number',
+      'password': 'Password',
+      'search': 'Search',
+      'url': 'Website URL',
+      'number': 'Number',
+      'range': 'Range',
+      'date': 'Date',
+      'time': 'Time',
+      'datetime-local': 'Date & Time',
+      'textarea': 'Message',
+      'select': 'Select Option',
+      'checkbox': 'Checkbox Options',
+      'radio': 'Radio Options',
+      'file': 'File Upload',
+      'image': 'Image Upload',
+      'youtube': 'YouTube Video',
+      'rating': 'Rating',
+      'scale-rating': 'Scale Rating',
+      'location': 'Location',
+      'signature': 'Signature',
+      'payment': 'Payment Information',
+      'color': 'Color',
+      'toggle': 'Toggle',
+      'multi-select': 'Multi Select',
+      'rich-text': 'Rich Text',
+      'section': 'Section',
+      'heading': 'Heading',
+      'paragraph': 'Paragraph',
+      'divider': 'Divider',
+      'container': 'Container',
+      '2-columns': '2 Columns',
+      '3-columns': '3 Columns',
+      '4-columns': '4 Columns'
+    };
+    return labels[elementType] || 'Form Field';
+  };
+
+  const getDefaultPlaceholder = (elementType: string): string => {
+    const placeholders: { [key: string]: string } = {
+      'text': 'Enter text...',
+      'email': 'Enter your email address',
+      'tel': 'Enter phone number',
+      'password': 'Enter password',
+      'search': 'Search...',
+      'url': 'https://example.com',
+      'number': 'Enter number',
+      'textarea': 'Enter your message...',
+      'location': 'Enter address or location'
+    };
+    return placeholders[elementType] || '';
+  };
+
+  const getDefaultOptions = (elementType: string): string[] => {
+    if (['select', 'checkbox', 'radio', 'multi-select'].includes(elementType)) {
+      return ['Option 1', 'Option 2', 'Option 3'];
+    }
+    return [];
+  };
+
+  const getDefaultSettings = (elementType: string): any => {
+    const settings: { [key: string]: any } = {
+      'youtube': { url: '', autoplay: false, controls: true },
+      'rating': { maxStars: 5 },
+      'scale-rating': { minValue: 1, maxValue: 10 },
+      'range': { min: 0, max: 100, step: 1 },
+      'file': { accept: '*', multiple: false },
+      'image': { accept: 'image/*', multiple: false },
+      'rich-text': { toolbar: ['bold', 'italic', 'underline'] },
+      'section': { collapsible: false },
+      'heading': { level: 2, text: 'Section Heading' },
+      'paragraph': { text: 'This is a paragraph of descriptive text.' }
+    };
+    return settings[elementType] || {};
+  };
+
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'copy';
@@ -65,6 +141,10 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
       ...prev,
       elements: prev.elements.filter(el => el.id !== elementId)
     }));
+    
+    if (selectedElement?.id === elementId) {
+      onSelectElement(null as any);
+    }
   };
 
   const handleElementDuplicate = (element: any) => {
@@ -135,7 +215,6 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
     };
   };
 
-  // Get background style for the entire canvas area
   const getCanvasBackgroundStyle = () => {
     const canvasStyles = formConfig.settings.canvasStyles || {};
     
@@ -153,7 +232,6 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
     };
   };
 
-  // Render nested elements for containers
   const renderNestedElements = (containerId: string) => {
     const nestedElements = elements.filter(el => el.containerId === containerId);
     return nestedElements.map((element, index) => (
@@ -174,7 +252,6 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
       >
-        {/* Element Actions */}
         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
           <Button
             size="sm"
@@ -221,7 +298,6 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
     ));
   };
 
-  // Get root level elements (not in containers)
   const rootElements = elements.filter(el => !el.containerId);
 
   return (
@@ -229,9 +305,31 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
       className="w-full h-full flex items-center justify-center p-8 relative"
       style={getCanvasBackgroundStyle()}
     >
-      {/* Global Custom CSS Injection */}
       {formConfig.settings.canvasStyles?.customCSS && (
         <style dangerouslySetInnerHTML={{ __html: formConfig.settings.canvasStyles.customCSS }} />
+      )}
+      
+      {/* Logo Configuration */}
+      {formConfig.settings.logo?.enabled && formConfig.settings.logo?.url && (
+        <div 
+          className="absolute z-10"
+          style={{
+            top: `${formConfig.settings.logo.position?.top || 20}px`,
+            left: `${formConfig.settings.logo.position?.left || 20}px`,
+            width: `${formConfig.settings.logo.width || 100}px`,
+            height: `${formConfig.settings.logo.height || 100}px`,
+          }}
+        >
+          <img 
+            src={formConfig.settings.logo.url} 
+            alt="Form Logo"
+            className="w-full h-full object-contain"
+            style={{
+              opacity: formConfig.settings.logo.opacity || 1,
+              borderRadius: `${formConfig.settings.logo.borderRadius || 0}px`
+            }}
+          />
+        </div>
       )}
       
       {/* Enhanced Drop Zone */}
@@ -281,7 +379,7 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
               Start Building Your Amazing Form
             </h3>
             <p className="text-gray-500 mb-6 max-w-md mx-auto">
-              Drag elements from the floating sidebar to begin creating your beautiful, interactive form
+              Drag elements from the element library to begin creating your beautiful, interactive form
             </p>
             
             <motion.div
@@ -329,7 +427,6 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
                       `${formConfig.settings.layout.questionSpacing}px` : '24px'
                   }}
                 >
-                  {/* Element Actions */}
                   <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 z-10">
                     <Button
                       size="sm"
@@ -366,7 +463,6 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
                     </Button>
                   </div>
 
-                  {/* Container/Layout Elements with Enhanced Drop Zones */}
                   {(element.type === 'container' || element.type === '2-columns' || element.type === '3-columns' || element.type === '4-columns') ? (
                     <motion.div
                       className={`p-6 rounded-xl border-2 transition-all duration-300 cursor-pointer min-h-[200px] ${
@@ -404,7 +500,6 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
                       </div>
                     </motion.div>
                   ) : (
-                    /* Regular Form Elements */
                     <motion.div
                       className={`p-4 rounded-xl border-2 transition-all duration-300 cursor-pointer hover:shadow-lg ${
                         selectedElement?.id === element.id

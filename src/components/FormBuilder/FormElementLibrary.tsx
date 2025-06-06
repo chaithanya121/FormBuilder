@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -134,18 +133,30 @@ const FormElementLibrary: React.FC<FormElementLibraryProps> = ({ onDragStart }) 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, elementType: string) => {
     console.log('Drag started for element:', elementType);
     e.dataTransfer.setData('application/x-form-element', elementType);
+    e.dataTransfer.setData('text/plain', elementType);
     e.dataTransfer.effectAllowed = 'copy';
+    
+    // Add a visual indicator
+    e.dataTransfer.setDragImage(e.currentTarget, 50, 50);
+    
     if (onDragStart) {
       onDragStart(e, elementType);
     }
   };
 
   const handleElementClick = (elementType: string) => {
+    console.log('Element clicked:', elementType);
+    // For click interactions, we can trigger a different action
     if (onDragStart) {
-      // Create a proper mock drag event or use a different approach
-      console.log('Element clicked:', elementType);
-      // For now, we'll just call onDragStart with null event to indicate it's a click
-      onDragStart(null as any, elementType);
+      // Create a minimal event-like object for click handling
+      const clickEvent = {
+        dataTransfer: {
+          setData: (format: string, data: string) => {},
+          effectAllowed: 'copy' as const
+        }
+      } as React.DragEvent<HTMLDivElement>;
+      
+      onDragStart(clickEvent, elementType);
     }
   };
 
@@ -174,7 +185,6 @@ const FormElementLibrary: React.FC<FormElementLibraryProps> = ({ onDragStart }) 
         </CardHeader>
 
         <CardContent className="flex-1 flex flex-col p-4 overflow-hidden">
-          {/* Search and View Mode */}
           <div className="space-y-3 mb-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -208,7 +218,6 @@ const FormElementLibrary: React.FC<FormElementLibraryProps> = ({ onDragStart }) 
             </div>
           </div>
 
-          {/* Dropdown View */}
           {viewMode === 'dropdown' && (
             <div className="space-y-3">
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
@@ -229,7 +238,7 @@ const FormElementLibrary: React.FC<FormElementLibraryProps> = ({ onDragStart }) 
 
               <ScrollArea className="flex-1">
                 <div className="space-y-2">
-                  {currentCategory.elements.map((element, index) => (
+                  {currentCategory.elements.map((element) => (
                     <div
                       key={element.type}
                       draggable
@@ -257,7 +266,6 @@ const FormElementLibrary: React.FC<FormElementLibraryProps> = ({ onDragStart }) 
             </div>
           )}
 
-          {/* Grid View with Tabs */}
           {viewMode === 'grid' && (
             <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="flex-1 flex flex-col">
               <TabsList className="grid grid-cols-4 mb-4">
@@ -280,7 +288,7 @@ const FormElementLibrary: React.FC<FormElementLibraryProps> = ({ onDragStart }) 
                       </div>
 
                       <div className="grid grid-cols-1 gap-2">
-                        {category.elements.map((element, index) => (
+                        {category.elements.map((element) => (
                           <Tooltip key={element.type}>
                             <TooltipTrigger asChild>
                               <div
@@ -323,7 +331,6 @@ const FormElementLibrary: React.FC<FormElementLibraryProps> = ({ onDragStart }) 
             </Tabs>
           )}
 
-          {/* Usage Stats */}
           <div className="mt-4 p-3 bg-gray-50 rounded-lg">
             <div className="text-xs text-gray-600 text-center">
               {Object.values(ELEMENT_CATEGORIES).reduce((acc, cat) => acc + cat.elements.length, 0)} elements available
