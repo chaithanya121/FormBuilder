@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -46,7 +45,6 @@ const EnhancedFormCanvas: React.FC<EnhancedFormCanvasProps> = ({
 
   const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    // Only reset if we're leaving the canvas entirely
     const rect = canvasRef.current?.getBoundingClientRect();
     if (rect) {
       const { clientX, clientY } = e;
@@ -60,24 +58,41 @@ const EnhancedFormCanvas: React.FC<EnhancedFormCanvasProps> = ({
     e.preventDefault();
     setDraggedOver(null);
     
-    // Try different data transfer types to get the element type
-    let elementType = e.dataTransfer.getData('text/plain') || 
-                     e.dataTransfer.getData('text') || 
-                     e.dataTransfer.getData('application/json') ||
-                     e.dataTransfer.getData('element-type');
+    // Get the drag data - try multiple formats
+    let elementData = null;
+    let elementType = '';
     
-    console.log('Dropped element type:', elementType);
-    console.log('All data transfer types:', e.dataTransfer.types);
+    // Try to get JSON data first
+    try {
+      const jsonData = e.dataTransfer.getData('application/json');
+      if (jsonData) {
+        elementData = JSON.parse(jsonData);
+        elementType = elementData.type;
+        console.log('Parsed JSON data:', elementData);
+      }
+    } catch (error) {
+      console.log('No valid JSON data found');
+    }
     
-    // If we still don't have an element type, try to parse from JSON
-    if (!elementType && e.dataTransfer.types.includes('application/json')) {
+    // Fallback to text data
+    if (!elementType) {
+      elementType = e.dataTransfer.getData('text/plain') || 
+                   e.dataTransfer.getData('text') || 
+                   e.dataTransfer.getData('element-type');
+      
+      // If elementType is a JSON string, parse it
       try {
-        const data = JSON.parse(e.dataTransfer.getData('application/json'));
-        elementType = data.type || data.elementType;
+        const parsed = JSON.parse(elementType);
+        if (parsed.type) {
+          elementType = parsed.type;
+        }
       } catch (error) {
-        console.error('Error parsing drag data:', error);
+        // elementType is already a simple string
       }
     }
+    
+    console.log('Final element type:', elementType);
+    console.log('Available data types:', e.dataTransfer.types);
     
     if (elementType) {
       const newElement: FormElement = {
@@ -97,7 +112,6 @@ const EnhancedFormCanvas: React.FC<EnhancedFormCanvasProps> = ({
       const insertIndex = dropIndex !== undefined ? dropIndex : newElements.length;
       newElements.splice(insertIndex, 0, newElement);
 
-      // Update the form config
       const updatedConfig = {
         ...formConfig,
         elements: newElements
@@ -105,8 +119,6 @@ const EnhancedFormCanvas: React.FC<EnhancedFormCanvasProps> = ({
 
       setFormConfig(updatedConfig);
       onUpdate(updatedConfig);
-
-      // Auto-select the new element
       onSelectElement(newElement);
       
       console.log('Element added successfully, total elements:', newElements.length);
@@ -143,6 +155,7 @@ const EnhancedFormCanvas: React.FC<EnhancedFormCanvasProps> = ({
       'color': 'Color',
       'toggle': 'Toggle',
       'multi-select': 'Multi Select',
+      'multiselect': 'Multi Select',
       'rich-text': 'Rich Text',
       'section': 'Section',
       'heading': 'Heading',
@@ -168,7 +181,7 @@ const EnhancedFormCanvas: React.FC<EnhancedFormCanvasProps> = ({
   };
 
   const getDefaultOptions = (elementType: string): string[] => {
-    if (['select', 'checkbox', 'radio', 'multi-select'].includes(elementType)) {
+    if (['select', 'checkbox', 'radio', 'multi-select', 'multiselect'].includes(elementType)) {
       return ['Option 1', 'Option 2', 'Option 3'];
     }
     return [];
@@ -255,6 +268,7 @@ const EnhancedFormCanvas: React.FC<EnhancedFormCanvasProps> = ({
   };
 
   const canvasStyles = formConfig.settings?.canvasStyles || {};
+  const logoSettings = formConfig.settings?.logo || {};
 
   return (
     <div className="h-full flex flex-col">
@@ -316,7 +330,7 @@ const EnhancedFormCanvas: React.FC<EnhancedFormCanvasProps> = ({
         <div className={`mx-auto transition-all duration-300 ${getCanvasWidth()}`}>
           <Card 
             ref={canvasRef}
-            className="min-h-96 shadow-xl"
+            className="min-h-96 shadow-xl relative"
             style={{
               backgroundColor: canvasStyles.formBackgroundColor || '#ffffff',
               borderRadius: canvasStyles.borderRadius || '12px',
@@ -331,6 +345,29 @@ const EnhancedFormCanvas: React.FC<EnhancedFormCanvasProps> = ({
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e)}
           >
+            {/* Logo Display */}
+            {logoSettings.enabled && logoSettings.url && (
+              <div 
+                className="absolute z-10"
+                style={{
+                  top: `${logoSettings.position?.top || 20}px`,
+                  left: `${logoSettings.position?.left || 20}px`,
+                  opacity: logoSettings.opacity || 1
+                }}
+              >
+                <img
+                  src={logoSettings.url}
+                  alt="Form Logo"
+                  style={{
+                    width: `${logoSettings.width || 100}px`,
+                    height: `${logoSettings.height || 100}px`,
+                    borderRadius: `${logoSettings.borderRadius || 0}px`,
+                    objectFit: 'contain'
+                  }}
+                />
+              </div>
+            )}
+
             {elements.length === 0 ? (
               <div className="text-center py-16">
                 <div className="mb-4">

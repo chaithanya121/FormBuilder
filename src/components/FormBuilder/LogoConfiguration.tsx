@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
-import { Image, Upload } from 'lucide-react';
+import { Image, Upload, RotateCcw } from 'lucide-react';
 import { FormConfig } from './types';
 
 interface LogoConfigurationProps {
@@ -18,7 +18,7 @@ const LogoConfiguration: React.FC<LogoConfigurationProps> = ({
   formConfig,
   onUpdate
 }) => {
-  const logoSettings = formConfig.settings.logo || {};
+  const logoSettings = formConfig.settings?.logo || {};
 
   const updateLogoSetting = (key: string, value: any) => {
     onUpdate({
@@ -60,142 +60,223 @@ const LogoConfiguration: React.FC<LogoConfigurationProps> = ({
     }
   };
 
+  const resetLogoSettings = () => {
+    onUpdate({
+      ...formConfig,
+      settings: {
+        ...formConfig.settings,
+        logo: {
+          enabled: false,
+          url: '',
+          width: 100,
+          height: 100,
+          position: { top: 20, left: 20 },
+          opacity: 1,
+          borderRadius: 0
+        }
+      }
+    });
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Image className="h-5 w-5" />
-          Logo Configuration
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Enable Logo */}
-        <div className="flex items-center justify-between">
-          <Label htmlFor="logo-enabled">Enable Logo</Label>
-          <Switch
-            id="logo-enabled"
-            checked={logoSettings.enabled || false}
-            onCheckedChange={(checked) => updateLogoSetting('enabled', checked)}
-          />
-        </div>
-
-        {logoSettings.enabled && (
-          <>
-            {/* Logo URL */}
-            <div className="space-y-2">
-              <Label htmlFor="logo-url">Logo URL</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="logo-url"
-                  placeholder="https://example.com/logo.png"
-                  value={logoSettings.url || ''}
-                  onChange={(e) => updateLogoSetting('url', e.target.value)}
-                />
-                <Button
-                  variant="outline"
-                  onClick={() => document.getElementById('logo-upload')?.click()}
-                >
-                  <Upload className="h-4 w-4" />
-                </Button>
-              </div>
-              <input
-                id="logo-upload"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageUpload}
-              />
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Image className="h-5 w-5" />
+              Logo Configuration
             </div>
+            <Button variant="outline" size="sm" onClick={resetLogoSettings}>
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Reset
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Enable Logo */}
+          <div className="flex items-center justify-between">
+            <Label htmlFor="logo-enabled">Enable Logo</Label>
+            <Switch
+              id="logo-enabled"
+              checked={logoSettings.enabled || false}
+              onCheckedChange={(checked) => updateLogoSetting('enabled', checked)}
+            />
+          </div>
 
-            {/* Logo Preview */}
-            {logoSettings.url && (
-              <div className="p-4 border rounded-lg bg-gray-50">
-                <Label className="block mb-2">Preview</Label>
-                <img
-                  src={logoSettings.url}
-                  alt="Logo Preview"
-                  className="max-w-32 max-h-32 object-contain"
+          {logoSettings.enabled && (
+            <>
+              {/* Logo Upload Section */}
+              <div className="space-y-4">
+                <Label htmlFor="logo-url">Logo Image</Label>
+                
+                {/* URL Input */}
+                <div className="flex gap-2">
+                  <Input
+                    id="logo-url"
+                    placeholder="https://example.com/logo.png or upload below"
+                    value={logoSettings.url || ''}
+                    onChange={(e) => updateLogoSetting('url', e.target.value)}
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={() => document.getElementById('logo-upload')?.click()}
+                  >
+                    <Upload className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                {/* File Upload */}
+                <input
+                  id="logo-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
                 />
+                
+                <div className="text-center">
+                  <Button
+                    variant="outline"
+                    onClick={() => document.getElementById('logo-upload')?.click()}
+                    className="w-full"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload Logo Image
+                  </Button>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Supports PNG, JPG, SVG up to 5MB
+                  </p>
+                </div>
               </div>
-            )}
 
-            {/* Size Settings */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="logo-width">Width (px)</Label>
-                <Input
-                  id="logo-width"
-                  type="number"
-                  value={logoSettings.width || 100}
-                  onChange={(e) => updateLogoSetting('width', parseInt(e.target.value))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="logo-height">Height (px)</Label>
-                <Input
-                  id="logo-height"
-                  type="number"
-                  value={logoSettings.height || 100}
-                  onChange={(e) => updateLogoSetting('height', parseInt(e.target.value))}
-                />
-              </div>
-            </div>
+              {/* Logo Preview */}
+              {logoSettings.url && (
+                <Card className="p-4 bg-gray-50">
+                  <Label className="block mb-3 font-medium">Preview</Label>
+                  <div className="flex items-center justify-center bg-white border-2 border-dashed border-gray-300 rounded-lg p-6">
+                    <img
+                      src={logoSettings.url}
+                      alt="Logo Preview"
+                      style={{
+                        width: `${logoSettings.width || 100}px`,
+                        height: `${logoSettings.height || 100}px`,
+                        borderRadius: `${logoSettings.borderRadius || 0}px`,
+                        opacity: logoSettings.opacity || 1
+                      }}
+                      className="object-contain"
+                    />
+                  </div>
+                </Card>
+              )}
 
-            {/* Position Settings */}
-            <div className="space-y-4">
-              <Label>Position</Label>
+              {/* Size Settings */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="logo-top">Top (px)</Label>
+                  <Label htmlFor="logo-width">Width (px)</Label>
                   <Input
-                    id="logo-top"
+                    id="logo-width"
                     type="number"
-                    value={logoSettings.position?.top || 20}
-                    onChange={(e) => updateLogoPosition('top', parseInt(e.target.value))}
+                    min="10"
+                    max="500"
+                    value={logoSettings.width || 100}
+                    onChange={(e) => updateLogoSetting('width', parseInt(e.target.value))}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="logo-left">Left (px)</Label>
+                  <Label htmlFor="logo-height">Height (px)</Label>
                   <Input
-                    id="logo-left"
+                    id="logo-height"
                     type="number"
-                    value={logoSettings.position?.left || 20}
-                    onChange={(e) => updateLogoPosition('left', parseInt(e.target.value))}
+                    min="10"
+                    max="500"
+                    value={logoSettings.height || 100}
+                    onChange={(e) => updateLogoSetting('height', parseInt(e.target.value))}
                   />
                 </div>
               </div>
-            </div>
 
-            {/* Opacity Slider */}
-            <div className="space-y-2">
-              <Label>Opacity</Label>
-              <Slider
-                value={[logoSettings.opacity || 1]}
-                onValueChange={(value) => updateLogoSetting('opacity', value[0])}
-                max={1}
-                min={0}
-                step={0.1}
-                className="w-full"
-              />
-              <div className="text-sm text-gray-600 text-center">
-                {Math.round((logoSettings.opacity || 1) * 100)}%
+              {/* Position Settings */}
+              <div className="space-y-4">
+                <Label>Position</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="logo-top">Top (px)</Label>
+                    <Input
+                      id="logo-top"
+                      type="number"
+                      min="0"
+                      max="200"
+                      value={logoSettings.position?.top || 20}
+                      onChange={(e) => updateLogoPosition('top', parseInt(e.target.value))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="logo-left">Left (px)</Label>
+                    <Input
+                      id="logo-left"
+                      type="number"
+                      min="0"
+                      max="200"
+                      value={logoSettings.position?.left || 20}
+                      onChange={(e) => updateLogoPosition('left', parseInt(e.target.value))}
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
 
-            {/* Border Radius */}
-            <div className="space-y-2">
-              <Label htmlFor="logo-border-radius">Border Radius (px)</Label>
-              <Input
-                id="logo-border-radius"
-                type="number"
-                value={logoSettings.borderRadius || 0}
-                onChange={(e) => updateLogoSetting('borderRadius', parseInt(e.target.value))}
-              />
-            </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
+              {/* Style Settings */}
+              <div className="space-y-4">
+                {/* Opacity Slider */}
+                <div className="space-y-3">
+                  <Label>Opacity</Label>
+                  <Slider
+                    value={[logoSettings.opacity || 1]}
+                    onValueChange={(value) => updateLogoSetting('opacity', value[0])}
+                    max={1}
+                    min={0}
+                    step={0.1}
+                    className="w-full"
+                  />
+                  <div className="text-sm text-gray-600 text-center">
+                    {Math.round((logoSettings.opacity || 1) * 100)}%
+                  </div>
+                </div>
+
+                {/* Border Radius */}
+                <div className="space-y-2">
+                  <Label htmlFor="logo-border-radius">Border Radius (px)</Label>
+                  <Input
+                    id="logo-border-radius"
+                    type="number"
+                    min="0"
+                    max="50"
+                    value={logoSettings.borderRadius || 0}
+                    onChange={(e) => updateLogoSetting('borderRadius', parseInt(e.target.value))}
+                  />
+                  <p className="text-xs text-gray-500">
+                    0 = Square, higher values = more rounded
+                  </p>
+                </div>
+              </div>
+
+              {/* Tips */}
+              <Card className="bg-blue-50 border-blue-200">
+                <CardContent className="pt-4">
+                  <h4 className="font-medium text-blue-900 mb-2">💡 Tips for best results:</h4>
+                  <ul className="text-sm text-blue-800 space-y-1">
+                    <li>• Use transparent PNG files for best appearance</li>
+                    <li>• Keep logos under 200x200px for mobile compatibility</li>
+                    <li>• Position logos in corners to avoid overlapping form content</li>
+                    <li>• Use 80-90% opacity for subtle branding</li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
