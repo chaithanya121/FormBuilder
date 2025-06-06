@@ -1,500 +1,679 @@
+
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useTheme } from '@/components/theme-provider';
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { 
-  ArrowLeft, 
-  Search, 
-  Download, 
-  Eye, 
-  Trash2, 
-  FileText,
-  ChevronRight,
-  Home,
-  Database,
-  Filter,
-  Calendar,
-  TrendingUp,
-  Users,
-  Clock,
-  BarChart3,
-  Target,
-  Sparkles,
-  Download as ExportIcon
-} from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { Badge } from '@/components/ui/badge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  Search, Filter, Download, Eye, Trash2, Calendar, Clock,
+  BarChart3, TrendingUp, Users, FileText, Mail, Phone,
+  MapPin, Star, ThumbsUp, AlertCircle, CheckCircle,
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
+  MoreHorizontal, RefreshCw, Settings, Share, Archive
+} from "lucide-react";
+import { useParams } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
-const FormSubmissions = () => {
+interface SubmissionData {
+  id: string;
+  formId: string;
+  formName: string;
+  submissionDate: string;
+  status: 'new' | 'reviewed' | 'processed' | 'archived';
+  score?: number;
+  location?: string;
+  device: 'desktop' | 'mobile' | 'tablet';
+  data: Record<string, any>;
+  metadata: {
+    ip: string;
+    userAgent: string;
+    timestamp: string;
+    duration: number;
+  };
+}
+
+interface AnalyticsData {
+  totalSubmissions: number;
+  todaySubmissions: number;
+  averageScore: number;
+  completionRate: number;
+  deviceBreakdown: Record<string, number>;
+  locationData: Record<string, number>;
+  timeSeriesData: Array<{ date: string; submissions: number }>;
+}
+
+const SUBMISSIONS_PER_PAGE = 15;
+
+const FormSubmissions: React.FC = () => {
   const { formId } = useParams();
-  const navigate = useNavigate();
-  const { theme } = useTheme();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSubmission, setSelectedSubmission] = useState<any>(null);
+  const { toast } = useToast();
   
-  // Mock data - replace with actual API call
-  const [formData] = useState({
-    name: 'Contact Form',
-    submissions: 24,
-    conversionRate: '89.2%',
-    avgCompletionTime: '2m 15s'
-  });
+  const [submissions, setSubmissions] = useState<SubmissionData[]>([]);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [dateFilter, setDateFilter] = useState<string>('all');
+  const [selectedSubmissions, setSelectedSubmissions] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
 
-  const [submissions] = useState([
-    {
-      id: '1',
-      timestamp: '2024-06-01T10:30:00Z',
-      status: 'completed',
+  // Mock data - replace with actual API calls
+  useEffect(() => {
+    const mockSubmissions: SubmissionData[] = Array.from({ length: 87 }, (_, i) => ({
+      id: `sub_${i + 1}`,
+      formId: formId || 'form_1',
+      formName: 'Contact Form',
+      submissionDate: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+      status: ['new', 'reviewed', 'processed', 'archived'][Math.floor(Math.random() * 4)] as any,
+      score: Math.floor(Math.random() * 5) + 1,
+      location: ['New York', 'London', 'Tokyo', 'Sydney', 'Berlin'][Math.floor(Math.random() * 5)],
+      device: ['desktop', 'mobile', 'tablet'][Math.floor(Math.random() * 3)] as any,
       data: {
-        name: 'John Doe',
-        email: 'john@example.com',
-        message: 'Hello, I would like to get more information about your services.'
+        name: `User ${i + 1}`,
+        email: `user${i + 1}@example.com`,
+        message: `This is a sample message from user ${i + 1}`,
+        rating: Math.floor(Math.random() * 5) + 1
+      },
+      metadata: {
+        ip: `192.168.1.${Math.floor(Math.random() * 255)}`,
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        timestamp: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+        duration: Math.floor(Math.random() * 300) + 30
       }
-    },
-    {
-      id: '2',
-      timestamp: '2024-06-01T09:15:00Z',
-      status: 'completed',
-      data: {
-        name: 'Jane Smith',
-        email: 'jane@example.com',
-        message: 'Great website! Looking forward to working together.'
-      }
-    },
-    {
-      id: '3',
-      timestamp: '2024-05-31T16:45:00Z',
-      status: 'completed',
-      data: {
-        name: 'Mike Johnson',
-        email: 'mike@example.com',
-        message: 'Can you provide a quote for my project?'
-      }
-    }
-  ]);
+    }));
 
-  const quickStats = [
-    {
-      title: 'Total Submissions',
-      value: formData.submissions.toString(),
-      icon: Database,
-      color: 'from-blue-500 to-cyan-400',
-      change: '+12 today'
-    },
-    {
-      title: 'Conversion Rate',
-      value: formData.conversionRate,
-      icon: Target,
-      color: 'from-green-500 to-emerald-400',
-      change: '+5.1% vs last week'
-    },
-    {
-      title: 'Avg. Completion',
-      value: formData.avgCompletionTime,
-      icon: Clock,
-      color: 'from-purple-500 to-pink-400',
-      change: '15s faster'
-    },
-    {
-      title: 'Response Quality',
-      value: '94%',
-      icon: TrendingUp,
-      color: 'from-orange-500 to-red-400',
-      change: 'High quality responses'
-    }
-  ];
+    const mockAnalytics: AnalyticsData = {
+      totalSubmissions: 87,
+      todaySubmissions: 12,
+      averageScore: 4.2,
+      completionRate: 85.6,
+      deviceBreakdown: { desktop: 45, mobile: 35, tablet: 7 },
+      locationData: { 'New York': 25, 'London': 18, 'Tokyo': 15, 'Sydney': 12, 'Berlin': 17 },
+      timeSeriesData: Array.from({ length: 30 }, (_, i) => ({
+        date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        submissions: Math.floor(Math.random() * 10) + 1
+      }))
+    };
+
+    setTimeout(() => {
+      setSubmissions(mockSubmissions);
+      setAnalytics(mockAnalytics);
+      setLoading(false);
+    }, 1000);
+  }, [formId]);
 
   const filteredSubmissions = submissions.filter(submission => {
-    if (!searchTerm) return true;
+    const matchesSearch = submission.data.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         submission.data.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || submission.status === statusFilter;
+    const matchesDate = dateFilter === 'all' || (() => {
+      const submissionDate = new Date(submission.submissionDate);
+      const now = new Date();
+      switch (dateFilter) {
+        case 'today':
+          return submissionDate.toDateString() === now.toDateString();
+        case 'week':
+          return (now.getTime() - submissionDate.getTime()) < 7 * 24 * 60 * 60 * 1000;
+        case 'month':
+          return (now.getTime() - submissionDate.getTime()) < 30 * 24 * 60 * 60 * 1000;
+        default:
+          return true;
+      }
+    })();
     
-    const searchLower = searchTerm.toLowerCase();
-    return Object.values(submission.data).some(value => 
-      String(value).toLowerCase().includes(searchLower)
-    );
+    return matchesSearch && matchesStatus && matchesDate;
   });
 
-  const handleExportCSV = () => {
-    console.log('Exporting submissions to CSV...');
-    // Implement CSV export functionality
+  // Pagination
+  const totalPages = Math.ceil(filteredSubmissions.length / SUBMISSIONS_PER_PAGE);
+  const startIndex = (currentPage - 1) * SUBMISSIONS_PER_PAGE;
+  const paginatedSubmissions = filteredSubmissions.slice(startIndex, startIndex + SUBMISSIONS_PER_PAGE);
+
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'new': return 'bg-blue-100 text-blue-700';
+      case 'reviewed': return 'bg-yellow-100 text-yellow-700';
+      case 'processed': return 'bg-green-100 text-green-700';
+      case 'archived': return 'bg-gray-100 text-gray-700';
+      default: return 'bg-gray-100 text-gray-700';
+    }
   };
 
-  return (
-    <div className={`min-h-screen ${theme === 'light' 
-      ? 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100' 
-      : 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900'
-    } p-6 relative overflow-hidden`}>
-      
-      {/* Background Effects */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.1, 1],
-            rotate: [0, 90, 180]
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className={`absolute top-20 right-20 w-64 h-64 ${theme === 'light' ? 'bg-emerald-200/20' : 'bg-emerald-500/5'} rounded-full blur-3xl`}
-        ></motion.div>
-        <motion.div 
-          animate={{ 
-            scale: [1.1, 1, 1.1],
-            x: [-10, 10, -10]
-          }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className={`absolute bottom-20 left-20 w-80 h-80 ${theme === 'light' ? 'bg-blue-200/20' : 'bg-blue-500/5'} rounded-full blur-3xl`}
-        ></motion.div>
-      </div>
+  const handleBulkAction = (action: string) => {
+    if (selectedSubmissions.length === 0) {
+      toast({
+        title: "No submissions selected",
+        description: "Please select submissions to perform bulk actions",
+        variant: "destructive"
+      });
+      return;
+    }
 
-      <div className="max-w-7xl mx-auto relative z-10">
-        {/* Breadcrumbs */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2 mb-6"
-        >
-          <Link to="/" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
-            <Home className="h-4 w-4" />
-            Home
-          </Link>
-          <ChevronRight className="h-4 w-4 text-gray-400" />
-          <Link to="/platform/forms" className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
-            Forms
-          </Link>
-          <ChevronRight className="h-4 w-4 text-gray-400" />
-          <span className="text-sm font-medium text-gray-900 dark:text-white">Submissions</span>
-        </motion.div>
+    switch (action) {
+      case 'export':
+        toast({
+          title: "Export Started",
+          description: `Exporting ${selectedSubmissions.length} submissions...`
+        });
+        break;
+      case 'archive':
+        toast({
+          title: "Submissions Archived",
+          description: `${selectedSubmissions.length} submissions have been archived`
+        });
+        break;
+      case 'delete':
+        toast({
+          title: "Submissions Deleted",
+          description: `${selectedSubmissions.length} submissions have been deleted`
+        });
+        break;
+    }
+    setSelectedSubmissions([]);
+  };
 
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8"
-        >
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              onClick={() => navigate('/platform/forms')}
-              className={`${theme === 'light' ? 'bg-white/80 hover:bg-white' : 'bg-gray-800/50 hover:bg-gray-700'} backdrop-blur-sm`}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Forms
-            </Button>
-            <div className="flex items-center gap-4">
-              <motion.div 
-                initial={{ scale: 0.8, rotate: -10 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ duration: 0.5 }}
-                className="p-4 bg-gradient-to-r from-emerald-500 to-green-400 rounded-3xl shadow-2xl"
-              >
-                <Database className="h-10 w-10 text-white" />
-              </motion.div>
-              <div>
-                <h1 className={`text-4xl font-bold bg-gradient-to-r ${theme === 'light' 
-                  ? 'from-gray-900 via-emerald-800 to-green-900' 
-                  : 'from-white via-emerald-200 to-green-200'
-                } bg-clip-text text-transparent`}>
-                  Form Analytics
-                </h1>
-                <p className={`text-lg ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
-                  {formData.name} - Detailed insights and submissions
-                </p>
-              </div>
-            </div>
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="flex items-center justify-between mt-6">
+        <div className="text-sm text-gray-400">
+          Showing {startIndex + 1}-{Math.min(startIndex + SUBMISSIONS_PER_PAGE, filteredSubmissions.length)} of {filteredSubmissions.length} submissions
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => goToPage(1)}
+            disabled={currentPage === 1}
+            className="bg-gray-700/70 border-gray-600 text-white hover:bg-gray-600 disabled:opacity-50"
+          >
+            <ChevronsLeft className="h-4 w-4" />
+          </Button>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => goToPage(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="bg-gray-700/70 border-gray-600 text-white hover:bg-gray-600 disabled:opacity-50"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          
+          <div className="flex items-center gap-1">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let page;
+              if (totalPages <= 5) {
+                page = i + 1;
+              } else if (currentPage <= 3) {
+                page = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                page = totalPages - 4 + i;
+              } else {
+                page = currentPage - 2 + i;
+              }
+              
+              return (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => goToPage(page)}
+                  className={
+                    currentPage === page
+                      ? "bg-blue-600 text-white hover:bg-blue-700"
+                      : "bg-gray-700/70 border-gray-600 text-white hover:bg-gray-600"
+                  }
+                >
+                  {page}
+                </Button>
+              );
+            })}
           </div>
           
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              onClick={handleExportCSV}
-              className={`${theme === 'light' ? 'bg-white/80 hover:bg-white' : 'bg-gray-800/50 hover:bg-gray-700'} backdrop-blur-sm`}
-            >
-              <ExportIcon className="h-4 w-4 mr-2" />
-              Export Data
-            </Button>
-            <Button
-              onClick={() => navigate(`/form-builder/${formId}`)}
-              className="bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white shadow-lg"
-            >
-              <FileText className="h-4 w-4 mr-2" />
-              Edit Form
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => goToPage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="bg-gray-700/70 border-gray-600 text-white hover:bg-gray-600 disabled:opacity-50"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => goToPage(totalPages)}
+            disabled={currentPage === totalPages}
+            className="bg-gray-700/70 border-gray-600 text-white hover:bg-gray-600 disabled:opacity-50"
+          >
+            <ChevronsRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="h-8 w-8 animate-spin text-white mx-auto mb-4" />
+          <p className="text-white">Loading submissions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 p-4 lg:p-8">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center"
+        >
+          <h1 className="text-4xl lg:text-5xl font-bold text-white mb-4">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-200 via-indigo-300 to-purple-200">
+              Form Submissions
+            </span>
+          </h1>
+          <p className="text-xl text-blue-100/80 max-w-3xl mx-auto">
+            Comprehensive analytics and management for your form submissions
+          </p>
         </motion.div>
 
-        {/* Quick Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
-        >
-          {quickStats.map((stat, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              whileHover={{ scale: 1.02, y: -5 }}
-            >
-              <Card className={`${theme === 'light' 
-                ? 'bg-white/90 border-white/50 shadow-xl hover:shadow-2xl' 
-                : 'bg-gray-800/50 border-gray-700 shadow-2xl hover:shadow-emerald-500/10'
-              } backdrop-blur-sm transition-all duration-500 overflow-hidden relative group cursor-pointer`}>
-                
-                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white/10 to-transparent rounded-bl-full opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
-                
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className={`text-sm font-medium ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
-                    {stat.title}
-                  </CardTitle>
-                  <motion.div 
-                    whileHover={{ rotate: 15, scale: 1.1 }}
-                    className={`p-2 bg-gradient-to-r ${stat.color} rounded-lg shadow-lg`}
-                  >
-                    <stat.icon className="h-5 w-5 text-white" />
-                  </motion.div>
-                </CardHeader>
-                <CardContent>
-                  <div className={`text-3xl font-bold bg-gradient-to-r ${stat.color} bg-clip-text text-transparent mb-1`}>
-                    {stat.value}
+        {/* Analytics Cards */}
+        {analytics && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          >
+            <Card className="bg-gradient-to-br from-blue-600/20 to-blue-800/20 backdrop-blur-sm border border-blue-400/30">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-blue-200 text-sm font-medium">Total Submissions</p>
+                    <p className="text-3xl font-bold text-white">{analytics.totalSubmissions}</p>
                   </div>
-                  <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                    {stat.change}
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {/* Search and Filters */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="flex flex-col sm:flex-row gap-4 mb-6"
-        >
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search submissions..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={`pl-10 ${theme === 'light' ? 'bg-white/80 border-gray-300' : 'bg-gray-800/50 border-gray-600'} backdrop-blur-sm rounded-xl`}
-            />
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" className={`${theme === 'light' ? 'bg-white/80' : 'bg-gray-800/50'} backdrop-blur-sm`}>
-              <Filter className="h-4 w-4 mr-2" />
-              Filter
-            </Button>
-            <Button variant="outline" size="sm" className={`${theme === 'light' ? 'bg-white/80' : 'bg-gray-800/50'} backdrop-blur-sm`}>
-              <Calendar className="h-4 w-4 mr-2" />
-              Date Range
-            </Button>
-          </div>
-        </motion.div>
-
-        {/* Submissions Table */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <Card className={`${theme === 'light' 
-            ? 'bg-white/90 border-white/50 shadow-xl' 
-            : 'bg-gray-800/50 border-gray-700 shadow-2xl'
-          } backdrop-blur-sm overflow-hidden`}>
-            <CardHeader className="border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between">
-                <CardTitle className={`text-xl ${theme === 'light' ? 'text-gray-900' : 'text-white'} flex items-center gap-2`}>
-                  <Database className="h-5 w-5" />
-                  Submissions ({filteredSubmissions.length})
-                </CardTitle>
-                <div className="flex items-center gap-2">
-                  <Badge className="bg-green-100 text-green-700 px-3 py-1">
-                    {filteredSubmissions.filter(s => s.status === 'completed').length} Completed
-                  </Badge>
-                  <Button variant="ghost" size="sm">
-                    <BarChart3 className="h-4 w-4 mr-2" />
-                    View Analytics
-                  </Button>
+                  <FileText className="h-8 w-8 text-blue-300" />
                 </div>
+                <div className="mt-2 flex items-center text-sm">
+                  <TrendingUp className="h-4 w-4 text-green-400 mr-1" />
+                  <span className="text-green-400">+{analytics.todaySubmissions} today</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-purple-600/20 to-purple-800/20 backdrop-blur-sm border border-purple-400/30">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-purple-200 text-sm font-medium">Average Score</p>
+                    <p className="text-3xl font-bold text-white">{analytics.averageScore}</p>
+                  </div>
+                  <Star className="h-8 w-8 text-purple-300" />
+                </div>
+                <div className="mt-2 flex items-center text-sm">
+                  <ThumbsUp className="h-4 w-4 text-green-400 mr-1" />
+                  <span className="text-green-400">Excellent rating</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-green-600/20 to-green-800/20 backdrop-blur-sm border border-green-400/30">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-green-200 text-sm font-medium">Completion Rate</p>
+                    <p className="text-3xl font-bold text-white">{analytics.completionRate}%</p>
+                  </div>
+                  <CheckCircle className="h-8 w-8 text-green-300" />
+                </div>
+                <div className="mt-2 flex items-center text-sm">
+                  <BarChart3 className="h-4 w-4 text-blue-400 mr-1" />
+                  <span className="text-blue-400">Above average</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-orange-600/20 to-orange-800/20 backdrop-blur-sm border border-orange-400/30">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-orange-200 text-sm font-medium">Mobile Users</p>
+                    <p className="text-3xl font-bold text-white">{analytics.deviceBreakdown.mobile}%</p>
+                  </div>
+                  <Users className="h-8 w-8 text-orange-300" />
+                </div>
+                <div className="mt-2 flex items-center text-sm">
+                  <TrendingUp className="h-4 w-4 text-green-400 mr-1" />
+                  <span className="text-green-400">Growing segment</span>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Main Content */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700/50 shadow-2xl"
+        >
+          <Tabs defaultValue="submissions" className="w-full">
+            <div className="border-b border-gray-700/50 px-6 pt-6">
+              <TabsList className="grid w-full max-w-md grid-cols-2">
+                <TabsTrigger value="submissions">Submissions</TabsTrigger>
+                <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              </TabsList>
+            </div>
+
+            <TabsContent value="submissions" className="p-6">
+              {/* Filters and Search */}
+              <div className="flex flex-col lg:flex-row gap-4 mb-6">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search submissions..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 bg-gray-700/70 border-gray-600 text-white"
+                  />
+                </div>
+
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-40 bg-gray-700/70 border-gray-600 text-white">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-700">
+                    <SelectItem value="all" className="text-white hover:bg-gray-700">All Status</SelectItem>
+                    <SelectItem value="new" className="text-white hover:bg-gray-700">New</SelectItem>
+                    <SelectItem value="reviewed" className="text-white hover:bg-gray-700">Reviewed</SelectItem>
+                    <SelectItem value="processed" className="text-white hover:bg-gray-700">Processed</SelectItem>
+                    <SelectItem value="archived" className="text-white hover:bg-gray-700">Archived</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={dateFilter} onValueChange={setDateFilter}>
+                  <SelectTrigger className="w-40 bg-gray-700/70 border-gray-600 text-white">
+                    <SelectValue placeholder="Date" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-700">
+                    <SelectItem value="all" className="text-white hover:bg-gray-700">All Time</SelectItem>
+                    <SelectItem value="today" className="text-white hover:bg-gray-700">Today</SelectItem>
+                    <SelectItem value="week" className="text-white hover:bg-gray-700">This Week</SelectItem>
+                    <SelectItem value="month" className="text-white hover:bg-gray-700">This Month</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Button 
+                  onClick={() => handleBulkAction('export')}
+                  disabled={selectedSubmissions.length === 0}
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export
+                </Button>
               </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              {filteredSubmissions.length === 0 ? (
-                <div className="text-center py-16">
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <Database className={`h-16 w-16 mx-auto mb-4 ${theme === 'light' ? 'text-gray-400' : 'text-gray-600'}`} />
-                    <h3 className={`text-xl font-semibold mb-2 ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                      No submissions found
-                    </h3>
-                    <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} mb-6`}>
-                      {searchTerm ? 'Try adjusting your search terms' : 'No submissions have been received yet'}
-                    </p>
-                    <Button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-                      <Sparkles className="h-4 w-4 mr-2" />
-                      Share Form
-                    </Button>
-                  </motion.div>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className={theme === 'light' ? 'bg-gray-50' : 'bg-gray-800/50'}>
-                        <TableHead className="font-semibold">Date & Time</TableHead>
-                        <TableHead className="font-semibold">Status</TableHead>
-                        <TableHead className="font-semibold">Preview</TableHead>
-                        <TableHead className="text-right font-semibold">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredSubmissions.map((submission, index) => (
-                        <motion.tr
-                          key={submission.id}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          className={`border-b border-gray-200 dark:border-gray-700 hover:${theme === 'light' ? 'bg-gray-50' : 'bg-gray-700/50'} transition-colors cursor-pointer`}
-                        >
-                          <TableCell className="font-medium py-4">
-                            <div className="flex items-center gap-2">
-                              <Clock className="h-4 w-4 text-gray-400" />
-                              {formatDate(submission.timestamp)}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={`${
-                              submission.status === 'completed' 
-                                ? 'bg-green-100 text-green-700 border-green-200' 
-                                : 'bg-yellow-100 text-yellow-700 border-yellow-200'
-                            }`}>
-                              {submission.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="max-w-md">
-                              {Object.entries(submission.data).slice(0, 2).map(([key, value]) => (
-                                <div key={key} className="text-sm mb-1">
-                                  <span className={`font-medium ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
-                                    {key}:
-                                  </span>{' '}
-                                  <span className={theme === 'light' ? 'text-gray-600' : 'text-gray-400'}>
-                                    {String(value).substring(0, 50)}
-                                    {String(value).length > 50 ? '...' : ''}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => setSelectedSubmission(submission)}
-                                  className="hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20"
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                              </motion.div>
-                              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </motion.div>
-                            </div>
-                          </TableCell>
-                        </motion.tr>
-                      ))}
-                    </TableBody>
-                  </Table>
+
+              {/* Bulk Actions */}
+              {selectedSubmissions.length > 0 && (
+                <div className="mb-4 p-3 bg-blue-500/20 border border-blue-400/30 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200 text-sm">
+                      {selectedSubmissions.length} submission(s) selected
+                    </span>
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => handleBulkAction('archive')}
+                        className="border-blue-400 text-blue-200 hover:bg-blue-500/20"
+                      >
+                        <Archive className="h-4 w-4 mr-2" />
+                        Archive
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => handleBulkAction('delete')}
+                        className="border-red-400 text-red-200 hover:bg-red-500/20"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+
+              {/* Submissions Table */}
+              <div className="bg-gray-800/80 rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader className="bg-gray-800/90">
+                    <TableRow className="hover:bg-gray-700/50">
+                      <TableHead className="text-white">
+                        <input
+                          type="checkbox"
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedSubmissions(paginatedSubmissions.map(s => s.id));
+                            } else {
+                              setSelectedSubmissions([]);
+                            }
+                          }}
+                          className="rounded border-gray-600 bg-gray-700"
+                        />
+                      </TableHead>
+                      <TableHead className="text-white">Submitter</TableHead>
+                      <TableHead className="text-white">Status</TableHead>
+                      <TableHead className="text-white">Date</TableHead>
+                      <TableHead className="text-white">Score</TableHead>
+                      <TableHead className="text-white">Device</TableHead>
+                      <TableHead className="text-white">Location</TableHead>
+                      <TableHead className="text-white text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedSubmissions.map((submission) => (
+                      <TableRow key={submission.id} className="hover:bg-gray-700/50">
+                        <TableCell>
+                          <input
+                            type="checkbox"
+                            checked={selectedSubmissions.includes(submission.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedSubmissions([...selectedSubmissions, submission.id]);
+                              } else {
+                                setSelectedSubmissions(selectedSubmissions.filter(id => id !== submission.id));
+                              }
+                            }}
+                            className="rounded border-gray-600 bg-gray-700"
+                          />
+                        </TableCell>
+                        <TableCell className="text-white">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-blue-500/20 rounded-full">
+                              <Users className="h-4 w-4 text-blue-400" />
+                            </div>
+                            <div>
+                              <p className="font-medium">{submission.data.name}</p>
+                              <p className="text-sm text-gray-400">{submission.data.email}</p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getStatusColor(submission.status)}>
+                            {submission.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-gray-300">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3 text-gray-500" />
+                            {new Date(submission.submissionDate).toLocaleDateString()}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-gray-300">
+                          {submission.score && (
+                            <div className="flex items-center gap-1">
+                              <Star className="h-3 w-3 text-yellow-500" />
+                              {submission.score}/5
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-gray-300 capitalize">{submission.device}</TableCell>
+                        <TableCell className="text-gray-300">
+                          {submission.location && (
+                            <div className="flex items-center gap-1">
+                              <MapPin className="h-3 w-3 text-gray-500" />
+                              {submission.location}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-gray-700"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 w-8 p-0 text-gray-400 hover:text-red-400 hover:bg-gray-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-gray-700"
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+
+                {renderPagination()}
+              </div>
+
+              {paginatedSubmissions.length === 0 && (
+                <div className="text-center py-12">
+                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-white mb-2">No submissions found</h3>
+                  <p className="text-gray-400 mb-4">
+                    {searchTerm || statusFilter !== 'all' || dateFilter !== 'all' ? 
+                      "Try adjusting your search terms or filters" : 
+                      "No submissions have been received yet"
+                    }
+                  </p>
+                  {(searchTerm || statusFilter !== 'all' || dateFilter !== 'all') && (
+                    <Button 
+                      onClick={() => {
+                        setSearchTerm('');
+                        setStatusFilter('all');
+                        setDateFilter('all');
+                      }}
+                      className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600"
+                    >
+                      Clear Filters
+                    </Button>
+                  )}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="analytics" className="p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Device Breakdown */}
+                <Card className="bg-gray-700/50 border-gray-600">
+                  <CardHeader>
+                    <CardTitle className="text-white">Device Breakdown</CardTitle>
+                    <CardDescription className="text-gray-400">
+                      Submission distribution by device type
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {analytics && Object.entries(analytics.deviceBreakdown).map(([device, count]) => (
+                      <div key={device} className="flex items-center justify-between py-2">
+                        <span className="text-gray-300 capitalize">{device}</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-32 bg-gray-600 rounded-full h-2">
+                            <div 
+                              className="bg-blue-500 h-2 rounded-full" 
+                              style={{ width: `${(count / analytics.totalSubmissions) * 100}%` }}
+                            />
+                          </div>
+                          <span className="text-white text-sm font-medium">{count}%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+
+                {/* Location Data */}
+                <Card className="bg-gray-700/50 border-gray-600">
+                  <CardHeader>
+                    <CardTitle className="text-white">Top Locations</CardTitle>
+                    <CardDescription className="text-gray-400">
+                      Submissions by geographic location
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {analytics && Object.entries(analytics.locationData)
+                      .sort(([,a], [,b]) => b - a)
+                      .slice(0, 5)
+                      .map(([location, count]) => (
+                      <div key={location} className="flex items-center justify-between py-2">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-blue-400" />
+                          <span className="text-gray-300">{location}</span>
+                        </div>
+                        <Badge className="bg-blue-100 text-blue-700">
+                          {count}
+                        </Badge>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
         </motion.div>
       </div>
-
-      {/* Submission Details Dialog */}
-      <Dialog
-        open={!!selectedSubmission}
-        onOpenChange={() => setSelectedSubmission(null)}
-      >
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Eye className="h-5 w-5" />
-              Submission Details
-            </DialogTitle>
-            <DialogDescription>
-              Submitted on {selectedSubmission && formatDate(selectedSubmission.timestamp)}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="mt-4 space-y-4">
-            {selectedSubmission && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`${theme === 'light' ? 'bg-gray-50' : 'bg-gray-800'} p-6 rounded-xl border ${theme === 'light' ? 'border-gray-200' : 'border-gray-700'}`}
-              >
-                {Object.entries(selectedSubmission.data).map(([key, value]) => (
-                  <div key={key} className="mb-4 last:mb-0">
-                    <div className={`text-sm font-semibold ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} mb-2 flex items-center gap-2`}>
-                      <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                      {key.charAt(0).toUpperCase() + key.slice(1)}
-                    </div>
-                    <div className={`${theme === 'light' ? 'text-gray-900' : 'text-white'} break-words p-3 rounded-lg ${theme === 'light' ? 'bg-white border border-gray-200' : 'bg-gray-700 border border-gray-600'}`}>
-                      {String(value)}
-                    </div>
-                  </div>
-                ))}
-              </motion.div>
-            )}
-            <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setSelectedSubmission(null)}>
-                Close
-              </Button>
-              <Button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

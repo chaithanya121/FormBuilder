@@ -1,4 +1,6 @@
 
+import { FormElement } from '../components/FormBuilder/types';
+
 export interface CalculationField {
   id: string;
   name: string;

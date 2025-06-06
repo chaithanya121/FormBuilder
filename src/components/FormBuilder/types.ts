@@ -122,6 +122,36 @@ export interface FormConfig {
       required?: boolean;
       text?: string;
     };
+    // Enhanced capabilities
+    calculations?: {
+      enabled?: boolean;
+      fields?: any[];
+    };
+    notifications?: {
+      enabled?: boolean;
+      rules?: any[];
+    };
+    integrations?: {
+      api?: boolean;
+      cloudStorage?: string[];
+      database?: boolean;
+      realTimeTracking?: boolean;
+    };
+    accessibility?: {
+      screenReader?: boolean;
+      wcagCompliant?: boolean;
+      highContrast?: boolean;
+    };
+    collaboration?: {
+      comments?: boolean;
+      assignments?: boolean;
+      workflow?: boolean;
+    };
+    mobileLayout?: {
+      responsive?: boolean;
+      customBreakpoints?: Record<string, number>;
+      mobileSpecificElements?: string[];
+    };
   };
 }
 

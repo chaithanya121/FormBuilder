@@ -47,7 +47,7 @@ import {isEmpty} from 'lodash'
 import { useSelector, useDispatch } from 'react-redux'
 import { platformApi } from '@/services/api/platform';
 import { AppDispatch, RootState } from '@/store';
-
+import { useNavigate } from 'react-router-dom';
 interface Base64ImageProps {
   base64String: string;
   contentType: string;
@@ -60,6 +60,8 @@ const MainDashboard = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [platformCards,setPlatFormCards]= useState([])
   const platform = useSelector((state: RootState) => state.platform.platform)
+   const navigate = useNavigate();
+  const [activeView, setActiveView] = useState<'overview' | 'forms'>('overview');
 
   useEffect(() => {
     dispatch(getPlatform());
@@ -245,8 +247,43 @@ function Base64Svg({ base64String, className = "" }) {
       </div>
 
       <div className="max-w-7xl mx-auto space-y-8 relative z-10 p-6">
+
+           {/* Hero Section */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  className="text-center mb-16"
+                >
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                    className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-full mb-8"
+                  >
+                    <Sparkles className="h-5 w-5" />
+                    <span className="font-medium">BuildCraft Platform</span>
+                    <Zap className="h-5 w-5" />
+                  </motion.div>
+                  
+                  <h1 className={`text-5xl md:text-7xl font-bold mb-6 ${theme === 'light'
+                    ? 'bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent'
+                    : 'bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent'
+                  }`}>
+                     Your Creative Workspace
+                    <br />
+                    <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
+                      Create Everything
+                    </span>
+                  </h1>
+                  
+                  <p className={`text-xl md:text-2xl mb-8 max-w-3xl mx-auto ${theme === 'light' ? 'text-gray-600' : 'text-gray-300'}`}>
+                    Build powerful forms, track insights, and optimize your workflow with AI-powered tools. 
+            Your productivity hub for creating professional digital experiences.
+                  </p>
+                </motion.div>
         {/* Welcome Hero Section */}
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -305,7 +342,7 @@ function Base64Svg({ base64String, className = "" }) {
               </Button>
             </Link>
           </motion.div>
-        </motion.div>
+        </motion.div> */}
 
         {/* Enhanced Stats Grid */}
         <motion.div
@@ -651,7 +688,61 @@ function Base64Svg({ base64String, className = "" }) {
             </motion.div>
           </div>
         </div>
+
+
+
+          {/* Enhanced Call to Action */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+              >
+                <Card className="bg-gradient-to-r from-blue-500 via-purple-600 to-pink-600 text-white border-0 shadow-xl relative overflow-hidden">
+                  <div className="absolute inset-0 opacity-20">
+                    <svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                      <g fill="none" fillRule="evenodd">
+                        <g fill="#ffffff" fillOpacity="0.1">
+                          <circle cx="30" cy="30" r="2"/>
+                        </g>
+                      </g>
+                    </svg>
+                  </div>
+                  <CardContent className="p-8 text-center relative">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                      className="w-16 h-16 mx-auto mb-4 opacity-80"
+                    >
+                      <Zap className="w-full h-full" />
+                    </motion.div>
+                    <h3 className="text-2xl font-bold mb-4">Ready to Build Something Amazing?</h3>
+                    <p className="text-lg opacity-90 mb-6 max-w-2xl mx-auto">
+                      Join thousands of creators who are building beautiful, functional projects with our platform
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                      <Button 
+                        size="lg" 
+                        className="bg-white text-blue-600 hover:bg-gray-100"
+                        onClick={() => setActiveView('forms')}
+                      >
+                        <FileText className="h-5 w-5 mr-2" />
+                        Start Building Forms
+                      </Button>
+                      <Button 
+                        size="lg" 
+                        variant="outline" 
+                        className="bg-white text-blue-600 hover:bg-gray-100"
+                        onClick={() => navigate('/tools/ai-form-generator')}
+                      >
+                        <Brain className="h-5 w-5 mr-2" />
+                        Try AI Generator
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
       </div>
+
     </div>
   );
 };

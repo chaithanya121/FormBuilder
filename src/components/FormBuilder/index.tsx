@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import EnhancedFormElementLibrary from './EnhancedFormElementLibrary';
 import EnhancedFormCanvas from './EnhancedFormCanvas';
 import EnhancedFormPropertiesPanel from './EnhancedFormPropertiesPanel';
+import EnhancedRightSidebar from './EnhancedRightSidebar';
+import IntegrationsHub from './Integrations/IntegrationsHub';
 import FormDesigner from './FormDesigner';
 import SaveSuccessDialog from './SaveSuccessDialog';
 import ModernFloatingActions from './ModernFloatingActions';
@@ -119,8 +121,7 @@ const FormBuilder: React.FC = () => {
   const [selectedElement, setSelectedElement] = useState<FormElement | null>(null);
   const [activePanel, setActivePanel] = useState<'elements' | 'configuration' | 'designer' | 'advanced'>('elements');
   const [showSaveDialog, setShowSaveDialog] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [elementFilter, setElementFilter] = useState('all');
+  const [currentView, setCurrentView] = useState<'builder' | 'integrations' | 'designer' | 'advanced'>('builder');
 
   // Enhanced modal states
   const [showViewCode, setShowViewCode] = useState(false);
@@ -173,11 +174,18 @@ const FormBuilder: React.FC = () => {
     setSelectedElement(updatedElement);
   };
 
+  const onElementAdd = (element: FormElement) => {
+    setFormConfig(prev => ({
+      ...prev,
+      elements: [...prev.elements, element]
+    }));
+  };
+
   // Enhanced calculation handling
   const handleAddCalculation = () => {
     setShowCalculationBuilder(true);
   };
-
+  
   const handleSaveCalculation = (calculation: any) => {
     setFormConfig(prev => ({
       ...prev,
@@ -192,12 +200,12 @@ const FormBuilder: React.FC = () => {
     }));
     setShowCalculationBuilder(false);
   };
-
+  
   // Enhanced notification handling
   const handleAddNotification = () => {
     setShowNotificationBuilder(true);
   };
-
+  
   const handleSaveNotification = (rule: any) => {
     setFormConfig(prev => ({
       ...prev,
@@ -326,6 +334,22 @@ const FormBuilder: React.FC = () => {
     input.click();
   };
 
+  const handleNavigateToIntegrations = () => {
+    setCurrentView('integrations');
+  };
+
+  const handleNavigateToDesigner = () => {
+    setCurrentView('designer');
+  };
+
+  const handleNavigateToAdvanced = () => {
+    setCurrentView('advanced');
+  };
+
+  const handleBackToBuilder = () => {
+    setCurrentView('builder');
+  };
+
   const handleQuickAction = (action: string) => {
     switch (action) {
       case 'view-code':
@@ -392,8 +416,8 @@ const FormBuilder: React.FC = () => {
       case 'elements':
         return (
           <EnhancedFormElementLibrary 
-            onDragStart={handleDragStart} 
-            onClose={() => setActivePanel('configuration')}
+            onElementAdd={onElementAdd}
+            formConfig={formConfig}
           />
         );
       case 'configuration':
@@ -506,6 +530,17 @@ const FormBuilder: React.FC = () => {
     }
   };
 
+  // Render different views based on currentView state
+  if (currentView === 'integrations') {
+    return (
+      <IntegrationsHub 
+        onBack={handleBackToBuilder}
+        formConfig={formConfig}
+        onUpdate={setFormConfig}
+      />
+    );
+  }
+
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-gray-50 to-blue-50">
       {/* Enhanced Header */}
@@ -563,21 +598,21 @@ const FormBuilder: React.FC = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={() => navigate('/admin/dashboard')}
-                className="hidden lg:flex border-green-200 text-green-700 hover:bg-green-50"
+                onClick={handleNavigateToIntegrations}
+                className="hidden lg:flex border-purple-200 text-purple-700 hover:bg-purple-50"
               >
-                <Activity className="h-4 w-4 mr-1 xl:mr-2" />
-                <span className="hidden xl:inline">Admin</span>
+                <Zap className="h-4 w-4 mr-1 xl:mr-2" />
+                <span className="hidden xl:inline">Integrations</span>
               </Button>
 
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={() => navigate('/realtime-tracker')}
-                className="hidden lg:flex border-orange-200 text-orange-700 hover:bg-orange-50"
+                onClick={() => navigate('/admin/dashboard')}
+                className="hidden lg:flex border-green-200 text-green-700 hover:bg-green-50"
               >
-                <TrendingUp className="h-4 w-4 mr-1 xl:mr-2" />
-                <span className="hidden xl:inline">Live</span>
+                <Activity className="h-4 w-4 mr-1 xl:mr-2" />
+                <span className="hidden xl:inline">Admin</span>
               </Button>
 
               <Button 
@@ -651,68 +686,12 @@ const FormBuilder: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="w-72 xl:w-80 border-l border-gray-200 bg-gradient-to-b from-gray-50/95 to-white/95 backdrop-blur-md overflow-y-auto shadow-lg hidden xl:flex flex-col"
         >
-          <div className="p-4 xl:p-6 space-y-4 xl:space-y-6">
-            {/* Enhanced B2C Insights */}
-            <B2CInsights formConfig={formConfig} />
-
-            {/* Enhanced Analytics */}
-            <Card className="p-3 xl:p-4 bg-white/80 backdrop-blur-sm border-gray-200/50">
-              <div className="flex items-center gap-2 mb-3">
-                <Activity className="h-4 w-4 text-blue-500" />
-                <h3 className="font-semibold text-sm xl:text-base">Enhanced Analytics</h3>
-              </div>
-              <div className="space-y-2 xl:space-y-3 text-xs xl:text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Total Elements:</span>
-                  <Badge variant="outline" className="text-xs">{formConfig.elements.length}</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Calculations:</span>
-                  <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 text-xs">
-                    {formConfig.settings.calculations?.fields?.length || 0}
-                  </Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Notifications:</span>
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
-                    {formConfig.settings.notifications?.rules?.length || 0}
-                  </Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Cloud Storage:</span>
-                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
-                    {formConfig.settings.integrations?.cloudStorage?.length || 0}
-                  </Badge>
-                </div>
-              </div>
-            </Card>
-
-            {/* Enhanced Features Status */}
-            <Card className="p-3 xl:p-4 bg-white/80 backdrop-blur-sm border-gray-200/50">
-              <div className="flex items-center gap-2 mb-3">
-                <Zap className="h-4 w-4 text-yellow-500" />
-                <h3 className="font-semibold text-sm xl:text-base">Enhanced Features</h3>
-              </div>
-              <div className="space-y-2 text-xs">
-                <div className="flex items-center justify-between">
-                  <span>Real-time Tracking</span>
-                  <Badge className="bg-green-100 text-green-700 text-xs">Active</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Mobile Optimized</span>
-                  <Badge className="bg-green-100 text-green-700 text-xs">Enabled</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>WCAG Compliant</span>
-                  <Badge className="bg-green-100 text-green-700 text-xs">Active</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>AI Enhanced</span>
-                  <Badge className="bg-purple-100 text-purple-700 text-xs">Ready</Badge>
-                </div>
-              </div>
-            </Card>
-          </div>
+          <EnhancedRightSidebar 
+            formConfig={formConfig}
+            onNavigateToIntegrations={handleNavigateToIntegrations}
+            onNavigateToDesigner={handleNavigateToDesigner}
+            onNavigateToAdvanced={handleNavigateToAdvanced}
+          />
         </motion.div>
       </div>
 

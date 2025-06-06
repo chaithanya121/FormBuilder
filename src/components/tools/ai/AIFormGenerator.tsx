@@ -143,13 +143,13 @@ export const AIFormGenerator = () => {
           className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6"
         >
           <div className="flex items-center gap-4">
-            <Link to="/tools">
+            {/* <Link to="/tools">
               <Button variant="outline" size="sm" className={`${theme === 'light' ? 'bg-white/80 hover:bg-white' : 'bg-gray-800/50 hover:bg-gray-700'} backdrop-blur-sm border-gray-300 dark:border-gray-600`}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Tools
               </Button>
             </Link>
-            <ChevronRight className="h-4 w-4 text-gray-400" />
+            <ChevronRight className="h-4 w-4 text-gray-400" /> */}
             <div className="flex items-center gap-4">
               <motion.div 
                 initial={{ scale: 0.8, rotate: -10 }}

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-// import Header from '@/layout/Header';
 import Header from '@/components/Header';
 import Footer from './Footer';
 import Sidebar from './Sidebar';
+import ModernBreadcrumb from '@/components/ModernBreadcrumb';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useTheme } from '@/components/theme-provider';
@@ -24,6 +24,9 @@ const Layout = ({ children }: LayoutProps) => {
   const isPublishedForm = location.pathname.startsWith('/form/');
   // Check if we're in the form builder
   const isFormBuilder = location.pathname.startsWith('/form-builder/') || location.pathname === '/create';
+  
+  // Determine if we should show breadcrumbs
+  const showBreadcrumbs = !isPublishedForm && !isFormBuilder && location.pathname !== '/';
 
   // Always keep sidebar closed by default
   useEffect(() => {
@@ -70,7 +73,13 @@ const Layout = ({ children }: LayoutProps) => {
         </div>
       )}
       
-      <div className={`flex flex-1 ${showHeader ? 'pt-16' : ''}`}>
+      {showBreadcrumbs && (
+        <div className={`${showHeader ? 'mt-16' : ''} sticky top-16 z-20`}>
+          <ModernBreadcrumb />
+        </div>
+      )}
+      
+      <div className={`flex flex-1 ${showHeader ? (showBreadcrumbs ? 'pt-16' : 'pt-16') : ''}`}>
         <main className={`flex-1 ${theme === 'light' ? 'bg-white' : 'bg-gradient-to-b from-gray-900 to-gray-800'} transition-all duration-300`}>
           <div className="w-full">
             <div className="animate-fade-in">
