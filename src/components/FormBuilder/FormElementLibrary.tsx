@@ -142,13 +142,10 @@ const FormElementLibrary: React.FC<FormElementLibraryProps> = ({ onDragStart }) 
 
   const handleElementClick = (elementType: string) => {
     if (onDragStart) {
-      const mockDragEvent = {
-        dataTransfer: {
-          setData: () => {},
-          effectAllowed: 'copy'
-        }
-      } as React.DragEvent<HTMLDivElement>;
-      onDragStart(mockDragEvent, elementType);
+      // Create a proper mock drag event or use a different approach
+      console.log('Element clicked:', elementType);
+      // For now, we'll just call onDragStart with null event to indicate it's a click
+      onDragStart(null as any, elementType);
     }
   };
 
