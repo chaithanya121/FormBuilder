@@ -9,7 +9,7 @@ import EnhancedFormCanvas from './EnhancedFormCanvas';
 import EnhancedFormPropertiesPanel from './EnhancedFormPropertiesPanel';
 import EnhancedRightSidebar from './EnhancedRightSidebar';
 import FormStylesPanel from './FormStylesPanel';
-import LayoutControls from './LayoutControls';
+import HeaderLayoutControls from './HeaderLayoutControls';
 import IntegrationsHub from './Integrations/IntegrationsHub';
 import FormDesigner from './FormDesigner';
 import SaveSuccessDialog from './SaveSuccessDialog';
@@ -632,6 +632,12 @@ const FormBuilder: React.FC = () => {
 
             {/* Enhanced Action Buttons */}
             <div className="flex items-center gap-1 xl:gap-3 flex-shrink-0">
+              {/* Header Layout Controls */}
+              <HeaderLayoutControls
+                formConfig={formConfig}
+                onUpdate={handleFormConfigUpdate}
+              />
+
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -699,19 +705,13 @@ const FormBuilder: React.FC = () => {
           </AnimatePresence>
         </motion.div>
 
-        {/* Center Canvas Area with Layout Controls */}
+        {/* Center Canvas Area - Layout Controls Removed */}
         <motion.div 
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
           className="flex-1 flex flex-col overflow-hidden relative"
         >
-          {/* Layout Controls */}
-          <LayoutControls
-            formConfig={formConfig}
-            onUpdate={handleFormConfigUpdate}
-          />
-          
           <EnhancedFormCanvas
             elements={formConfig.elements}
             setFormConfig={handleFormConfigUpdate}

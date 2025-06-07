@@ -199,7 +199,10 @@ const EnhancedFormCanvas: React.FC<FormCanvasProps> = ({
       border: '1px solid rgba(255, 255, 255, 0.2)',
       backdropFilter: 'blur(20px)',
       position: 'relative' as const,
-      overflow: 'hidden' as const
+      overflow: 'hidden' as const,
+      fontFamily: styles.fontFamily || 'Inter',
+      fontSize: `${styles.fontSize || 16}px`,
+      color: styles.fontColor || '#000000'
     };
   };
 
@@ -256,6 +259,12 @@ const EnhancedFormCanvas: React.FC<FormCanvasProps> = ({
       }`}
       onClick={() => onSelectElement(element)}
       onDragOver={(e) => handleDragOver(e, index)}
+      style={{
+        marginBottom: `${formConfig.settings?.layout?.questionSpacing || 24}px`,
+        fontFamily: formConfig.settings?.canvasStyles?.fontFamily || 'Inter',
+        fontSize: `${formConfig.settings?.canvasStyles?.fontSize || 16}px`,
+        color: formConfig.settings?.canvasStyles?.fontColor || '#000000'
+      }}
     >
       {/* Element Controls */}
       <div className="absolute -top-2 -right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
@@ -460,6 +469,10 @@ const EnhancedFormCanvas: React.FC<FormCanvasProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
             className="text-center mb-8"
+            style={{
+              fontFamily: formConfig.settings?.canvasStyles?.fontFamily || 'Inter',
+              color: formConfig.settings?.canvasStyles?.fontColor || '#000000'
+            }}
           >
             <h1 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               {formConfig.name || 'Untitled Form'}

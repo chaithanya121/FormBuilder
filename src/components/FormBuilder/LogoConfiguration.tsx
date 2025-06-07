@@ -79,6 +79,63 @@ const LogoConfiguration: React.FC<LogoConfigurationProps> = ({
     });
   }, [formConfig, onUpdate]);
 
+  // Function to handle alignment preset changes
+  const handleAlignmentChange = useCallback((alignment: string) => {
+    let newTop = 20;
+    let newLeft = 20;
+
+    // Calculate position based on alignment
+    switch (alignment) {
+      case 'top-left':
+        newTop = 20;
+        newLeft = 20;
+        break;
+      case 'top-center':
+        newTop = 20;
+        newLeft = 50; // Will be centered using CSS transform
+        break;
+      case 'top-right':
+        newTop = 20;
+        newLeft = 80; // Percentage from left
+        break;
+      case 'center':
+        newTop = 50;
+        newLeft = 50;
+        break;
+      case 'bottom-left':
+        newTop = 80;
+        newLeft = 20;
+        break;
+      case 'bottom-center':
+        newTop = 80;
+        newLeft = 50;
+        break;
+      case 'bottom-right':
+        newTop = 80;
+        newLeft = 80;
+        break;
+      default:
+        break;
+    }
+
+    // Update both alignment and position
+    onUpdate({
+      ...formConfig,
+      settings: {
+        ...formConfig.settings,
+        logo: {
+          ...logoSettings,
+          position: {
+            ...logoSettings.position,
+            alignment: alignment,
+            top: newTop,
+            left: newLeft
+          }
+        }
+      }
+    });
+  }, [formConfig, logoSettings, onUpdate]);
+
   return (
     <div className="space-y-6 p-4">
       <Card>
@@ -201,12 +258,12 @@ const LogoConfiguration: React.FC<LogoConfigurationProps> = ({
               <div className="space-y-4">
                 <Label>Position & Alignment</Label>
                 
-                {/* Alignment Presets */}
+                {/* Alignment Presets - Now Fully Functional */}
                 <div className="space-y-2">
                   <Label className="text-sm">Quick Alignment</Label>
                   <Select
                     value={logoSettings.position?.alignment || 'top-left'}
-                    onValueChange={(value) => updateLogoPosition('alignment', value)}
+                    onValueChange={handleAlignmentChange}
                   >
                     <SelectTrigger>
                       <SelectValue />
