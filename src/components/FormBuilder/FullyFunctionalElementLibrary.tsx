@@ -263,7 +263,7 @@ const FormElementLibrary: React.FC<FormElementLibraryProps> = ({ onDragStart, on
                     <motion.div
                       key={element.type}
                       draggable
-                      onDragStart={(e) => handleDragStart(e, element.type)}
+                      onDragStart={(e: React.DragEvent<HTMLDivElement>) => handleDragStart(e, element.type)}
                       onClick={() => handleElementClick(element.type)}
                       className="group p-3 bg-white border border-gray-200 rounded-lg cursor-grab hover:cursor-grabbing hover:shadow-md hover:border-blue-300 transition-all duration-200 active:scale-95"
                       whileHover={{ scale: 1.02 }}
@@ -328,7 +328,7 @@ const FormElementLibrary: React.FC<FormElementLibraryProps> = ({ onDragStart, on
                             <TooltipTrigger asChild>
                               <motion.div
                                 draggable
-                                onDragStart={(e) => handleDragStart(e, element.type)}
+                                onDragStart={(e: React.DragEvent<HTMLDivElement>) => handleDragStart(e, element.type)}
                                 onClick={() => handleElementClick(element.type)}
                                 className="group p-3 bg-white border border-gray-200 rounded-lg cursor-grab hover:cursor-grabbing hover:shadow-md hover:border-blue-300 transition-all duration-200 active:scale-95"
                                 whileHover={{ scale: 1.02 }}
