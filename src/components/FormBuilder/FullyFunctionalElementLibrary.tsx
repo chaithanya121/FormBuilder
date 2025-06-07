@@ -260,14 +260,12 @@ const FormElementLibrary: React.FC<FormElementLibraryProps> = ({ onDragStart, on
               <ScrollArea className="flex-1">
                 <div className="space-y-2">
                   {currentCategory.elements.map((element) => (
-                    <motion.div
+                    <div
                       key={element.type}
                       draggable
                       onDragStart={(e: React.DragEvent<HTMLDivElement>) => handleDragStart(e, element.type)}
                       onClick={() => handleElementClick(element.type)}
                       className="group p-3 bg-white border border-gray-200 rounded-lg cursor-grab hover:cursor-grabbing hover:shadow-md hover:border-blue-300 transition-all duration-200 active:scale-95"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
                     >
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
@@ -294,7 +292,7 @@ const FormElementLibrary: React.FC<FormElementLibraryProps> = ({ onDragStart, on
                           </div>
                         </div>
                       </div>
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
               </ScrollArea>
@@ -326,13 +324,11 @@ const FormElementLibrary: React.FC<FormElementLibraryProps> = ({ onDragStart, on
                         {category.elements.map((element) => (
                           <Tooltip key={element.type}>
                             <TooltipTrigger asChild>
-                              <motion.div
+                              <div
                                 draggable
                                 onDragStart={(e: React.DragEvent<HTMLDivElement>) => handleDragStart(e, element.type)}
                                 onClick={() => handleElementClick(element.type)}
                                 className="group p-3 bg-white border border-gray-200 rounded-lg cursor-grab hover:cursor-grabbing hover:shadow-md hover:border-blue-300 transition-all duration-200 active:scale-95"
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
                               >
                                 <div className="flex items-center gap-3">
                                   <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
@@ -351,7 +347,7 @@ const FormElementLibrary: React.FC<FormElementLibraryProps> = ({ onDragStart, on
                                     </p>
                                   </div>
                                 </div>
-                              </motion.div>
+                              </div>
                             </TooltipTrigger>
                             <TooltipContent side="right" className="bg-white border shadow-lg">
                               <div className="max-w-xs">
