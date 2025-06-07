@@ -770,6 +770,7 @@ const FormBuilder: React.FC = () => {
             onExport={handleExport}
             onImport={handleImport}
             onPanelChange={handlePanelChange}
+            onNavigateToLogo={handleNavigateToLogo}
           />
         </motion.div>
       </div>
