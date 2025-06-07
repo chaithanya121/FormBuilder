@@ -97,6 +97,17 @@ export interface FormConfig {
       elementWidth?: 'auto' | 'full' | 'half' | 'third' | 'quarter' | 'custom';
       customWidth?: number;
     };
+    visual?: {
+      themeType?: string;
+      animations?: {
+        enabled?: boolean;
+        type?: string;
+      };
+      shadows?: {
+        enabled?: boolean;
+        intensity?: string;
+      };
+    };
     submitButton?: {
       text?: string;
       style?: string;
@@ -135,6 +146,9 @@ export interface FormConfig {
     preview?: {
       width?: string | number;
       nesting?: boolean;
+      mode?: string;
+      showGrid?: boolean;
+      showOutlines?: boolean;
     };
     validation?: {
       liveValidation?: string;

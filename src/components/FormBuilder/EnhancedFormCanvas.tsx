@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '@/components/ui/card';
@@ -6,10 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { FormConfig, FormElement, FormCanvasProps } from './types';
-import FormElementRenderer from './FormElementRenderer';
+import FormElementRenderer from '../FormElementRenderer';
 import { 
   Plus, Trash2, Copy, Settings, GripVertical, 
-  ChevronUp, ChevronDown, Grid, Layout, 
+  ChevronUp, ChevronDown, 
   Sparkles, Layers, Eye, Zap
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -24,7 +23,6 @@ const EnhancedFormCanvas: React.FC<FormCanvasProps> = ({
 }) => {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [gridMode, setGridMode] = useState<'single' | 'two' | 'three'>('single');
   const canvasRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -102,7 +100,6 @@ const EnhancedFormCanvas: React.FC<FormCanvasProps> = ({
   }, []);
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
-    // Only reset if we're leaving the canvas entirely
     if (!canvasRef.current?.contains(e.relatedTarget as Node)) {
       setDragOverIndex(null);
       setIsDragging(false);
@@ -199,157 +196,179 @@ const EnhancedFormCanvas: React.FC<FormCanvasProps> = ({
       border: '1px solid rgba(255, 255, 255, 0.2)',
       backdropFilter: 'blur(20px)',
       position: 'relative' as const,
-      overflow: 'hidden' as const
+      overflow: 'hidden' as const,
+      fontFamily: styles.fontFamily || 'Inter',
+      fontSize: `${styles.fontSize || 16}px`,
+      color: styles.fontColor || '#000000'
     };
   };
 
-  const gridColumns = {
-    single: 'grid-cols-1',
-    two: 'grid-cols-1 md:grid-cols-2',
-    three: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+  const getFormElementsContainerStyles = () => {
+    const layoutSettings = formConfig.settings?.layout || {};
+    const gridColumns = layoutSettings.gridColumns || 1;
+    
+    return {
+      display: 'grid',
+      gridTemplateColumns: `repeat(${gridColumns}, 1fr)`,
+      gap: `${layoutSettings.questionSpacing || 24}px`,
+      width: '100%'
+    };
   };
 
-  const renderGridModeToggle = () => (
-    <div className="flex items-center gap-2 mb-4 p-2 bg-white/80 backdrop-blur-sm rounded-lg border border-gray-200">
-      <span className="text-sm font-medium text-gray-700">Layout:</span>
-      <div className="flex rounded-md border border-gray-200 overflow-hidden">
-        <Button
-          size="sm"
-          variant={gridMode === 'single' ? 'default' : 'outline'}
-          onClick={() => setGridMode('single')}
-          className="rounded-none border-0 px-3 py-1"
-        >
-          <Layout className="h-3 w-3" />
-        </Button>
-        <Button
-          size="sm"
-          variant={gridMode === 'two' ? 'default' : 'outline'}
-          onClick={() => setGridMode('two')}
-          className="rounded-none border-0 px-3 py-1"
-        >
-          <Grid className="h-3 w-3" />
-        </Button>
-        <Button
-          size="sm"
-          variant={gridMode === 'three' ? 'default' : 'outline'}
-          onClick={() => setGridMode('three')}
-          className="rounded-none border-0 px-3 py-1"
-        >
-          <Layers className="h-3 w-3" />
-        </Button>
-      </div>
-    </div>
-  );
+  const getElementWidth = () => {
+    const layoutSettings = formConfig.settings?.layout || {};
+    const elementWidth = layoutSettings.elementWidth || 'full';
+    
+    switch (elementWidth) {
+      case 'auto':
+        return 'auto';
+      case 'half':
+        return '50%';
+      case 'third':
+        return '33.333%';
+      case 'quarter':
+        return '25%';
+      case 'custom':
+        return `${layoutSettings.customWidth || 100}%`;
+      default:
+        return '100%';
+    }
+  };
 
-  const renderElement = (element: FormElement, index: number) => (
-    <motion.div
-      key={element.id}
-      layout
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.3, delay: index * 0.05 }}
-      className={`group relative bg-white/90 backdrop-blur-sm rounded-xl border-2 transition-all duration-300 hover:shadow-lg ${
-        selectedElement?.id === element.id 
-          ? 'border-blue-500 shadow-lg ring-2 ring-blue-200' 
-          : 'border-gray-200 hover:border-blue-300'
-      }`}
-      onClick={() => onSelectElement(element)}
-      onDragOver={(e) => handleDragOver(e, index)}
-    >
-      {/* Element Controls */}
-      <div className="absolute -top-2 -right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleElementMove(element.id, 'up');
-          }}
-          disabled={index === 0}
-          className="h-6 w-6 p-0 bg-white/95 backdrop-blur-sm hover:bg-blue-50"
-        >
-          <ChevronUp className="h-3 w-3" />
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleElementMove(element.id, 'down');
-          }}
-          disabled={index === elements.length - 1}
-          className="h-6 w-6 p-0 bg-white/95 backdrop-blur-sm hover:bg-blue-50"
-        >
-          <ChevronDown className="h-3 w-3" />
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleElementDuplicate(element);
-          }}
-          className="h-6 w-6 p-0 bg-white/95 backdrop-blur-sm hover:bg-green-50"
-        >
-          <Copy className="h-3 w-3" />
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelectElement(element);
-          }}
-          className="h-6 w-6 p-0 bg-white/95 backdrop-blur-sm hover:bg-purple-50"
-        >
-          <Settings className="h-3 w-3" />
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleElementDelete(element.id);
-          }}
-          className="h-6 w-6 p-0 bg-white/95 backdrop-blur-sm hover:bg-red-50 text-red-600"
-        >
-          <Trash2 className="h-3 w-3" />
-        </Button>
-      </div>
+  const getLabelAlignment = (): 'top' | 'left' | 'right' => {
+    const layoutSettings = formConfig.settings?.layout || {};
+    const alignment = layoutSettings.labelAlignment || 'top';
+    
+    // Ensure the return value matches the expected literal types
+    if (alignment === 'left' || alignment === 'right' || alignment === 'top') {
+      return alignment;
+    }
+    
+    // Default fallback
+    return 'top';
+  };
 
-      {/* Drag Handle */}
-      <div className="absolute left-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab">
-        <GripVertical className="h-4 w-4 text-gray-400" />
-      </div>
-
-      {/* Element Badge */}
-      <div className="absolute top-2 right-2">
-        <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
-          {element.type}
-        </Badge>
-      </div>
-
-      {/* Element Content */}
-      <div className="p-4 pt-8">
-        <FormElementRenderer
-          element={element}
-          value=""
-          onChange={() => {}}
-          formConfig={formConfig}
-        />
-      </div>
-
-      {/* Drop Zone Indicators */}
-      {dragOverIndex === index && isDragging && (
-        <div className="absolute inset-0 bg-blue-500/20 border-2 border-blue-500 border-dashed rounded-xl flex items-center justify-center backdrop-blur-sm">
-          <div className="bg-blue-500 text-white px-3 py-1 rounded-lg text-sm font-medium">
-            Drop element here
-          </div>
+  const renderElement = (element: FormElement, index: number) => {
+    const elementWidth = getElementWidth();
+    const labelAlignment = getLabelAlignment();
+    
+    return (
+      <motion.div
+        key={element.id}
+        layout
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.3, delay: index * 0.05 }}
+        className={`group relative bg-white/90 backdrop-blur-sm rounded-xl border-2 transition-all duration-300 hover:shadow-lg ${
+          selectedElement?.id === element.id 
+            ? 'border-blue-500 shadow-lg ring-2 ring-blue-200' 
+            : 'border-gray-200 hover:border-blue-300'
+        }`}
+        onClick={() => onSelectElement(element)}
+        onDragOver={(e) => handleDragOver(e, index)}
+        style={{
+          width: elementWidth,
+          fontFamily: formConfig.settings?.canvasStyles?.fontFamily || 'Inter',
+          fontSize: `${formConfig.settings?.canvasStyles?.fontSize || 16}px`,
+          color: formConfig.settings?.canvasStyles?.fontColor || '#000000'
+        }}
+      >
+        {/* Element Controls */}
+        <div className="absolute -top-2 -right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleElementMove(element.id, 'up');
+            }}
+            disabled={index === 0}
+            className="h-6 w-6 p-0 bg-white/95 backdrop-blur-sm hover:bg-blue-50"
+          >
+            <ChevronUp className="h-3 w-3" />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleElementMove(element.id, 'down');
+            }}
+            disabled={index === elements.length - 1}
+            className="h-6 w-6 p-0 bg-white/95 backdrop-blur-sm hover:bg-blue-50"
+          >
+            <ChevronDown className="h-3 w-3" />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleElementDuplicate(element);
+            }}
+            className="h-6 w-6 p-0 bg-white/95 backdrop-blur-sm hover:bg-green-50"
+          >
+            <Copy className="h-3 w-3" />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelectElement(element);
+            }}
+            className="h-6 w-6 p-0 bg-white/95 backdrop-blur-sm hover:bg-purple-50"
+          >
+            <Settings className="h-3 w-3" />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleElementDelete(element.id);
+            }}
+            className="h-6 w-6 p-0 bg-white/95 backdrop-blur-sm hover:bg-red-50 text-red-600"
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
         </div>
-      )}
-    </motion.div>
-  );
+
+        {/* Drag Handle */}
+        <div className="absolute left-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab">
+          <GripVertical className="h-4 w-4 text-gray-400" />
+        </div>
+
+        {/* Element Badge */}
+        <div className="absolute top-2 right-2">
+          <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
+            {element.type}
+          </Badge>
+        </div>
+
+        {/* Element Content */}
+        <div className="p-4 pt-8">
+          <FormElementRenderer
+            element={element}
+            value=""
+            onChange={() => {}}
+            formConfig={formConfig}
+            labelAlignment={labelAlignment}
+          />
+        </div>
+
+        {/* Drop Zone Indicators */}
+        {dragOverIndex === index && isDragging && (
+          <div className="absolute inset-0 bg-blue-500/20 border-2 border-blue-500 border-dashed rounded-xl flex items-center justify-center backdrop-blur-sm">
+            <div className="bg-blue-500 text-white px-3 py-1 rounded-lg text-sm font-medium">
+              Drop element here
+            </div>
+          </div>
+        )}
+      </motion.div>
+    );
+  };
 
   const renderEmptyState = () => (
     <motion.div
@@ -422,8 +441,15 @@ const EnhancedFormCanvas: React.FC<FormCanvasProps> = ({
           animate={{ opacity: 1, scale: 1 }}
           className="absolute z-20"
           style={{
-            top: `${formConfig.settings.logo.position?.top || 20}px`,
-            left: `${formConfig.settings.logo.position?.left || 20}px`,
+            top: formConfig.settings.logo.position?.alignment?.includes('center') 
+              ? `${formConfig.settings.logo.position?.top || 20}px`
+              : `${formConfig.settings.logo.position?.top || 20}px`,
+            left: formConfig.settings.logo.position?.alignment?.includes('center')
+              ? '50%'
+              : `${formConfig.settings.logo.position?.left || 20}px`,
+            transform: formConfig.settings.logo.position?.alignment?.includes('center')
+              ? 'translateX(-50%)'
+              : 'none',
             opacity: formConfig.settings.logo.opacity || 1
           }}
         >
@@ -460,6 +486,10 @@ const EnhancedFormCanvas: React.FC<FormCanvasProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
             className="text-center mb-8"
+            style={{
+              fontFamily: formConfig.settings?.canvasStyles?.fontFamily || 'Inter',
+              color: formConfig.settings?.canvasStyles?.fontColor || '#000000'
+            }}
           >
             <h1 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               {formConfig.name || 'Untitled Form'}
@@ -471,14 +501,11 @@ const EnhancedFormCanvas: React.FC<FormCanvasProps> = ({
             )}
           </motion.div>
 
-          {/* Grid Mode Toggle */}
-          {elements.length > 0 && renderGridModeToggle()}
-
-          {/* Form Elements */}
+          {/* Form Elements with Layout Controls Applied */}
           {elements.length > 0 ? (
             <motion.div
               layout
-              className={`grid gap-6 ${gridColumns[gridMode]}`}
+              style={getFormElementsContainerStyles()}
             >
               <AnimatePresence>
                 {elements.map((element, index) => renderElement(element, index))}
