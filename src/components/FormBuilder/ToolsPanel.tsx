@@ -23,6 +23,7 @@ interface ToolsPanelProps {
   onSave: () => void;
   onExport: () => void;
   onImport: () => void;
+  onNavigateToLogo: () => void;
   onPanelChange: (panel: 'elements' | 'configuration' | 'designer' | 'advanced' | 'logo') => void;
   formConfig: FormConfig;
 }
@@ -33,12 +34,13 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
   onSave,
   onExport,
   onImport,
-  onPanelChange
+  onPanelChange,
+   onNavigateToLogo
 }) => {
-  const [selectedPanel, setSelectedPanel] = useState<'elements' | 'configuration' | 'designer' | 'advanced'>('elements');
+  const [selectedPanel, setSelectedPanel] = useState<'elements' | 'configuration' | 'designer' | 'advanced' | 'logo'>('elements');
   const [hoveredAction, setHoveredAction] = useState<string | null>(null);
 
-  const handlePanelChange = (panel: 'elements' | 'configuration' | 'designer' | 'advanced') => {
+  const handlePanelChange = (panel: 'elements' | 'configuration' | 'designer' | 'advanced'| 'logo') => {
     setSelectedPanel(panel);
     onPanelChange(panel);
   };
@@ -73,14 +75,15 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
       action: () => onToolAction('integrations'),
       badge: 'Pro'
     },
+
     {
-      id: 'advanced',
-      label: 'Advanced',
-      description: 'Pro features & automation',
+      id: 'Logo & Branding',
+      label: 'Logo & Branding',
+      description: 'Upload logo and brand settings',
       icon: Settings,
       gradient: 'from-orange-400 via-amber-500 to-yellow-600',
-      action: () => handlePanelChange('advanced'),
-      isSelected: selectedPanel === 'advanced',
+      action: () => handlePanelChange('logo'),
+      isSelected: selectedPanel === 'logo',
       badge: 'Enterprise'
     }
   ];
@@ -406,6 +409,37 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
 
         <Separator className="bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
 
+         {/* Quick Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg text-white">
+              <Zap className="h-5 w-5" />
+            </div>
+            <div>
+              <h4 className="font-bold text-gray-900 text-lg">Quick Actions</h4>
+              <p className="text-sm text-gray-600">One-click powerful tools</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {quickActions.map((action, index) => (
+              <motion.div
+                key={action.id}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3 + index * 0.05 }}
+              >
+                <ActionButton action={action} />
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+         <Separator className="bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
+
         {/* Active Capabilities */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -437,34 +471,7 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
 
         <Separator className="bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
 
-        {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg text-white">
-              <Zap className="h-5 w-5" />
-            </div>
-            <div>
-              <h4 className="font-bold text-gray-900 text-lg">Quick Actions</h4>
-              <p className="text-sm text-gray-600">One-click powerful tools</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {quickActions.map((action, index) => (
-              <motion.div
-                key={action.id}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.3 + index * 0.05 }}
-              >
-                <ActionButton action={action} />
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+       
 
         {/* Enhanced Stats */}
         <motion.div

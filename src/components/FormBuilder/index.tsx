@@ -23,6 +23,7 @@ import { FormConfig, FormElement } from './types';
 import { CalculationEngine } from '@/services/calculation-engine';
 import { NotificationService } from '@/services/notification-service';
 import { CloudStorageManager } from '@/services/cloud-storage';
+// import ToolsPanel from './ToolsPanel';
 import { 
   Settings, Eye, Save, Upload, Download, Play, 
   Palette, Layers, Grid, Code, Sparkles, Wand2,
@@ -742,7 +743,7 @@ const FormBuilder: React.FC = () => {
         </motion.div>
 
         {/* Enhanced Right Info Panel */}
-        <motion.div 
+        {/* <motion.div 
           initial={{ x: 300, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.1 }}
@@ -754,6 +755,21 @@ const FormBuilder: React.FC = () => {
             onNavigateToDesigner={handleNavigateToDesigner}
             onNavigateToAdvanced={handleNavigateToAdvanced}
             onNavigateToLogo={handleNavigateToLogo}
+          />
+        </motion.div> */}
+         <motion.div 
+          initial={{ x: 300, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="w-72 xl:w-80 border-l border-gray-200 bg-gradient-to-b from-gray-50/95 to-white/95 backdrop-blur-md overflow-y-auto shadow-lg hidden xl:flex flex-col"
+        >
+          <ToolsPanel
+            onToolAction={handleQuickAction}
+            onPreview={handlePreview}
+            onSave={handleSave}
+            onExport={handleExport}
+            onImport={handleImport}
+            onPanelChange={handlePanelChange}
           />
         </motion.div>
       </div>
