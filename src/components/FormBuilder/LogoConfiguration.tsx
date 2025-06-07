@@ -1,12 +1,13 @@
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
-import { Image, Upload, RotateCcw } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Image, Upload, RotateCcw, AlignCenter, AlignLeft, AlignRight } from 'lucide-react';
 import { FormConfig } from './types';
 
 interface LogoConfigurationProps {
@@ -20,7 +21,7 @@ const LogoConfiguration: React.FC<LogoConfigurationProps> = ({
 }) => {
   const logoSettings = formConfig.settings?.logo || {};
 
-  const updateLogoSetting = (key: string, value: any) => {
+  const updateLogoSetting = useCallback((key: string, value: any) => {
     onUpdate({
       ...formConfig,
       settings: {
@@ -31,9 +32,9 @@ const LogoConfiguration: React.FC<LogoConfigurationProps> = ({
         }
       }
     });
-  };
+  }, [formConfig, logoSettings, onUpdate]);
 
-  const updateLogoPosition = (axis: 'top' | 'left', value: number) => {
+  const updateLogoPosition = useCallback((axis: 'top' | 'left' | 'alignment', value: any) => {
     onUpdate({
       ...formConfig,
       settings: {
@@ -47,9 +48,9 @@ const LogoConfiguration: React.FC<LogoConfigurationProps> = ({
         }
       }
     });
-  };
+  }, [formConfig, logoSettings, onUpdate]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -58,9 +59,9 @@ const LogoConfiguration: React.FC<LogoConfigurationProps> = ({
       };
       reader.readAsDataURL(file);
     }
-  };
+  }, [updateLogoSetting]);
 
-  const resetLogoSettings = () => {
+  const resetLogoSettings = useCallback(() => {
     onUpdate({
       ...formConfig,
       settings: {
@@ -70,16 +71,16 @@ const LogoConfiguration: React.FC<LogoConfigurationProps> = ({
           url: '',
           width: 100,
           height: 100,
-          position: { top: 20, left: 20 },
+          position: { top: 20, left: 20, alignment: 'top-left' },
           opacity: 1,
           borderRadius: 0
         }
       }
     });
-  };
+  }, [formConfig, onUpdate]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
@@ -114,7 +115,7 @@ const LogoConfiguration: React.FC<LogoConfigurationProps> = ({
                 <div className="flex gap-2">
                   <Input
                     id="logo-url"
-                    placeholder="https://example.com/logo.png or upload below"
+                    placeholder="https://example.com/logo.png"
                     value={logoSettings.url || ''}
                     onChange={(e) => updateLogoSetting('url', e.target.value)}
                   />
@@ -196,12 +197,71 @@ const LogoConfiguration: React.FC<LogoConfigurationProps> = ({
                 </div>
               </div>
 
-              {/* Position Settings */}
+              {/* Enhanced Position Settings */}
               <div className="space-y-4">
-                <Label>Position</Label>
+                <Label>Position & Alignment</Label>
+                
+                {/* Alignment Presets */}
+                <div className="space-y-2">
+                  <Label className="text-sm">Quick Alignment</Label>
+                  <Select
+                    value={logoSettings.position?.alignment || 'top-left'}
+                    onValueChange={(value) => updateLogoPosition('alignment', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="top-left">
+                        <div className="flex items-center gap-2">
+                          <AlignLeft className="h-4 w-4" />
+                          Top Left
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="top-center">
+                        <div className="flex items-center gap-2">
+                          <AlignCenter className="h-4 w-4" />
+                          Top Center
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="top-right">
+                        <div className="flex items-center gap-2">
+                          <AlignRight className="h-4 w-4" />
+                          Top Right
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="center">
+                        <div className="flex items-center gap-2">
+                          <AlignCenter className="h-4 w-4" />
+                          Center
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="bottom-left">
+                        <div className="flex items-center gap-2">
+                          <AlignLeft className="h-4 w-4" />
+                          Bottom Left
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="bottom-center">
+                        <div className="flex items-center gap-2">
+                          <AlignCenter className="h-4 w-4" />
+                          Bottom Center
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="bottom-right">
+                        <div className="flex items-center gap-2">
+                          <AlignRight className="h-4 w-4" />
+                          Bottom Right
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Fine-tune Position */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="logo-top">Top (px)</Label>
+                    <Label htmlFor="logo-top">Top Offset (px)</Label>
                     <Input
                       id="logo-top"
                       type="number"
@@ -212,7 +272,7 @@ const LogoConfiguration: React.FC<LogoConfigurationProps> = ({
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="logo-left">Left (px)</Label>
+                    <Label htmlFor="logo-left">Left Offset (px)</Label>
                     <Input
                       id="logo-left"
                       type="number"
@@ -267,7 +327,7 @@ const LogoConfiguration: React.FC<LogoConfigurationProps> = ({
                   <ul className="text-sm text-blue-800 space-y-1">
                     <li>• Use transparent PNG files for best appearance</li>
                     <li>• Keep logos under 200x200px for mobile compatibility</li>
-                    <li>• Position logos in corners to avoid overlapping form content</li>
+                    <li>• Use alignment presets for quick positioning</li>
                     <li>• Use 80-90% opacity for subtle branding</li>
                   </ul>
                 </CardContent>

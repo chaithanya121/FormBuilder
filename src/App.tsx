@@ -10,7 +10,7 @@ import FormBuilder from './components/FormBuilder';
 import FormPreview from '@/components/FormBuilder/FormPreview';
 import FormSubmissions from './pages/FormSubmissions';
 import AIChatInterface from './pages/AIChatInterface';
-import FormBuilderDashboard from '@/components/FormBuilder/FormBuilderDashboard';
+import FormBuilderDashboardWithPagination from '@/components/FormBuilder/FormBuilderDashboardWithPagination';
 import LandingPage from '@/pages/LandingPage';
 import About from '@/pages/About';
 import Contact from '@/pages/Contact';
@@ -20,6 +20,7 @@ import MainDashboard from '@/components/MainDashboard';
 import Forms from '@/components/Forms';
 import FormSubmission from '@/components/FormSubmission';
 import ProfilePage from '@/pages/ProfilePage';
+import FormBuilderDashboard from './components/FormBuilder/FormBuilderDashboard';
 import PlanSelection from './components/PlanSelection';
 import PaymentMethod from './components/PaymentMethod';
 import PaymentSuccess from './components/PaymentSuccess';
@@ -54,14 +55,80 @@ function App() {
                 {/* Form Creation and Wizard */}
                 <Route path="/form-wizard" element={<Layout><EnhancedFormWizard /></Layout>} />
                 <Route path="/form-builder/:id?" element={<Layout><FormBuilder /></Layout>} />
-                <Route path="/form-preview/:id" element={<Layout><FormPreview formConfig={{
+                <Route path="/form-preview/:id" element={<FormPreview formConfig={{
                   name: 'Preview Form',
                   elements: [],
                   settings: {
                     submitButton: { text: 'Submit' },
-                    canvasStyles: {}
+                    canvasStyles: {},
+                    logo: {
+                      enabled: false,
+                      url: '',
+                      width: 100,
+                      height: 100,
+                      position: { top: 20, left: 20 },
+                      opacity: 1,
+                      borderRadius: 0
+                    },
+                    preview: { width: "Full", nesting: false },
+                    validation: { liveValidation: "Default" },
+                    layout: {
+                      size: "Default",
+                      columns: { default: true, tablet: true, desktop: true },
+                      labels: "Default", 
+                      placeholders: "Default", 
+                      errors: "Default",
+                      messages: "Default",
+                      questionSpacing: 24,
+                      labelAlignment: "top"
+                    },
+                    termsAndConditions: {
+                      enabled: false,
+                      required: false,
+                      text: "I accept the Terms & Conditions"
+                    },
+                    calculations: {
+                      enabled: false,
+                      fields: []
+                    },
+                    notifications: {
+                      enabled: false,
+                      rules: []
+                    },
+                    integrations: {
+                      api: false,
+                      cloudStorage: {
+                        enabled: false,
+                        providers: []
+                      },
+                      database: {
+                        enabled: false,
+                        type: "",
+                        connectionString: ""
+                      },
+                      realTimeTracking: true
+                    },
+                    accessibility: {
+                      screenReader: true,
+                      wcagCompliant: true,
+                      highContrast: false
+                    },
+                    collaboration: {
+                      comments: true,
+                      assignments: true,
+                      workflow: false
+                    },
+                    mobileLayout: {
+                      responsive: true,
+                      customBreakpoints: {
+                        mobile: 768,
+                        tablet: 1024,
+                        desktop: 1200
+                      },
+                      mobileSpecificElements: []
+                    }
                   }
-                }} /></Layout>} />
+                }} isPreviewMode={true} />} />
                 <Route path="/form-submissions/:formId" element={<Layout><FormSubmissions /></Layout>} />
                 <Route path="/forms/:id/submissions" element={<Layout><FormSubmissions /></Layout>} />
                 

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,9 +8,9 @@ import {
   Calculator, Bell, Cloud, Database, Smartphone, 
   Accessibility, MessageSquare, Save, Eye, Settings,
   Grid, Layers, Palette, Zap, BarChart3, TrendingUp,
-  Users, Activity, Shield, Target, Lightbulb, CheckCircle
+  Users, Activity, Shield, Target, Lightbulb, CheckCircle,
+  Image, Upload, Download
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { FormConfig } from './types';
 
 interface EnhancedRightSidebarProps {
@@ -17,17 +18,20 @@ interface EnhancedRightSidebarProps {
   onNavigateToIntegrations: () => void;
   onNavigateToDesigner: () => void;
   onNavigateToAdvanced: () => void;
+  onNavigateToLogo: () => void;
 }
 
 const EnhancedRightSidebar: React.FC<EnhancedRightSidebarProps> = ({
   formConfig,
   onNavigateToIntegrations,
   onNavigateToDesigner,
-  onNavigateToAdvanced
+  onNavigateToAdvanced,
+  onNavigateToLogo
 }) => {
   const [activeTab, setActiveTab] = useState('capabilities');
 
-  const capabilities = [
+  // Memoize capabilities to prevent unnecessary re-renders
+  const capabilities = useMemo(() => [
     {
       id: 'calculations',
       name: 'Calculations',
@@ -91,26 +95,24 @@ const EnhancedRightSidebar: React.FC<EnhancedRightSidebarProps> = ({
       enabled: formConfig.settings?.collaboration?.comments || false,
       count: 0
     }
-  ];
+  ], [formConfig.settings]);
 
   const quickActions = [
     { id: 'save', name: 'Save', icon: Save, color: 'green' },
-    { id: 'preview', name: 'Preview', icon: Eye, color: 'blue' }
+    { id: 'preview', name: 'Preview', icon: Eye, color: 'blue' },
+    { id: 'export', name: 'Export', icon: Download, color: 'purple' },
+    { id: 'import', name: 'Import', icon: Upload, color: 'orange' }
   ];
 
-  const formStats = {
+  const formStats = useMemo(() => ({
     elements: formConfig.elements?.length || 0,
     submissions: 0,
     conversionRate: '87%',
     avgCompletionTime: '3.2 min'
-  };
+  }), [formConfig.elements?.length]);
 
   const renderCapabilityCard = (capability: any) => (
-    <motion.div
-      key={capability.id}
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-    >
+    <div key={capability.id}>
       <Card className={`cursor-pointer transition-all duration-300 border-2 hover:border-${capability.color}-300 hover:shadow-lg group`}>
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
@@ -142,7 +144,7 @@ const EnhancedRightSidebar: React.FC<EnhancedRightSidebarProps> = ({
           </div>
         </CardContent>
       </Card>
-    </motion.div>
+    </div>
   );
 
   return (
@@ -188,18 +190,19 @@ const EnhancedRightSidebar: React.FC<EnhancedRightSidebarProps> = ({
                     </div>
                   </CardContent>
                 </Card>
-                 <Card 
-                  className="cursor-pointer transition-all duration-300 border-2 hover:border-red-300 hover:shadow-lg group bg-gradient-to-r from-green-50 to-red-50"
-                  onClick={onNavigateToDesigner}
+
+                <Card 
+                  className="cursor-pointer transition-all duration-300 border-2 hover:border-green-300 hover:shadow-lg group bg-gradient-to-r from-green-50 to-emerald-50"
+                  onClick={onNavigateToLogo}
                 >
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-green-100 group-hover:bg-pink-200 transition-colors">
-                        <Palette className="h-5 w-5 text-blue-600" />
+                      <div className="p-2 rounded-lg bg-green-100 group-hover:bg-green-200 transition-colors">
+                        <Image className="h-5 w-5 text-green-600" />
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-semibold text-green-900">Elements</h4>
-                        <p className="text-sm text-green-700">All Type Form Elements</p>
+                        <h4 className="font-semibold text-green-900">Logo & Branding</h4>
+                        <p className="text-sm text-green-700">Upload logo and brand settings</p>
                       </div>
                     </div>
                   </CardContent>
@@ -223,17 +226,17 @@ const EnhancedRightSidebar: React.FC<EnhancedRightSidebarProps> = ({
                 </Card>
 
                 <Card 
-                  className="cursor-pointer transition-all duration-300 border-2 hover:border-green-300 hover:shadow-lg group bg-gradient-to-r from-green-50 to-emerald-50"
+                  className="cursor-pointer transition-all duration-300 border-2 hover:border-orange-300 hover:shadow-lg group bg-gradient-to-r from-orange-50 to-red-50"
                   onClick={onNavigateToAdvanced}
                 >
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-green-100 group-hover:bg-green-200 transition-colors">
-                        <Settings className="h-5 w-5 text-green-600" />
+                      <div className="p-2 rounded-lg bg-orange-100 group-hover:bg-orange-200 transition-colors">
+                        <Settings className="h-5 w-5 text-orange-600" />
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-semibold text-green-900">Advanced</h4>
-                        <p className="text-sm text-green-700">Pro features & automation</p>
+                        <h4 className="font-semibold text-orange-900">Advanced</h4>
+                        <p className="text-sm text-orange-700">Pro features & automation</p>
                       </div>
                     </div>
                   </CardContent>
@@ -250,7 +253,7 @@ const EnhancedRightSidebar: React.FC<EnhancedRightSidebarProps> = ({
               </div>
 
               {/* Quick Actions */}
-              {/* <div className="space-y-3">
+              <div className="space-y-3">
                 <h4 className="font-medium text-gray-900">Quick Actions</h4>
                 <div className="grid grid-cols-2 gap-2">
                   {quickActions.map((action) => (
@@ -265,7 +268,7 @@ const EnhancedRightSidebar: React.FC<EnhancedRightSidebarProps> = ({
                     </Button>
                   ))}
                 </div>
-              </div> */}
+              </div>
             </TabsContent>
 
             <TabsContent value="performance" className="mt-4 space-y-4">

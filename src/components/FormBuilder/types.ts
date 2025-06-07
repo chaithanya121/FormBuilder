@@ -6,6 +6,7 @@ export interface FormElement {
   placeholder?: string;
   required?: boolean;
   options?: string[];
+  rows?: number;
   validation?: {
     min?: number;
     max?: number;
@@ -92,6 +93,9 @@ export interface FormConfig {
       errors?: string;
       messages?: string;
       labelAlignment?: string;
+      gridColumns?: number;
+      elementWidth?: 'auto' | 'full' | 'half' | 'third' | 'quarter' | 'custom';
+      customWidth?: number;
     };
     submitButton?: {
       text?: string;
@@ -101,6 +105,7 @@ export interface FormConfig {
     canvasStyles?: {
       backgroundColor?: string;
       backgroundImage?: string;
+      backgroundPattern?: string;
       formBackgroundColor?: string;
       borderRadius?: string;
       padding?: string;
@@ -122,6 +127,7 @@ export interface FormConfig {
       position?: {
         top?: number;
         left?: number;
+        alignment?: 'left' | 'center' | 'right' | 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right';
       };
       opacity?: number;
       borderRadius?: number;

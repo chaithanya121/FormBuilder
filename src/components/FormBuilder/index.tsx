@@ -1,21 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import EnhancedFormElementLibrary from './EnhancedFormElementLibrary';
+import FullyFunctionalElementLibrary from './FullyFunctionalElementLibrary';
+import ToolsPanel from './ToolsPanel';
 import EnhancedFormCanvas from './EnhancedFormCanvas';
 import EnhancedFormPropertiesPanel from './EnhancedFormPropertiesPanel';
 import EnhancedRightSidebar from './EnhancedRightSidebar';
+import FormStylesPanel from './FormStylesPanel';
+import LayoutControls from './LayoutControls';
 import IntegrationsHub from './Integrations/IntegrationsHub';
 import FormDesigner from './FormDesigner';
 import SaveSuccessDialog from './SaveSuccessDialog';
-import ModernFloatingActions from './ModernFloatingActions';
 import B2CInsights from './B2CInsights';
 import ViewCodeModal from './QuickActions/ViewCodeModal';
 import TestFormModal from './QuickActions/TestFormModal';
 import AIEnhanceModal from './QuickActions/AIEnhanceModal';
+import LogoConfiguration from './LogoConfiguration';
 import { FormConfig, FormElement } from './types';
 import { CalculationEngine } from '@/services/calculation-engine';
 import { NotificationService } from '@/services/notification-service';
@@ -25,7 +27,8 @@ import {
   Palette, Layers, Grid, Code, Sparkles, Wand2,
   HelpCircle, Info, Lightbulb, Zap, Target, Search, Filter,
   CircleArrowLeft, TrendingUp, Users, Activity, Calculator,
-  Bell, Cloud, Database, Smartphone, Accessibility, MessageSquare
+  Bell, Cloud, Database, Smartphone, Accessibility, MessageSquare,
+  Image
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -57,13 +60,17 @@ const FormBuilder: React.FC = () => {
         errors: "Default",
         messages: "Default",
         questionSpacing: 24,
-        labelAlignment: "top"
+        labelAlignment: "top",
+        gridColumns: 1,
+        elementWidth: 'full',
+        customWidth: 100
       },
       canvasStyles: {
         backgroundColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
         formBackgroundColor: "#ffffff",
         fontColor: "#321f16",
         primaryColor: "#3b82f6",
+        secondaryColor: "#8b5cf6",
         fontFamily: "Inter",
         fontSize: 16,
         formWidth: 752,
@@ -81,7 +88,15 @@ const FormBuilder: React.FC = () => {
         required: false,
         text: "I accept the Terms & Conditions"
       },
-      // Enhanced capabilities
+      logo: {
+        enabled: false,
+        url: '',
+        width: 100,
+        height: 100,
+        position: { top: 20, left: 20 },
+        opacity: 1,
+        borderRadius: 0
+      },
       calculations: {
         enabled: false,
         fields: []
@@ -126,7 +141,7 @@ const FormBuilder: React.FC = () => {
   });
 
   const [selectedElement, setSelectedElement] = useState<FormElement | null>(null);
-  const [activePanel, setActivePanel] = useState<'elements' | 'configuration' | 'designer' | 'advanced'>('elements');
+  const [activePanel, setActivePanel] = useState<'elements' | 'configuration' | 'designer' | 'advanced' | 'logo'>('elements');
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [currentView, setCurrentView] = useState<'builder' | 'integrations' | 'designer' | 'advanced'>('builder');
 
@@ -140,6 +155,14 @@ const FormBuilder: React.FC = () => {
   // Services
   const [calculationEngine] = useState(new CalculationEngine());
   const [cloudStorageManager] = useState(new CloudStorageManager());
+
+  // Memoized form config update to prevent unnecessary re-renders
+  const handleFormConfigUpdate = useCallback((newConfig: FormConfig | ((prev: FormConfig) => FormConfig)) => {
+    setFormConfig(prev => {
+      const updated = typeof newConfig === 'function' ? newConfig(prev) : newConfig;
+      return updated;
+    });
+  }, []);
 
   // Load form data from Redux on component mount
   useEffect(() => {
@@ -155,7 +178,7 @@ const FormBuilder: React.FC = () => {
     }
   }, [currentForm]);
 
-  // Show error toast if there's an error
+  // Show error toast if there's an error (but prevent multiple toasts)
   useEffect(() => {
     if (error) {
       toast({
@@ -166,35 +189,35 @@ const FormBuilder: React.FC = () => {
     }
   }, [error, toast]);
 
-  const handleElementSelect = (element: FormElement) => {
+  const handleElementSelect = useCallback((element: FormElement) => {
     setSelectedElement(element);
     setActivePanel('configuration');
-  };
+  }, []);
 
-  const handleElementUpdate = (updatedElement: FormElement) => {
-    setFormConfig(prev => ({
+  const handleElementUpdate = useCallback((updatedElement: FormElement) => {
+    handleFormConfigUpdate(prev => ({
       ...prev,
       elements: prev.elements.map(el => 
         el.id === updatedElement.id ? updatedElement : el
       )
     }));
     setSelectedElement(updatedElement);
-  };
+  }, [handleFormConfigUpdate]);
 
-  const onElementAdd = (element: FormElement) => {
-    setFormConfig(prev => ({
+  const onElementAdd = useCallback((element: FormElement) => {
+    handleFormConfigUpdate(prev => ({
       ...prev,
       elements: [...prev.elements, element]
     }));
-  };
+  }, [handleFormConfigUpdate]);
 
   // Enhanced calculation handling
-  const handleAddCalculation = () => {
+  const handleAddCalculation = useCallback(() => {
     setShowCalculationBuilder(true);
-  };
+  }, []);
   
-  const handleSaveCalculation = (calculation: any) => {
-    setFormConfig(prev => ({
+  const handleSaveCalculation = useCallback((calculation: any) => {
+    handleFormConfigUpdate(prev => ({
       ...prev,
       settings: {
         ...prev.settings,
@@ -206,15 +229,15 @@ const FormBuilder: React.FC = () => {
       }
     }));
     setShowCalculationBuilder(false);
-  };
+  }, [handleFormConfigUpdate]);
   
   // Enhanced notification handling
-  const handleAddNotification = () => {
+  const handleAddNotification = useCallback(() => {
     setShowNotificationBuilder(true);
-  };
+  }, []);
   
-  const handleSaveNotification = (rule: any) => {
-    setFormConfig(prev => ({
+  const handleSaveNotification = useCallback((rule: any) => {
+    handleFormConfigUpdate(prev => ({
       ...prev,
       settings: {
         ...prev.settings,
@@ -226,39 +249,38 @@ const FormBuilder: React.FC = () => {
       }
     }));
     setShowNotificationBuilder(false);
-  };
+  }, [handleFormConfigUpdate]);
 
-  const handleDeleteElement = () => {
+  const handleDeleteElement = useCallback(() => {
     if (selectedElement) {
-      setFormConfig(prev => ({
+      handleFormConfigUpdate(prev => ({
         ...prev,
         elements: prev.elements.filter(el => el.id !== selectedElement.id)
       }));
       setSelectedElement(null);
     }
-  };
+  }, [selectedElement, handleFormConfigUpdate]);
 
-  const handleDuplicateElement = () => {
+  const handleDuplicateElement = useCallback(() => {
     if (selectedElement) {
       const duplicatedElement = {
         ...selectedElement,
         id: Date.now().toString(),
         label: `${selectedElement.label} (Copy)`
       };
-      setFormConfig(prev => ({
+      handleFormConfigUpdate(prev => ({
         ...prev,
         elements: [...prev.elements, duplicatedElement]
       }));
     }
-  };
+  }, [selectedElement, handleFormConfigUpdate]);
 
-  const handlePreview = () => {
+  const handlePreview = useCallback(() => {
     const formId = currentForm?.primary_id || 'current';
     navigate(`/form-preview/${formId}`);
-  };
+  }, [currentForm, navigate]);
 
-  const handleSave = async () => {
-    console.log(currentForm)
+  const handleSave = useCallback(async () => {
     try {
       if (currentForm?.primary_id) {
         // Update existing form
@@ -280,10 +302,6 @@ const FormBuilder: React.FC = () => {
         }));
       }
       setShowSaveDialog(true);
-      toast({
-        title: "Success",
-        description: "Form saved successfully!",
-      });
     } catch (error) {
       toast({
         title: "Error",
@@ -291,16 +309,16 @@ const FormBuilder: React.FC = () => {
         variant: "destructive"
       });
     }
-  };
+  }, [currentForm, formConfig, dispatch, toast]);
 
-  const handlePublish = () => {
+  const handlePublish = useCallback(() => {
     toast({
       title: "Form Published!",
       description: "Your form is now live and ready to receive submissions.",
     });
-  };
+  }, [toast]);
 
-  const handleExport = () => {
+  const handleExport = useCallback(() => {
     const dataStr = JSON.stringify(formConfig, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
@@ -309,9 +327,9 @@ const FormBuilder: React.FC = () => {
     link.download = `${formConfig.name.toLowerCase().replace(/\s+/g, '-')}-config.json`;
     link.click();
     URL.revokeObjectURL(url);
-  };
+  }, [formConfig]);
 
-  const handleImport = () => {
+  const handleImport = useCallback(() => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
@@ -339,25 +357,29 @@ const FormBuilder: React.FC = () => {
       }
     };
     input.click();
-  };
+  }, [toast]);
 
-  const handleNavigateToIntegrations = () => {
+  const handleNavigateToIntegrations = useCallback(() => {
     setCurrentView('integrations');
-  };
+  }, []);
 
-  const handleNavigateToDesigner = () => {
-    setCurrentView('designer');
-  };
+  const handleNavigateToDesigner = useCallback(() => {
+    setActivePanel('designer');
+  }, []);
 
-  const handleNavigateToAdvanced = () => {
+  const handleNavigateToAdvanced = useCallback(() => {
     setCurrentView('advanced');
-  };
+  }, []);
 
-  const handleBackToBuilder = () => {
+  const handleNavigateToLogo = useCallback(() => {
+    setActivePanel('logo');
+  }, []);
+
+  const handleBackToBuilder = useCallback(() => {
     setCurrentView('builder');
-  };
+  }, []);
 
-  const handleQuickAction = (action: string) => {
+  const handleQuickAction = useCallback((action: string) => {
     switch (action) {
       case 'view-code':
         setShowViewCode(true);
@@ -389,42 +411,44 @@ const FormBuilder: React.FC = () => {
       default:
         break;
     }
-  };
+  }, [handlePreview, navigate, toast]);
 
-  const handleThemeStudio = () => {
+  const handleThemeStudio = useCallback(() => {
     navigate('/tools/theme-studio');
-  };
+  }, [navigate]);
 
-  const handleDesigner = () => {
+  const handleDesigner = useCallback(() => {
     setActivePanel('designer');
-  };
+  }, []);
 
-  const handleAIEnhance = (enhancedConfig: FormConfig) => {
+  const handleAIEnhance = useCallback((enhancedConfig: FormConfig) => {
     setFormConfig(enhancedConfig);
     setShowAIEnhance(false);
-  };
+  }, []);
 
-  const handlePanelChange = (panel: 'elements' | 'configuration' | 'designer' | 'advanced') => {
+  const handlePanelChange = useCallback((panel: 'elements' | 'configuration' | 'designer' | 'advanced' | 'logo') => {
     setActivePanel(panel);
-  };
+  }, []);
 
-  const handleSaveDialogClose = () => {
+  const handleSaveDialogClose = useCallback(() => {
     setShowSaveDialog(false);
-  };
+  }, []);
 
-  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, elementType: string) => {
+  const handleDragStart = useCallback((e: React.DragEvent<HTMLDivElement>, elementType: string) => {
     console.log('Setting drag data for element type:', elementType);
     e.dataTransfer.setData('text/plain', elementType);
     e.dataTransfer.effectAllowed = 'copy';
-  };
+  }, []);
 
-  const renderEnhancedSidePanel = () => {
+  // Memoized side panel to prevent unnecessary re-renders
+  const renderEnhancedSidePanel = useMemo(() => {
     switch (activePanel) {
       case 'elements':
         return (
-          <EnhancedFormElementLibrary 
+          <FullyFunctionalElementLibrary 
             onElementAdd={onElementAdd}
             formConfig={formConfig}
+            onDragStart={handleDragStart}
           />
         );
       case 'configuration':
@@ -432,7 +456,7 @@ const FormBuilder: React.FC = () => {
           <EnhancedFormPropertiesPanel
             formConfig={formConfig}
             selectedElement={selectedElement}
-            onFormConfigUpdate={setFormConfig}
+            onFormConfigUpdate={handleFormConfigUpdate}
             onElementUpdate={handleElementUpdate}
             onElementDelete={handleDeleteElement}
             onElementDuplicate={handleDuplicateElement}
@@ -441,11 +465,17 @@ const FormBuilder: React.FC = () => {
         );
       case 'designer':
         return (
-          <FormDesigner
-            isOpen={true}
-            onClose={() => setActivePanel('elements')}
+          <FormStylesPanel
             formConfig={formConfig}
-            onUpdate={setFormConfig}
+            onUpdate={handleFormConfigUpdate}
+            onClose={() => setActivePanel('elements')}
+          />
+        );
+      case 'logo':
+        return (
+          <LogoConfiguration
+            formConfig={formConfig}
+            onUpdate={handleFormConfigUpdate}
           />
         );
       case 'advanced':
@@ -535,7 +565,7 @@ const FormBuilder: React.FC = () => {
       default:
         return null;
     }
-  };
+  }, [activePanel, formConfig, selectedElement, onElementAdd, handleDragStart, handleFormConfigUpdate, handleElementUpdate, handleDeleteElement, handleDuplicateElement, handleAddCalculation, handleAddNotification]);
 
   // Render different views based on currentView state
   if (currentView === 'integrations') {
@@ -543,7 +573,7 @@ const FormBuilder: React.FC = () => {
       <IntegrationsHub 
         onBack={handleBackToBuilder}
         formConfig={formConfig}
-        onUpdate={setFormConfig}
+        onUpdate={handleFormConfigUpdate}
       />
     );
   }
@@ -593,7 +623,7 @@ const FormBuilder: React.FC = () => {
               <div className="flex items-center gap-2 flex-1 max-w-xs">
                 <Input
                   value={formConfig.name}
-                  onChange={(e) => setFormConfig(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) => handleFormConfigUpdate(prev => ({ ...prev, name: e.target.value }))}
                   className="w-full h-8 xl:h-9 text-sm"
                   placeholder="Form name"
                 />
@@ -664,25 +694,31 @@ const FormBuilder: React.FC = () => {
               transition={{ duration: 0.3 }}
               className="flex-1 overflow-hidden"
             >
-              {renderEnhancedSidePanel()}
+              {renderEnhancedSidePanel}
             </motion.div>
           </AnimatePresence>
         </motion.div>
 
-        {/* Center Canvas Area */}
+        {/* Center Canvas Area with Layout Controls */}
         <motion.div 
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
           className="flex-1 flex flex-col overflow-hidden relative"
         >
+          {/* Layout Controls */}
+          <LayoutControls
+            formConfig={formConfig}
+            onUpdate={handleFormConfigUpdate}
+          />
+          
           <EnhancedFormCanvas
             elements={formConfig.elements}
-            setFormConfig={setFormConfig}
+            setFormConfig={handleFormConfigUpdate}
             onSelectElement={handleElementSelect}
             selectedElement={selectedElement}
             formConfig={formConfig}
-            onUpdate={setFormConfig}
+            onUpdate={handleFormConfigUpdate}
           />
         </motion.div>
 
@@ -693,26 +729,15 @@ const FormBuilder: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="w-72 xl:w-80 border-l border-gray-200 bg-gradient-to-b from-gray-50/95 to-white/95 backdrop-blur-md overflow-y-auto shadow-lg hidden xl:flex flex-col"
         >
-          <EnhancedRightSidebar 
+          <EnhancedRightSidebar
             formConfig={formConfig}
             onNavigateToIntegrations={handleNavigateToIntegrations}
             onNavigateToDesigner={handleNavigateToDesigner}
             onNavigateToAdvanced={handleNavigateToAdvanced}
+            onNavigateToLogo={handleNavigateToLogo}
           />
         </motion.div>
       </div>
-
-      {/* Enhanced Modern Floating Actions */}
-      <ModernFloatingActions
-        activePanel={activePanel}
-        onPanelChange={handlePanelChange}
-        onQuickAction={handleQuickAction}
-        onPreview={handlePreview}
-        onSave={handleSave}
-        onExport={handleExport}
-        onImport={handleImport}
-        isLoading={loading}
-      />
 
       {/* Enhanced Modals */}
       <SaveSuccessDialog 

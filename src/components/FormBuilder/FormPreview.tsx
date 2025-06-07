@@ -1,11 +1,13 @@
-
 import React, { useState, useEffect } from 'react';
 import { FormConfig, FormElement } from "./types";
 import FormElementRenderer from "./FormElementRenderer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Send, Download, Eye, Code, Star, Shield, Clock, Users } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Send, Download, Eye, Code, Star, Shield, Clock, Users, ArrowLeft, Share2, Printer } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useNavigate, useParams } from "react-router-dom";
@@ -21,14 +23,24 @@ interface FormPreviewProps {
   onChange?: (values: Record<string, any>) => void;
   onSubmit?: (values: Record<string, any>) => void;
   isSubmission?: boolean;
+  isPreviewMode?: boolean;
 }
 
-const FormPreview = ({ formConfig, values, onChange, onSubmit, isSubmission = false }: FormPreviewProps) => {
+const FormPreview = ({ 
+  formConfig, 
+  values, 
+  onChange, 
+  onSubmit, 
+  isSubmission = false,
+  isPreviewMode = false 
+}: FormPreviewProps) => {
   const [formData, setFormData] = useState<Record<string, any>>(values || {});
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [showJsonView, setShowJsonView] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [currentStep, setCurrentStep] = useState(0);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { id } = useParams();
@@ -42,6 +54,72 @@ const FormPreview = ({ formConfig, values, onChange, onSubmit, isSubmission = fa
     securityLevel: 'Enterprise'
   };
 
+  // Form validation
+  const validateField = (element: FormElement, value: any) => {
+    const errors: string[] = [];
+
+    if (element.required && (!value || value.toString().trim() === '')) {
+      errors.push(`${element.label} is required`);
+    }
+
+    if (value && element.validation) {
+      const validation = element.validation;
+
+      // Length validation
+      if (validation.minLength && value.toString().length < validation.minLength) {
+        errors.push(`${element.label} must be at least ${validation.minLength} characters`);
+      }
+      if (validation.maxLength && value.toString().length > validation.maxLength) {
+        errors.push(`${element.label} must be no more than ${validation.maxLength} characters`);
+      }
+
+      // Number validation
+      if (element.type === 'number') {
+        const numValue = Number(value);
+        if (validation.min !== undefined && numValue < validation.min) {
+          errors.push(`${element.label} must be at least ${validation.min}`);
+        }
+        if (validation.max !== undefined && numValue > validation.max) {
+          errors.push(`${element.label} must be no more than ${validation.max}`);
+        }
+      }
+
+      // Email validation
+      if (element.type === 'email') {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+          errors.push(`${element.label} must be a valid email address`);
+        }
+      }
+
+      // Pattern validation
+      if (validation.pattern) {
+        const regex = new RegExp(validation.pattern);
+        if (!regex.test(value)) {
+          errors.push(validation.message || `${element.label} format is invalid`);
+        }
+      }
+    }
+
+    return errors;
+  };
+
+  const validateForm = () => {
+    const errors: Record<string, string> = {};
+    
+    formConfig.elements.forEach(element => {
+      const value = formData[element.label];
+      const fieldErrors = validateField(element, value);
+      
+      if (fieldErrors.length > 0) {
+        errors[element.id] = fieldErrors[0]; // Show first error
+      }
+    });
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleChange = (elementId: string, value: any) => {
     const element = formConfig.elements.find(item => item.id === elementId);
     const label = element ? element.label : elementId;
@@ -53,6 +131,15 @@ const FormPreview = ({ formConfig, values, onChange, onSubmit, isSubmission = fa
     
     setFormData(updatedData);
     
+    // Clear validation error for this field
+    if (validationErrors[elementId]) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[elementId];
+        return newErrors;
+      });
+    }
+    
     if (onChange) {
       onChange(updatedData);
     }
@@ -60,6 +147,16 @@ const FormPreview = ({ formConfig, values, onChange, onSubmit, isSubmission = fa
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form
+    if (!validateForm()) {
+      toast({
+        title: "Validation Error",
+        description: "Please fix the errors in the form before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     if (!termsAccepted && formConfig.settings.termsAndConditions?.required) {
       toast({
@@ -113,6 +210,26 @@ const FormPreview = ({ formConfig, values, onChange, onSubmit, isSubmission = fa
     URL.revokeObjectURL(url);
   };
 
+  const printForm = () => {
+    window.print();
+  };
+
+  const shareForm = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: formConfig.name,
+        text: 'Check out this form',
+        url: window.location.href,
+      });
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast({
+        title: "Link Copied",
+        description: "Form link has been copied to your clipboard.",
+      });
+    }
+  };
+
   const getFormStyles = () => {
     const canvasStyles = formConfig.settings.canvasStyles || {};
     
@@ -159,6 +276,16 @@ const FormPreview = ({ formConfig, values, onChange, onSubmit, isSubmission = fa
     };
   };
 
+  // Progressive form steps (if form has many elements)
+  const elementsPerStep = 5;
+  const totalSteps = Math.ceil(formConfig.elements.length / elementsPerStep);
+  const currentStepElements = formConfig.elements.slice(
+    currentStep * elementsPerStep,
+    (currentStep + 1) * elementsPerStep
+  );
+
+  const isMultiStep = formConfig.elements.length > elementsPerStep;
+
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden" style={getScreenBackground()}>
       {/* Global Custom CSS Injection */}
@@ -167,39 +294,57 @@ const FormPreview = ({ formConfig, values, onChange, onSubmit, isSubmission = fa
       )}
 
       {/* Header with Actions */}
-      <motion.div 
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="flex justify-between items-center p-4 md:p-6 relative z-10"
-      >
-        <Button 
-          variant="outline" 
-          onClick={() => navigate(-1)}
-          className="bg-white/90 backdrop-blur-sm hover:bg-white/95 transition-all duration-300"
+      {isPreviewMode && (
+        <motion.div 
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="flex justify-between items-center p-4 md:p-6 relative z-10"
         >
-          <Eye className="h-4 w-4 mr-2" />
-          Back to Builder
-        </Button>
-        
-        <div className="flex gap-2">
           <Button 
             variant="outline" 
-            onClick={() => setShowJsonView(true)}
+            onClick={() => navigate(-1)}
             className="bg-white/90 backdrop-blur-sm hover:bg-white/95 transition-all duration-300"
           >
-            <Code className="h-4 w-4 mr-2" />
-            View Data
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Builder
           </Button>
-          <Button 
-            variant="outline" 
-            onClick={exportFormData}
-            className="bg-white/90 backdrop-blur-sm hover:bg-white/95 transition-all duration-300"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-        </div>
-      </motion.div>
+          
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={shareForm}
+              className="bg-white/90 backdrop-blur-sm hover:bg-white/95 transition-all duration-300"
+            >
+              <Share2 className="h-4 w-4 mr-2" />
+              Share
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={printForm}
+              className="bg-white/90 backdrop-blur-sm hover:bg-white/95 transition-all duration-300"
+            >
+              <Printer className="h-4 w-4 mr-2" />
+              Print
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowJsonView(true)}
+              className="bg-white/90 backdrop-blur-sm hover:bg-white/95 transition-all duration-300"
+            >
+              <Code className="h-4 w-4 mr-2" />
+              View Data
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={exportFormData}
+              className="bg-white/90 backdrop-blur-sm hover:bg-white/95 transition-all duration-300"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+          </div>
+        </motion.div>
+      )}
 
       {/* Form Container */}
       <div className="flex-1 flex items-center justify-center p-4 md:p-6 relative z-10">
@@ -210,6 +355,30 @@ const FormPreview = ({ formConfig, values, onChange, onSubmit, isSubmission = fa
           style={getFormStyles()}
           className="w-full relative"
         >
+          {/* Logo Display */}
+          {formConfig.settings?.logo?.enabled && formConfig.settings.logo.url && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="absolute -top-4 -left-4 z-20"
+              style={{
+                opacity: formConfig.settings.logo.opacity || 1
+              }}
+            >
+              <img
+                src={formConfig.settings.logo.url}
+                alt="Form Logo"
+                style={{
+                  width: `${formConfig.settings.logo.width || 60}px`,
+                  height: `${formConfig.settings.logo.height || 60}px`,
+                  borderRadius: `${formConfig.settings.logo.borderRadius || 0}px`,
+                  objectFit: 'contain'
+                }}
+                className="shadow-lg"
+              />
+            </motion.div>
+          )}
+
           {/* Success Animation Overlay */}
           <AnimatePresence>
             {showSuccessMessage && (
@@ -261,22 +430,56 @@ const FormPreview = ({ formConfig, values, onChange, onSubmit, isSubmission = fa
           </motion.div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <motion.h1 
+            <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="text-2xl md:text-3xl font-bold mb-8 text-center" 
-              style={{
-                fontFamily: formConfig.settings.canvasStyles?.fontFamily || 'Inter',
-                fontSize: formConfig.settings.canvasStyles?.fontSize ? `${formConfig.settings.canvasStyles.fontSize + 8}px` : '28px',
-                color: formConfig.settings.canvasStyles?.fontColor || '#000000'
-              }}
+              className="text-center mb-8"
             >
-              {formConfig.name}
-            </motion.h1>
+              <h1 
+                className="text-2xl md:text-3xl font-bold mb-4" 
+                style={{
+                  fontFamily: formConfig.settings.canvasStyles?.fontFamily || 'Inter',
+                  fontSize: formConfig.settings.canvasStyles?.fontSize ? `${formConfig.settings.canvasStyles.fontSize + 8}px` : '28px',
+                  color: formConfig.settings.canvasStyles?.fontColor || '#000000'
+                }}
+              >
+                {formConfig.name}
+              </h1>
+              {formConfig.description && (
+                <p className="text-gray-600 max-w-2xl mx-auto">
+                  {formConfig.description}
+                </p>
+              )}
+            </motion.div>
+
+            {/* Progress indicator for multi-step forms */}
+            {isMultiStep && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="mb-8"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-sm font-medium text-gray-600">
+                    Step {currentStep + 1} of {totalSteps}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    {Math.round(((currentStep + 1) / totalSteps) * 100)}% Complete
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
+                  ></div>
+                </div>
+              </motion.div>
+            )}
 
             <div className="space-y-6">
-              {formConfig.elements.map((element, index) => (
+              {(isMultiStep ? currentStepElements : formConfig.elements).map((element, index) => (
                 <motion.div 
                   key={element.id} 
                   initial={{ opacity: 0, x: -20 }}
@@ -290,11 +493,48 @@ const FormPreview = ({ formConfig, values, onChange, onSubmit, isSubmission = fa
                     onChange={(value) => handleChange(element.id, value)}
                     formConfig={formConfig}
                   />
+                  {validationErrors[element.id] && (
+                    <motion.p 
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-red-500 text-sm"
+                    >
+                      {validationErrors[element.id]}
+                    </motion.p>
+                  )}
                 </motion.div>
               ))}
 
+              {/* Multi-step navigation */}
+              {isMultiStep && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.7 }}
+                  className="flex justify-between items-center pt-6"
+                >
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
+                    disabled={currentStep === 0}
+                  >
+                    Previous
+                  </Button>
+                  
+                  {currentStep < totalSteps - 1 ? (
+                    <Button
+                      type="button"
+                      onClick={() => setCurrentStep(Math.min(totalSteps - 1, currentStep + 1))}
+                    >
+                      Next
+                    </Button>
+                  ) : null}
+                </motion.div>
+              )}
+
               {/* Terms & Conditions */}
-              {formConfig.settings.termsAndConditions?.enabled && (
+              {formConfig.settings.termsAndConditions?.enabled && (!isMultiStep || currentStep === totalSteps - 1) && (
                 <motion.div 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -317,46 +557,48 @@ const FormPreview = ({ formConfig, values, onChange, onSubmit, isSubmission = fa
                 </motion.div>
               )}
 
-              {/* Enhanced Submit Button */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 }}
-              >
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full py-4 px-8 font-medium transition-all duration-300 relative overflow-hidden group"
-                  style={{
-                    backgroundColor: formConfig.settings.canvasStyles?.primaryColor || '#3b82f6',
-                    color: 'white',
-                    fontFamily: formConfig.settings.canvasStyles?.fontFamily || 'Inter',
-                    fontSize: formConfig.settings.canvasStyles?.fontSize ? `${formConfig.settings.canvasStyles.fontSize + 2}px` : '18px'
-                  }}
+              {/* Enhanced Submit Button (only show on last step or single step) */}
+              {(!isMultiStep || currentStep === totalSteps - 1) && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.8 }}
                 >
-                  <motion.div
-                    className="absolute inset-0 bg-white/20"
-                    initial={false}
-                    animate={{ scale: isSubmitting ? 1 : 0 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                  {isSubmitting ? (
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-4 px-8 font-medium transition-all duration-300 relative overflow-hidden group"
+                    style={{
+                      backgroundColor: formConfig.settings.canvasStyles?.primaryColor || '#3b82f6',
+                      color: 'white',
+                      fontFamily: formConfig.settings.canvasStyles?.fontFamily || 'Inter',
+                      fontSize: formConfig.settings.canvasStyles?.fontSize ? `${formConfig.settings.canvasStyles.fontSize + 2}px` : '18px'
+                    }}
+                  >
                     <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                      className="flex items-center justify-center"
-                    >
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full mr-2" />
-                      Submitting...
-                    </motion.div>
-                  ) : (
-                    <>
-                      <Send className="h-5 w-5 mr-2 group-hover:translate-x-1 transition-transform" />
-                      {formConfig.settings.submitButton?.text || 'Submit Form'}
-                    </>
-                  )}
-                </Button>
-              </motion.div>
+                      className="absolute inset-0 bg-white/20"
+                      initial={false}
+                      animate={{ scale: isSubmitting ? 1 : 0 }}
+                      transition={{ duration: 0.3 }}
+                    />
+                    {isSubmitting ? (
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        className="flex items-center justify-center"
+                      >
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full mr-2" />
+                        Submitting...
+                      </motion.div>
+                    ) : (
+                      <>
+                        <Send className="h-5 w-5 mr-2 group-hover:translate-x-1 transition-transform" />
+                        {formConfig.settings.submitButton?.text || 'Submit Form'}
+                      </>
+                    )}
+                  </Button>
+                </motion.div>
+              )}
             </div>
           </form>
         </motion.div>
