@@ -247,7 +247,7 @@ const FormWizard: React.FC = () => {
                     <SelectValue placeholder="Choose a theme" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="modern">Modern &amp; Clean</SelectItem>
+                    <SelectItem value="modern">Modern and Clean</SelectItem>
                     <SelectItem value="minimal">Minimal</SelectItem>
                     <SelectItem value="corporate">Corporate</SelectItem>
                     <SelectItem value="creative">Creative</SelectItem>
