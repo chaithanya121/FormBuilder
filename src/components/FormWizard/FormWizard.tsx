@@ -57,7 +57,7 @@ const FormWizard: React.FC = () => {
     {
       id: 'purpose',
       title: 'Purpose & Audience',
-      description: 'Define your form\'s goal',
+      description: 'Define your form goal',
       icon: Target,
       gradient: 'from-purple-500 to-pink-500'
     },
@@ -182,7 +182,7 @@ const FormWizard: React.FC = () => {
           <div className="space-y-6">
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">What&apos;s the purpose of this form?</label>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">What is the purpose of this form?</label>
                 <Textarea
                   placeholder="e.g., Collect customer feedback to improve our services..."
                   value={formData.purpose}
