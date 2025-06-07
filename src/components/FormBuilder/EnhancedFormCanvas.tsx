@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '@/components/ui/card';
@@ -8,7 +9,7 @@ import { FormConfig, FormElement, FormCanvasProps } from './types';
 import FormElementRenderer from './FormElementRenderer';
 import { 
   Plus, Trash2, Copy, Settings, GripVertical, 
-  ChevronUp, ChevronDown, 
+  ChevronUp, ChevronDown, Grid, Layout, 
   Sparkles, Layers, Eye, Zap
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -23,6 +24,7 @@ const EnhancedFormCanvas: React.FC<FormCanvasProps> = ({
 }) => {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [gridMode, setGridMode] = useState<'single' | 'two' | 'three'>('single');
   const canvasRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -100,6 +102,7 @@ const EnhancedFormCanvas: React.FC<FormCanvasProps> = ({
   }, []);
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
+    // Only reset if we're leaving the canvas entirely
     if (!canvasRef.current?.contains(e.relatedTarget as Node)) {
       setDragOverIndex(null);
       setIsDragging(false);
@@ -196,12 +199,47 @@ const EnhancedFormCanvas: React.FC<FormCanvasProps> = ({
       border: '1px solid rgba(255, 255, 255, 0.2)',
       backdropFilter: 'blur(20px)',
       position: 'relative' as const,
-      overflow: 'hidden' as const,
-      fontFamily: styles.fontFamily || 'Inter',
-      fontSize: `${styles.fontSize || 16}px`,
-      color: styles.fontColor || '#000000'
+      overflow: 'hidden' as const
     };
   };
+
+  const gridColumns = {
+    single: 'grid-cols-1',
+    two: 'grid-cols-1 md:grid-cols-2',
+    three: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+  };
+
+  const renderGridModeToggle = () => (
+    <div className="flex items-center gap-2 mb-4 p-2 bg-white/80 backdrop-blur-sm rounded-lg border border-gray-200">
+      <span className="text-sm font-medium text-gray-700">Layout:</span>
+      <div className="flex rounded-md border border-gray-200 overflow-hidden">
+        <Button
+          size="sm"
+          variant={gridMode === 'single' ? 'default' : 'outline'}
+          onClick={() => setGridMode('single')}
+          className="rounded-none border-0 px-3 py-1"
+        >
+          <Layout className="h-3 w-3" />
+        </Button>
+        <Button
+          size="sm"
+          variant={gridMode === 'two' ? 'default' : 'outline'}
+          onClick={() => setGridMode('two')}
+          className="rounded-none border-0 px-3 py-1"
+        >
+          <Grid className="h-3 w-3" />
+        </Button>
+        <Button
+          size="sm"
+          variant={gridMode === 'three' ? 'default' : 'outline'}
+          onClick={() => setGridMode('three')}
+          className="rounded-none border-0 px-3 py-1"
+        >
+          <Layers className="h-3 w-3" />
+        </Button>
+      </div>
+    </div>
+  );
 
   const renderElement = (element: FormElement, index: number) => (
     <motion.div
@@ -218,12 +256,6 @@ const EnhancedFormCanvas: React.FC<FormCanvasProps> = ({
       }`}
       onClick={() => onSelectElement(element)}
       onDragOver={(e) => handleDragOver(e, index)}
-      style={{
-        marginBottom: `${formConfig.settings?.layout?.questionSpacing || 24}px`,
-        fontFamily: formConfig.settings?.canvasStyles?.fontFamily || 'Inter',
-        fontSize: `${formConfig.settings?.canvasStyles?.fontSize || 16}px`,
-        color: formConfig.settings?.canvasStyles?.fontColor || '#000000'
-      }}
     >
       {/* Element Controls */}
       <div className="absolute -top-2 -right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
@@ -390,15 +422,8 @@ const EnhancedFormCanvas: React.FC<FormCanvasProps> = ({
           animate={{ opacity: 1, scale: 1 }}
           className="absolute z-20"
           style={{
-            top: formConfig.settings.logo.position?.alignment?.includes('center') 
-              ? `${formConfig.settings.logo.position?.top || 20}px`
-              : `${formConfig.settings.logo.position?.top || 20}px`,
-            left: formConfig.settings.logo.position?.alignment?.includes('center')
-              ? '50%'
-              : `${formConfig.settings.logo.position?.left || 20}px`,
-            transform: formConfig.settings.logo.position?.alignment?.includes('center')
-              ? 'translateX(-50%)'
-              : 'none',
+            top: `${formConfig.settings.logo.position?.top || 20}px`,
+            left: `${formConfig.settings.logo.position?.left || 20}px`,
             opacity: formConfig.settings.logo.opacity || 1
           }}
         >
@@ -435,10 +460,6 @@ const EnhancedFormCanvas: React.FC<FormCanvasProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
             className="text-center mb-8"
-            style={{
-              fontFamily: formConfig.settings?.canvasStyles?.fontFamily || 'Inter',
-              color: formConfig.settings?.canvasStyles?.fontColor || '#000000'
-            }}
           >
             <h1 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               {formConfig.name || 'Untitled Form'}
@@ -450,11 +471,14 @@ const EnhancedFormCanvas: React.FC<FormCanvasProps> = ({
             )}
           </motion.div>
 
+          {/* Grid Mode Toggle */}
+          {elements.length > 0 && renderGridModeToggle()}
+
           {/* Form Elements */}
           {elements.length > 0 ? (
             <motion.div
               layout
-              className="space-y-6"
+              className={`grid gap-6 ${gridColumns[gridMode]}`}
             >
               <AnimatePresence>
                 {elements.map((element, index) => renderElement(element, index))}

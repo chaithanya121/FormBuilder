@@ -9,7 +9,7 @@ import EnhancedFormCanvas from './EnhancedFormCanvas';
 import EnhancedFormPropertiesPanel from './EnhancedFormPropertiesPanel';
 import EnhancedRightSidebar from './EnhancedRightSidebar';
 import FormStylesPanel from './FormStylesPanel';
-import HeaderLayoutControls from './HeaderLayoutControls';
+import LayoutControls from './LayoutControls';
 import IntegrationsHub from './Integrations/IntegrationsHub';
 import FormDesigner from './FormDesigner';
 import SaveSuccessDialog from './SaveSuccessDialog';
@@ -18,7 +18,6 @@ import ViewCodeModal from './QuickActions/ViewCodeModal';
 import TestFormModal from './QuickActions/TestFormModal';
 import AIEnhanceModal from './QuickActions/AIEnhanceModal';
 import LogoConfiguration from './LogoConfiguration';
-import EnhancedFormConfigurationPanel from './EnhancedFormConfigurationPanel';
 import { FormConfig, FormElement } from './types';
 import { CalculationEngine } from '@/services/calculation-engine';
 import { NotificationService } from '@/services/notification-service';
@@ -142,7 +141,7 @@ const FormBuilder: React.FC = () => {
   });
 
   const [selectedElement, setSelectedElement] = useState<FormElement | null>(null);
-  const [activePanel, setActivePanel] = useState<'elements' | 'configuration' | 'designer' | 'advanced' | 'logo' | 'form-config'>('elements');
+  const [activePanel, setActivePanel] = useState<'elements' | 'configuration' | 'designer' | 'advanced' | 'logo'>('elements');
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [currentView, setCurrentView] = useState<'builder' | 'integrations' | 'designer' | 'advanced'>('builder');
 
@@ -277,8 +276,9 @@ const FormBuilder: React.FC = () => {
   }, [selectedElement, handleFormConfigUpdate]);
 
   const handlePreview = useCallback(() => {
-    window.open(`/form-preview/${id || 'current'}`, '_blank');
-  }, [id]);
+    const formId = currentForm?.primary_id || 'current';
+    navigate(`/form-preview/${formId}`);
+  }, [currentForm, navigate]);
 
   const handleSave = useCallback(async () => {
     try {
@@ -426,7 +426,7 @@ const FormBuilder: React.FC = () => {
     setShowAIEnhance(false);
   }, []);
 
-  const handlePanelChange = useCallback((panel: 'elements' | 'configuration' | 'designer' | 'advanced' | 'logo' | 'form-config') => {
+  const handlePanelChange = useCallback((panel: 'elements' | 'configuration' | 'designer' | 'advanced' | 'logo') => {
     setActivePanel(panel);
   }, []);
 
@@ -461,15 +461,6 @@ const FormBuilder: React.FC = () => {
             onElementDelete={handleDeleteElement}
             onElementDuplicate={handleDuplicateElement}
             onClose={() => setActivePanel('elements')}
-          />
-        );
-      case 'form-config':
-        return (
-          <EnhancedFormConfigurationPanel
-            formConfig={formConfig}
-            onUpdate={handleFormConfigUpdate}
-            onElementAdd={onElementAdd}
-            onDragStart={handleDragStart}
           />
         );
       case 'designer':
@@ -641,22 +632,6 @@ const FormBuilder: React.FC = () => {
 
             {/* Enhanced Action Buttons */}
             <div className="flex items-center gap-1 xl:gap-3 flex-shrink-0">
-              {/* Header Layout Controls */}
-              <HeaderLayoutControls
-                formConfig={formConfig}
-                onUpdate={handleFormConfigUpdate}
-              />
-
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setActivePanel('form-config')}
-                className="hidden lg:flex border-green-200 text-green-700 hover:bg-green-50"
-              >
-                <Settings className="h-4 w-4 mr-1 xl:mr-2" />
-                <span className="hidden xl:inline">Config</span>
-              </Button>
-
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -724,13 +699,19 @@ const FormBuilder: React.FC = () => {
           </AnimatePresence>
         </motion.div>
 
-        {/* Center Canvas Area */}
+        {/* Center Canvas Area with Layout Controls */}
         <motion.div 
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
           className="flex-1 flex flex-col overflow-hidden relative"
         >
+          {/* Layout Controls */}
+          <LayoutControls
+            formConfig={formConfig}
+            onUpdate={handleFormConfigUpdate}
+          />
+          
           <EnhancedFormCanvas
             elements={formConfig.elements}
             setFormConfig={handleFormConfigUpdate}
