@@ -10,7 +10,7 @@ import EnhancedFormPropertiesPanel from './EnhancedFormPropertiesPanel';
 import EnhancedRightSidebar from './EnhancedRightSidebar';
 import FormStylesPanel from './FormStylesPanel';
 import HeaderLayoutControls from './HeaderLayoutControls';
-import IntegrationsHub from './Integrations/IntegrationsHub';
+import ModernIntegrationsHub from './Integrations/ModernIntegrationsHub';
 import FormDesigner from './FormDesigner';
 import SaveSuccessDialog from './SaveSuccessDialog';
 import B2CInsights from './B2CInsights';
@@ -23,7 +23,6 @@ import { FormConfig, FormElement } from './types';
 import { CalculationEngine } from '@/services/calculation-engine';
 import { NotificationService } from '@/services/notification-service';
 import { CloudStorageManager } from '@/services/cloud-storage';
-// import ToolsPanel from './ToolsPanel';
 import { 
   Settings, Eye, Save, Upload, Download, Play, 
   Palette, Layers, Grid, Code, Sparkles, Wand2,
@@ -580,7 +579,7 @@ const FormBuilder: React.FC = () => {
   // Render different views based on currentView state
   if (currentView === 'integrations') {
     return (
-      <IntegrationsHub 
+      <ModernIntegrationsHub 
         onBack={handleBackToBuilder}
         formConfig={formConfig}
         onUpdate={handleFormConfigUpdate}

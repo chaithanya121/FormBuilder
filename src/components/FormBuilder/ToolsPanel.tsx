@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -35,17 +35,17 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
   onExport,
   onImport,
   onPanelChange,
-   onNavigateToLogo
+  onNavigateToLogo
 }) => {
   const [selectedPanel, setSelectedPanel] = useState<'elements' | 'configuration' | 'designer' | 'advanced' | 'logo'>('elements');
-  const [hoveredAction, setHoveredAction] = useState<string | null>(null);
 
-  const handlePanelChange = (panel: 'elements' | 'configuration' | 'designer' | 'advanced'| 'logo') => {
+  const handlePanelChange = useCallback((panel: 'elements' | 'configuration' | 'designer' | 'advanced'| 'logo') => {
     setSelectedPanel(panel);
     onPanelChange(panel);
-  };
+  }, [onPanelChange]);
 
-  const formConfigurationTools = [
+  // Memoize static data to prevent recreation on every render
+  const formConfigurationTools = useMemo(() => [
     {
       id: 'elements',
       label: 'Elements',
@@ -75,7 +75,6 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
       action: () => onToolAction('integrations'),
       badge: 'Pro'
     },
-
     {
       id: 'Logo & Branding',
       label: 'Logo & Branding',
@@ -86,9 +85,9 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
       isSelected: selectedPanel === 'logo',
       badge: 'Enterprise'
     }
-  ];
+  ], [selectedPanel, handlePanelChange, onToolAction]);
 
-  const activeCapabilities = [
+  const activeCapabilities = useMemo(() => [
     {
       id: 'calculations',
       label: 'Smart Calculations',
@@ -125,9 +124,9 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
       statusColor: 'bg-gray-500',
       action: () => onToolAction('cloud-storage')
     }
-  ];
+  ], [onToolAction]);
 
-  const quickActions = [
+  const quickActions = useMemo(() => [
     {
       id: 'preview',
       label: 'Live Preview',
@@ -170,20 +169,10 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
       gradient: 'from-indigo-500 to-purple-600',
       action: onExport
     }
-  ];
+  ], [onPreview, onSave, onExport, onToolAction]);
 
-  const ConfigurationCard = ({ tool }: { tool: any }) => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ 
-        scale: 1.02, 
-        y: -2,
-        transition: { duration: 0.2 }
-      }}
-      whileTap={{ scale: 0.98 }}
-      className="w-full relative overflow-hidden"
-    >
+  const ConfigurationCard = useCallback(({ tool }: { tool: any }) => (
+    <div className="w-full relative overflow-hidden">
       <Button
         onClick={tool.action}
         variant="ghost"
@@ -191,23 +180,18 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
           tool.isSelected ? 'ring-2 ring-blue-500 ring-offset-2' : ''
         }`}
       >
-        <Card className={`w-full border-2 transition-all duration-500 relative overflow-hidden ${
+        <Card className={`w-full border-2 transition-all duration-300 relative overflow-hidden ${
           tool.isSelected 
             ? 'border-blue-500 bg-blue-50 shadow-lg shadow-blue-200' 
-            : 'border-gray-200 hover:border-gray-300 hover:shadow-xl'
+            : 'border-gray-200 hover:border-gray-300 hover:shadow-lg'
         }`}>
-          {/* Gradient Background */}
           <div className={`absolute inset-0 bg-gradient-to-r ${tool.gradient} opacity-5`} />
           
           <CardContent className="p-4 relative">
             <div className="flex items-center gap-3">
-              <motion.div 
-                className={`p-3 rounded-xl bg-gradient-to-r ${tool.gradient} text-white shadow-lg`}
-                whileHover={{ rotate: 5 }}
-                transition={{ duration: 0.2 }}
-              >
+              <div className={`p-3 rounded-xl bg-gradient-to-r ${tool.gradient} text-white shadow-lg`}>
                 <tool.icon className="h-5 w-5" />
-              </motion.div>
+              </div>
               <div className="flex-1 text-left">
                 <div className="flex items-center gap-2">
                   <h4 className={`font-bold text-sm ${
@@ -241,29 +225,16 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
             </div>
           </CardContent>
           
-          {/* Selection Indicator */}
           {tool.isSelected && (
-            <motion.div
-              layoutId="selectedTool"
-              className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500 to-purple-600"
-              transition={{ duration: 0.3 }}
-            />
+            <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500 to-purple-600" />
           )}
         </Card>
       </Button>
-    </motion.div>
-  );
+    </div>
+  ), []);
 
-  const CapabilityCard = ({ capability }: { capability: any }) => (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      whileHover={{ 
-        scale: 1.02,
-        transition: { duration: 0.2 }
-      }}
-      whileTap={{ scale: 0.98 }}
-    >
+  const CapabilityCard = useCallback(({ capability }: { capability: any }) => (
+    <div>
       <Button
         onClick={capability.action}
         variant="ghost"
@@ -273,13 +244,9 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <motion.div 
-                  className="p-2.5 bg-gray-100 rounded-lg"
-                  whileHover={{ scale: 1.1 }}
-                  transition={{ duration: 0.2 }}
-                >
+                <div className="p-2.5 bg-gray-100 rounded-lg">
                   <capability.icon className="h-4 w-4 text-gray-700" />
-                </motion.div>
+                </div>
                 <div className="text-left">
                   <h4 className="font-semibold text-sm text-gray-900">{capability.label}</h4>
                   <p className="text-xs text-gray-600 mt-0.5">{capability.description}</p>
@@ -302,42 +269,20 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
           </CardContent>
         </Card>
       </Button>
-    </motion.div>
-  );
+    </div>
+  ), []);
 
-  const ActionButton = ({ action }: { action: any }) => (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      whileHover={{ 
-        scale: 1.05,
-        y: -2,
-        transition: { duration: 0.2 }
-      }}
-      whileTap={{ scale: 0.95 }}
-      onHoverStart={() => setHoveredAction(action.id)}
-      onHoverEnd={() => setHoveredAction(null)}
-    >
+  const ActionButton = useCallback(({ action }: { action: any }) => (
+    <div className="w-full">
       <Button
         onClick={action.action}
-        className={`w-full bg-gradient-to-r ${action.gradient} hover:opacity-90 text-white shadow-lg relative overflow-hidden group`}
+        className={`w-full bg-gradient-to-r ${action.gradient} hover:opacity-90 text-white shadow-lg relative overflow-hidden group transition-opacity duration-200`}
       >
-        <motion.div
-          className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"
-        />
         <action.icon className="h-4 w-4 mr-2" />
         <span className="font-medium">{action.label}</span>
-        {hoveredAction === action.id && (
-          <motion.div
-            className="absolute inset-0 bg-white opacity-10"
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 0.1 }}
-            transition={{ duration: 0.3 }}
-          />
-        )}
       </Button>
-    </motion.div>
-  );
+    </div>
+  ), []);
 
   return (
     <Card className="h-full flex flex-col bg-gradient-to-br from-white via-blue-50 to-purple-50 backdrop-blur-md border-gray-200/50 shadow-xl">
@@ -356,13 +301,9 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
           }}
         />
         <CardTitle className="flex items-center gap-3 relative z-10">
-          <motion.div
-            className="p-2 bg-white/20 rounded-lg"
-            whileHover={{ rotate: 360 }}
-            transition={{ duration: 0.5 }}
-          >
+          <div className="p-2 bg-white/20 rounded-lg">
             <Settings className="h-6 w-6" />
-          </motion.div>
+          </div>
           <div>
             <h3 className="text-xl font-bold">Tools & Actions</h3>
             <p className="text-blue-100 text-sm font-medium">Enhanced form builder suite</p>
@@ -377,11 +318,7 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
 
       <CardContent className="flex-1 p-6 overflow-y-auto space-y-8">
         {/* Form Configuration */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
+        <div>
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg text-white">
               <FileText className="h-5 w-5" />
@@ -392,29 +329,16 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
             </div>
           </div>
           <div className="space-y-4">
-            <AnimatePresence mode="wait">
-              {formConfigurationTools.map((tool, index) => (
-                <motion.div
-                  key={tool.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <ConfigurationCard tool={tool} />
-                </motion.div>
-              ))}
-            </AnimatePresence>
+            {formConfigurationTools.map((tool) => (
+              <ConfigurationCard key={tool.id} tool={tool} />
+            ))}
           </div>
-        </motion.div>
+        </div>
 
         <Separator className="bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
 
-         {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
+        {/* Quick Actions */}
+        <div>
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg text-white">
               <Zap className="h-5 w-5" />
@@ -425,27 +349,16 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            {quickActions.map((action, index) => (
-              <motion.div
-                key={action.id}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.3 + index * 0.05 }}
-              >
-                <ActionButton action={action} />
-              </motion.div>
+            {quickActions.map((action) => (
+              <ActionButton key={action.id} action={action} />
             ))}
           </div>
-        </motion.div>
+        </div>
 
-         <Separator className="bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
+        <Separator className="bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
 
         {/* Active Capabilities */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
+        <div>
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg text-white">
               <Layers className="h-5 w-5" />
@@ -456,30 +369,16 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
             </div>
           </div>
           <div className="space-y-3">
-            {activeCapabilities.map((capability, index) => (
-              <motion.div
-                key={capability.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 + index * 0.1 }}
-              >
-                <CapabilityCard capability={capability} />
-              </motion.div>
+            {activeCapabilities.map((capability) => (
+              <CapabilityCard key={capability.id} capability={capability} />
             ))}
           </div>
-        </motion.div>
+        </div>
 
         <Separator className="bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
 
-       
-
         {/* Enhanced Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 p-6 rounded-xl border border-blue-200 relative overflow-hidden"
-        >
+        <div className="bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 p-6 rounded-xl border border-blue-200 relative overflow-hidden">
           <motion.div
             className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full -translate-y-16 translate-x-16"
             animate={{
@@ -511,15 +410,10 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
               <div className="text-xs text-pink-700 font-medium">Features</div>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Pro Features Banner */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5 }}
-          className="bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 p-6 rounded-xl text-white relative overflow-hidden"
-        >
+        <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 p-6 rounded-xl text-white relative overflow-hidden">
           <motion.div
             className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
             animate={{
@@ -540,7 +434,7 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
           <p className="text-purple-100 text-sm relative z-10">
             Experience the full power of AI-enhanced form building with unlimited features and premium support.
           </p>
-        </motion.div>
+        </div>
       </CardContent>
     </Card>
   );
