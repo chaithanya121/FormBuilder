@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -152,16 +151,34 @@ const FormElementLibrary: React.FC<FormElementLibraryProps> = ({ onDragStart, on
 
   const handleElementClick = (elementType: string) => {
     console.log('Element clicked:', elementType);
-    if (onDragStart) {
-      const clickEvent = {
-        dataTransfer: {
-          setData: (format: string, data: string) => {},
-          effectAllowed: 'copy' as const
-        }
-      } as React.DragEvent<HTMLDivElement>;
-      
-      onDragStart(clickEvent, elementType);
-    }
+    
+    // Create a new form element and add it directly
+    const newElement: FormElement = {
+      id: Date.now().toString(),
+      type: elementType,
+      label: `New ${elementType.charAt(0).toUpperCase() + elementType.slice(1)}`,
+      placeholder: `Enter ${elementType}...`,
+      required: false,
+      settings: {},
+      fieldStyles: {
+        className: 'w-full',
+        backgroundColor: '#ffffff',
+        borderColor: '#d1d5db',
+        borderRadius: '8px',
+        padding: '12px',
+        fontSize: '16px',
+        fontFamily: 'Inter',
+        color: '#374151'
+      },
+      labelStyles: {
+        color: '#374151',
+        fontSize: '14px',
+        fontWeight: '500',
+        fontFamily: 'Inter'
+      }
+    };
+    
+    onElementAdd(newElement);
   };
 
   const allElements = Object.values(ELEMENT_CATEGORIES).flatMap(category => 

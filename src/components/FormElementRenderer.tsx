@@ -18,7 +18,7 @@ import { Separator } from "@/components/ui/separator";
 import { 
   HelpCircle, Play, ExternalLink, Star, ThumbsUp, ThumbsDown, 
   Heart, Share, MapPin, Camera, Lock, Shield, MessageSquare,
-  Plus, Minus, Upload, DollarSign, CreditCard, Globe
+  Plus, Minus, Upload, DollarSign, CreditCard, Globe, Edit
 } from "lucide-react";
 
 interface FormElementRendererProps {
