@@ -15,6 +15,8 @@ interface LogoConfigurationProps {
   onUpdate: (config: FormConfig) => void;
 }
 
+type AlignmentType = 'left' | 'center' | 'right' | 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right';
+
 const LogoConfiguration: React.FC<LogoConfigurationProps> = ({
   formConfig,
   onUpdate
@@ -79,8 +81,8 @@ const LogoConfiguration: React.FC<LogoConfigurationProps> = ({
     });
   }, [formConfig, onUpdate]);
 
-  // Function to handle alignment preset changes
-  const handleAlignmentChange = useCallback((alignment: string) => {
+  // Function to handle alignment preset changes - Fixed typing
+  const handleAlignmentChange = useCallback((alignment: AlignmentType) => {
     let newTop = 20;
     let newLeft = 20;
 
