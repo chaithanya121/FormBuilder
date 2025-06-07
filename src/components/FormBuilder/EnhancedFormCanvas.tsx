@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '@/components/ui/card';
@@ -236,9 +235,17 @@ const EnhancedFormCanvas: React.FC<FormCanvasProps> = ({
     }
   };
 
-  const getLabelAlignment = () => {
+  const getLabelAlignment = (): 'top' | 'left' | 'right' => {
     const layoutSettings = formConfig.settings?.layout || {};
-    return layoutSettings.labelAlignment || 'top';
+    const alignment = layoutSettings.labelAlignment || 'top';
+    
+    // Ensure the return value matches the expected literal types
+    if (alignment === 'left' || alignment === 'right' || alignment === 'top') {
+      return alignment;
+    }
+    
+    // Default fallback
+    return 'top';
   };
 
   const renderElement = (element: FormElement, index: number) => {
