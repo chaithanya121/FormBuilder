@@ -18,6 +18,7 @@ import ViewCodeModal from './QuickActions/ViewCodeModal';
 import TestFormModal from './QuickActions/TestFormModal';
 import AIEnhanceModal from './QuickActions/AIEnhanceModal';
 import LogoConfiguration from './LogoConfiguration';
+import EnhancedFormConfigurationPanel from './EnhancedFormConfigurationPanel';
 import { FormConfig, FormElement } from './types';
 import { CalculationEngine } from '@/services/calculation-engine';
 import { NotificationService } from '@/services/notification-service';
@@ -141,7 +142,7 @@ const FormBuilder: React.FC = () => {
   });
 
   const [selectedElement, setSelectedElement] = useState<FormElement | null>(null);
-  const [activePanel, setActivePanel] = useState<'elements' | 'configuration' | 'designer' | 'advanced' | 'logo'>('elements');
+  const [activePanel, setActivePanel] = useState<'elements' | 'configuration' | 'designer' | 'advanced' | 'logo' | 'form-config'>('elements');
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [currentView, setCurrentView] = useState<'builder' | 'integrations' | 'designer' | 'advanced'>('builder');
 
@@ -276,9 +277,8 @@ const FormBuilder: React.FC = () => {
   }, [selectedElement, handleFormConfigUpdate]);
 
   const handlePreview = useCallback(() => {
-    const formId = currentForm?.primary_id || 'current';
-    navigate(`/form-preview/${formId}`);
-  }, [currentForm, navigate]);
+    window.open(`/form-preview/${id || 'current'}`, '_blank');
+  }, [id]);
 
   const handleSave = useCallback(async () => {
     try {
@@ -426,7 +426,7 @@ const FormBuilder: React.FC = () => {
     setShowAIEnhance(false);
   }, []);
 
-  const handlePanelChange = useCallback((panel: 'elements' | 'configuration' | 'designer' | 'advanced' | 'logo') => {
+  const handlePanelChange = useCallback((panel: 'elements' | 'configuration' | 'designer' | 'advanced' | 'logo' | 'form-config') => {
     setActivePanel(panel);
   }, []);
 
@@ -461,6 +461,15 @@ const FormBuilder: React.FC = () => {
             onElementDelete={handleDeleteElement}
             onElementDuplicate={handleDuplicateElement}
             onClose={() => setActivePanel('elements')}
+          />
+        );
+      case 'form-config':
+        return (
+          <EnhancedFormConfigurationPanel
+            formConfig={formConfig}
+            onUpdate={handleFormConfigUpdate}
+            onElementAdd={onElementAdd}
+            onDragStart={handleDragStart}
           />
         );
       case 'designer':
@@ -641,6 +650,16 @@ const FormBuilder: React.FC = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
+                onClick={() => setActivePanel('form-config')}
+                className="hidden lg:flex border-green-200 text-green-700 hover:bg-green-50"
+              >
+                <Settings className="h-4 w-4 mr-1 xl:mr-2" />
+                <span className="hidden xl:inline">Config</span>
+              </Button>
+
+              <Button 
+                variant="outline" 
+                size="sm" 
                 onClick={handleNavigateToIntegrations}
                 className="hidden lg:flex border-purple-200 text-purple-700 hover:bg-purple-50"
               >
@@ -705,7 +724,7 @@ const FormBuilder: React.FC = () => {
           </AnimatePresence>
         </motion.div>
 
-        {/* Center Canvas Area - Layout Controls Removed */}
+        {/* Center Canvas Area */}
         <motion.div 
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
