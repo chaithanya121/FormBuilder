@@ -1,3 +1,4 @@
+import React from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState, useEffect } from "react";
@@ -20,14 +21,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { 
   Search, Filter, PlusCircle, Edit3, Eye, Trash2, Clock,
-  Zap, Wand2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
-  Activity
+  Zap, Wand2, Activity, ChevronLeft, ChevronRight,
+  ChevronsLeft, ChevronsRight
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { formsApi, FormData } from "@/services/api/forms";
-
-const FORMS_PER_PAGE = 10;
 
 const FormList = () => {
   const [forms, setForms] = useState<FormData[]>([]);
@@ -35,6 +34,7 @@ const FormList = () => {
   const [sortBy, setSortBy] = useState<'name' | 'date' | 'submissions'>('date');
   const [filterStatus, setFilterStatus] = useState<'all' | 'published' | 'draft'>('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -120,98 +120,58 @@ const FormList = () => {
     })
   );
 
-  // Pagination logic
-  const totalPages = Math.ceil(filteredAndSortedForms.length / FORMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * FORMS_PER_PAGE;
-  const paginatedForms = filteredAndSortedForms.slice(startIndex, startIndex + FORMS_PER_PAGE);
+  // Enhanced Pagination logic
+  const totalPages = Math.ceil(filteredAndSortedForms.length / pageSize);
+  const totalItems = filteredAndSortedForms.length;
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedForms = filteredAndSortedForms.slice(startIndex, startIndex + pageSize);
 
-  const goToPage = (page: number) => {
-    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterStatus, sortBy, pageSize]);
+
+  // Enhanced pagination navigation
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
   };
 
-  const renderPagination = () => {
-    if (totalPages <= 1) return null;
-
-    return (
-      <div className="flex items-center justify-between mt-6 px-4">
-        <div className="text-sm text-gray-400">
-          Showing {startIndex + 1}-{Math.min(startIndex + FORMS_PER_PAGE, filteredAndSortedForms.length)} of {filteredAndSortedForms.length} forms
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => goToPage(1)}
-            disabled={currentPage === 1}
-            className="bg-gray-700/70 border-gray-600 text-white hover:bg-gray-600 disabled:opacity-50"
-          >
-            <ChevronsLeft className="h-4 w-4" />
-          </Button>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => goToPage(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="bg-gray-700/70 border-gray-600 text-white hover:bg-gray-600 disabled:opacity-50"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          
-          <div className="flex items-center gap-1">
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let page;
-              if (totalPages <= 5) {
-                page = i + 1;
-              } else if (currentPage <= 3) {
-                page = i + 1;
-              } else if (currentPage >= totalPages - 2) {
-                page = totalPages - 4 + i;
-              } else {
-                page = currentPage - 2 + i;
-              }
-              
-              return (
-                <Button
-                  key={page}
-                  variant={currentPage === page ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => goToPage(page)}
-                  className={
-                    currentPage === page
-                      ? "bg-blue-600 text-white hover:bg-blue-700"
-                      : "bg-gray-700/70 border-gray-600 text-white hover:bg-gray-600"
-                  }
-                >
-                  {page}
-                </Button>
-              );
-            })}
-          </div>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => goToPage(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="bg-gray-700/70 border-gray-600 text-white hover:bg-gray-600 disabled:opacity-50"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => goToPage(totalPages)}
-            disabled={currentPage === totalPages}
-            className="bg-gray-700/70 border-gray-600 text-white hover:bg-gray-600 disabled:opacity-50"
-          >
-            <ChevronsRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-    );
+  const getVisiblePages = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(1);
+        pages.push('...');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    
+    return pages;
   };
 
   return (
@@ -336,85 +296,169 @@ const FormList = () => {
           </div>
         </div>
 
+        {/* Enhanced pagination info */}
+        <div className="flex items-center justify-between mb-4 text-sm text-gray-300">
+          <div className="flex items-center gap-4">
+            <span>
+              Showing {startIndex + 1}-{endIndex} of {totalItems} forms
+            </span>
+            <Select value={pageSize.toString()} onValueChange={(value) => setPageSize(Number(value))}>
+              <SelectTrigger className="w-20 h-8 bg-gray-700/70 border-gray-600 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-800 border-gray-700">
+                <SelectItem value="5" className="text-white">5</SelectItem>
+                <SelectItem value="10" className="text-white">10</SelectItem>
+                <SelectItem value="20" className="text-white">20</SelectItem>
+                <SelectItem value="50" className="text-white">50</SelectItem>
+              </SelectContent>
+            </Select>
+            <span>per page</span>
+          </div>
+          
+          {/* Enhanced pagination controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handlePageChange(1)}
+                disabled={currentPage === 1}
+                className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-gray-700"
+              >
+                <ChevronsLeft className="h-4 w-4" />
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-gray-700"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+
+              {getVisiblePages().map((page, index) => (
+                <React.Fragment key={index}>
+                  {page === '...' ? (
+                    <span className="px-2 text-gray-400">...</span>
+                  ) : (
+                    <Button
+                      variant={page === currentPage ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => handlePageChange(page as number)}
+                      className={`h-8 w-8 p-0 ${
+                        page === currentPage 
+                          ? 'bg-blue-600 text-white' 
+                          : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                      }`}
+                    >
+                      {page}
+                    </Button>
+                  )}
+                </React.Fragment>
+              ))}
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-gray-700"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage === totalPages}
+                className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-gray-700"
+              >
+                <ChevronsRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </div>
+
         <div className="bg-gray-800/80 rounded-lg overflow-hidden">
           {paginatedForms.length > 0 ? (
-            <>
-              <Table>
-                <TableHeader className="bg-gray-800/90">
-                  <TableRow className="hover:bg-gray-700/50">
-                    <TableHead className="text-white">Name</TableHead>
-                    <TableHead className="text-white">Status</TableHead>
-                    <TableHead className="text-white">Last Modified</TableHead>
-                    <TableHead className="text-white text-right">Submissions</TableHead>
-                    <TableHead className="text-white text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedForms.map((form) => (
-                    <TableRow 
-                      key={form.primary_id} 
-                      className="hover:bg-gray-700/50 cursor-pointer"
-                      onClick={() => navigate(`/form-builder/${form.primary_id}`)}
-                    >
-                      <TableCell className="font-medium text-white">{form.name}</TableCell>
-                      <TableCell>
-                        {form.published ? (
-                          <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">
-                            Published
-                          </span>
-                        ) : (
-                          <span className="text-xs bg-gray-500/20 text-gray-400 px-2 py-0.5 rounded-full">
-                            Draft
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-gray-300 flex items-center gap-1">
-                        <Clock className="h-3 w-3 text-gray-500" />
-                        {formatDate(form.last_modified)}
-                      </TableCell>
-                      <TableCell className="text-right text-gray-300">{form.submissions}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
+            <Table>
+              <TableHeader className="bg-gray-800/90">
+                <TableRow className="hover:bg-gray-700/50">
+                  <TableHead className="text-white">Name</TableHead>
+                  <TableHead className="text-white">Status</TableHead>
+                  <TableHead className="text-white">Last Modified</TableHead>
+                  <TableHead className="text-white text-right">Submissions</TableHead>
+                  <TableHead className="text-white text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedForms.map((form) => (
+                  <TableRow 
+                    key={form.primary_id} 
+                    className="hover:bg-gray-700/50 cursor-pointer"
+                    onClick={() => navigate(`/form-builder/${form.primary_id}`)}
+                  >
+                    <TableCell className="font-medium text-white">{form.name}</TableCell>
+                    <TableCell>
+                      {form.published ? (
+                        <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">
+                          Published
+                        </span>
+                      ) : (
+                        <span className="text-xs bg-gray-500/20 text-gray-400 px-2 py-0.5 rounded-full">
+                          Draft
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-gray-300 flex items-center gap-1">
+                      <Clock className="h-3 w-3 text-gray-500" />
+                      {formatDate(form.last_modified)}
+                    </TableCell>
+                    <TableCell className="text-right text-gray-300">{form.submissions}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-gray-700"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/form-builder/${form.primary_id}`);
+                          }}
+                        >
+                          <Edit3 className="h-4 w-4" />
+                        </Button>
+                        {form.published && (
                           <Button 
                             variant="ghost" 
                             size="sm" 
                             className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-gray-700"
                             onClick={(e) => {
                               e.stopPropagation();
-                              navigate(`/form-builder/${form.primary_id}`);
+                              navigate(`/form/${form.primary_id}`);
                             }}
                           >
-                            <Edit3 className="h-4 w-4" />
+                            <Eye className="h-4 w-4" />
                           </Button>
-                          {form.published && (
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-gray-700"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/form/${form.primary_id}`);
-                              }}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          )}
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-8 w-8 p-0 text-gray-400 hover:text-red-400 hover:bg-gray-700"
-                            onClick={(e) => handleDeleteForm(form.primary_id, e)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              {renderPagination()}
-            </>
+                        )}
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 w-8 p-0 text-gray-400 hover:text-red-400 hover:bg-gray-700"
+                          onClick={(e) => handleDeleteForm(form.primary_id, e)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           ) : (
             <div className="text-center py-10 px-4">
               <div className="flex flex-col items-center">

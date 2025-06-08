@@ -1,5 +1,6 @@
 
 import { formsApi, FormSubmission } from '@/services/api/forms';
+import { triggerIntegrations } from '@/services/integrations';
 
 // Save a new form submission
 export const saveFormSubmission = async (formId: string, submissionData: Record<string, any>): Promise<void> => {
@@ -10,8 +11,16 @@ export const saveFormSubmission = async (formId: string, submissionData: Record<
       throw new Error('Invalid form ID');
     }
     
+    // Save the submission to the database
     await formsApi.submitFormResponse(numericFormId, submissionData);
+    
+    // Update form submission count
     await updateFormSubmissionCount(formId);
+    
+    // Trigger integrations for this form submission
+    console.log('Triggering integrations for form submission:', { formId, submissionData });
+    await triggerIntegrations(formId, submissionData);
+    
   } catch (error) {
     console.error('Error saving form submission:', error);
     throw error;

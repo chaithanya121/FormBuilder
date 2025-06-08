@@ -580,9 +580,7 @@ const FormBuilder: React.FC = () => {
   if (currentView === 'integrations') {
     return (
       <ModernIntegrationsHub 
-        onBack={handleBackToBuilder}
-        formConfig={formConfig}
-        onUpdate={handleFormConfigUpdate}
+        formId={currentForm?.primary_id || id}
       />
     );
   }
@@ -763,6 +761,7 @@ const FormBuilder: React.FC = () => {
           className="w-72 xl:w-80 border-l border-gray-200 bg-gradient-to-b from-gray-50/95 to-white/95 backdrop-blur-md overflow-y-auto shadow-lg hidden xl:flex flex-col"
         >
           <ToolsPanel
+          formConfig={formConfig}
             onToolAction={handleQuickAction}
             onPreview={handlePreview}
             onSave={handleSave}

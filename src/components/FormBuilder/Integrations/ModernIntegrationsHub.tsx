@@ -1,560 +1,666 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  ArrowLeft, Zap, Mail, Webhook, Database, Cloud, 
-  MessageSquare, Calendar, Users, BarChart3, Settings,
-  CheckCircle, AlertCircle, Clock, Star, Play, Pause,
-  Globe, Lock, Shield, Sparkles, Target, Activity,
-  FileText, Eye, Edit, Trash2, Plus, Search,
-  ExternalLink, Copy, RefreshCw, Download, Upload
+  Search, Filter, Zap, Mail, Webhook, Database, 
+  Cloud, MessageSquare, Calendar, CreditCard, 
+  FileText, Users, Settings, Plus, Check,
+  ArrowRight, Star, Sparkles, FormInput, 
+  Layers, Palette, Wand2, TrendingUp, Activity,
+  Monitor, BarChart3, Bell, Eye, ExternalLink,
+  Shield, Globe, Code, Clock
 } from 'lucide-react';
-import { FormConfig } from '../types';
+import IntegrationConfigModal from './IntegrationConfigModal';
 import { useToast } from '@/hooks/use-toast';
-
-interface ModernIntegrationsHubProps {
-  onBack: () => void;
-  formConfig: FormConfig;
-  onUpdate: (config: FormConfig) => void;
-}
+import { formsApi, FormData } from '@/services/api/forms';
 
 interface Integration {
   id: string;
   name: string;
   description: string;
-  icon: any;
+  icon: React.ComponentType<any>;
   category: string;
-  status: 'connected' | 'available' | 'premium';
-  popular?: boolean;
-  gradient: string;
+  isEnabled: boolean;
+  isPremium?: boolean;
+  isPopular?: boolean;
+  color: string;
+  metrics: {
+    connected: number;
+    success: number;
+    lastUsed?: string;
+  };
   features: string[];
-  connected?: boolean;
 }
 
-const ModernIntegrationsHub: React.FC<ModernIntegrationsHubProps> = ({
-  onBack,
-  formConfig,
-  onUpdate
-}) => {
-  const { toast } = useToast();
-  const [selectedCategory, setSelectedCategory] = useState('all');
+const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
+  const [configModalOpen, setConfigModalOpen] = useState(false);
+  const [selectedFormId, setSelectedFormId] = useState(formId || '');
+  const [availableForms, setAvailableForms] = useState<FormData[]>([]);
+  const [activeView, setActiveView] = useState('grid');
+  const { toast } = useToast();
+
+  // Load available forms
+  useEffect(() => {
+    const loadForms = async () => {
+      try {
+        const forms = await formsApi.getAllForms();
+        setAvailableForms(forms);
+        if (forms.length > 0 && !selectedFormId) {
+          setSelectedFormId(forms[0].primary_id);
+        }
+      } catch (error) {
+        console.error('Error loading forms:', error);
+      }
+    };
+    loadForms();
+  }, [selectedFormId]);
 
   const integrations: Integration[] = [
     {
       id: 'email',
       name: 'Email Notifications',
-      description: 'Send automatic email notifications when forms are submitted',
+      description: 'Send automated email notifications with customizable templates and smart triggers',
       icon: Mail,
-      category: 'notifications',
-      status: 'connected',
-      popular: true,
-      gradient: 'from-blue-500 to-cyan-500',
-      features: ['Auto-responses', 'Admin notifications', 'Custom templates', 'SMTP support'],
-      connected: formConfig.settings.integrations?.email?.enabled
+      category: 'communication',
+      isEnabled: false,
+      isPopular: true,
+      color: 'from-blue-500 to-cyan-500',
+      metrics: { connected: 1247, success: 99.2, lastUsed: '2 min ago' },
+      features: ['Template Builder', 'Smart Triggers', 'A/B Testing', 'Analytics']
     },
     {
       id: 'webhook',
-      name: 'Webhooks',
-      description: 'Send form data to external APIs in real-time',
+      name: 'Custom Webhooks',
+      description: 'Send real-time data to any URL endpoint with advanced retry mechanisms and monitoring',
       icon: Webhook,
-      category: 'apis',
-      status: 'connected',
-      gradient: 'from-purple-500 to-pink-500',
-      features: ['Real-time data', 'Custom headers', 'Retry logic', 'Security'],
-      connected: formConfig.settings.integrations?.webhook?.enabled
-    },
-    {
-      id: 'zapier',
-      name: 'Zapier',
-      description: 'Connect to 5000+ apps with automation workflows',
-      icon: Zap,
       category: 'automation',
-      status: 'available',
-      popular: true,
-      gradient: 'from-orange-500 to-red-500',
-      features: ['5000+ apps', 'Workflows', 'Triggers', 'Actions'],
-      connected: formConfig.settings.integrations?.zapier?.enabled
+      isEnabled: false,
+      isPopular: true,
+      color: 'from-purple-500 to-pink-500',
+      metrics: { connected: 892, success: 98.7, lastUsed: '5 min ago' },
+      features: ['Real-time Data', 'Retry Logic', 'Monitoring', 'Custom Headers']
     },
     {
       id: 'slack',
-      name: 'Slack',
-      description: 'Get form submissions directly in your Slack channels',
+      name: 'Slack Integration',
+      description: 'Send instant notifications to Slack channels with rich formatting and interactive buttons',
       icon: MessageSquare,
-      category: 'notifications',
-      status: 'available',
-      gradient: 'from-green-500 to-emerald-500',
-      features: ['Channel notifications', 'Direct messages', 'Rich formatting', 'Bot integration'],
-      connected: formConfig.settings.integrations?.slack?.enabled
+      category: 'communication',
+      isEnabled: false,
+      color: 'from-green-500 to-emerald-500',
+      metrics: { connected: 634, success: 99.8, lastUsed: '1 min ago' },
+      features: ['Rich Messages', 'Interactive Buttons', 'Channel Routing', 'User Mentions']
+    },
+    {
+      id: 'zapier',
+      name: 'Zapier Connect',
+      description: 'Connect with 5000+ apps and automate complex workflows with conditional logic',
+      icon: Zap,
+      category: 'automation',
+      isEnabled: false,
+      isPopular: true,
+      color: 'from-orange-500 to-red-500',
+      metrics: { connected: 2156, success: 97.9, lastUsed: '3 min ago' },
+      features: ['5000+ Apps', 'Conditional Logic', 'Multi-step Workflows', 'Error Handling']
+    },
+    {
+      id: 'database',
+      name: 'Database Storage',
+      description: 'Store submissions in popular databases with custom field mapping and data validation',
+      icon: Database,
+      category: 'storage',
+      isEnabled: false,
+      color: 'from-indigo-500 to-purple-500',
+      metrics: { connected: 445, success: 99.1, lastUsed: '12 min ago' },
+      features: ['Field Mapping', 'Data Validation', 'Multiple DBs', 'Schema Sync']
     },
     {
       id: 'google-sheets',
       name: 'Google Sheets',
-      description: 'Automatically save submissions to Google Sheets',
-      icon: BarChart3,
+      description: 'Automatically populate Google Sheets with form responses and advanced formatting',
+      icon: FileText,
       category: 'storage',
-      status: 'available',
-      gradient: 'from-green-600 to-green-700',
-      features: ['Auto-sync', 'Real-time updates', 'Custom formatting', 'Shared access']
-    },
-    {
-      id: 'airtable',
-      name: 'Airtable',
-      description: 'Store and organize form data in powerful databases',
-      icon: Database,
-      category: 'storage',
-      status: 'premium',
-      gradient: 'from-indigo-500 to-purple-500',
-      features: ['Relational data', 'Views', 'Automation', 'API access']
-    },
-    {
-      id: 'salesforce',
-      name: 'Salesforce',
-      description: 'Create leads and contacts from form submissions',
-      icon: Cloud,
-      category: 'crm',
-      status: 'premium',
-      gradient: 'from-blue-600 to-indigo-600',
-      features: ['Lead creation', 'Contact management', 'Custom fields', 'Workflows']
-    },
-    {
-      id: 'hubspot',
-      name: 'HubSpot',
-      description: 'Sync form data with your HubSpot CRM',
-      icon: Users,
-      category: 'crm',
-      status: 'premium',
-      gradient: 'from-orange-600 to-red-600',
-      features: ['Contact sync', 'Deal creation', 'Marketing automation', 'Analytics']
+      isEnabled: false,
+      isPopular: true,
+      color: 'from-green-400 to-blue-500',
+      metrics: { connected: 1567, success: 99.5, lastUsed: '7 min ago' },
+      features: ['Auto-formatting', 'Charts & Graphs', 'Collaboration', 'Version History']
     },
     {
       id: 'mailchimp',
       name: 'Mailchimp',
-      description: 'Add subscribers to your email marketing lists',
+      description: 'Add subscribers to email lists with advanced segmentation and campaign automation',
       icon: Mail,
       category: 'marketing',
-      status: 'available',
-      gradient: 'from-yellow-500 to-orange-500',
-      features: ['List management', 'Segmentation', 'Campaigns', 'Analytics']
+      isEnabled: false,
+      color: 'from-yellow-500 to-orange-500',
+      metrics: { connected: 789, success: 98.3, lastUsed: '15 min ago' },
+      features: ['List Segmentation', 'Campaign Automation', 'Analytics', 'A/B Testing']
     },
     {
-      id: 'calendly',
-      name: 'Calendly',
-      description: 'Schedule meetings from form submissions',
+      id: 'stripe',
+      name: 'Stripe Payments',
+      description: 'Accept secure payments and subscriptions with advanced fraud protection',
+      icon: CreditCard,
+      category: 'payment',
+      isEnabled: false,
+      isPremium: true,
+      color: 'from-blue-600 to-indigo-600',
+      metrics: { connected: 234, success: 99.9, lastUsed: '4 min ago' },
+      features: ['Fraud Protection', 'Subscriptions', 'Multi-currency', 'Tax Calculation']
+    },
+    {
+      id: 'calendar',
+      name: 'Calendar Booking',
+      description: 'Enable appointment scheduling with calendar integration and automated reminders',
       icon: Calendar,
       category: 'scheduling',
-      status: 'available',
-      gradient: 'from-blue-500 to-purple-500',
-      features: ['Meeting scheduling', 'Calendar sync', 'Time zones', 'Reminders']
+      isEnabled: false,
+      isPremium: true,
+      color: 'from-teal-500 to-cyan-500',
+      metrics: { connected: 156, success: 98.8, lastUsed: '8 min ago' },
+      features: ['Auto Scheduling', 'Reminders', 'Time Zones', 'Availability Rules']
+    },
+    {
+      id: 'crm',
+      name: 'CRM Integration',
+      description: 'Sync contacts and leads with popular CRM systems with advanced field mapping',
+      icon: Users,
+      category: 'crm',
+      isEnabled: false,
+      isPremium: true,
+      color: 'from-pink-500 to-rose-500',
+      metrics: { connected: 378, success: 98.6, lastUsed: '6 min ago' },
+      features: ['Contact Sync', 'Lead Scoring', 'Pipeline Management', 'Custom Fields']
+    },
+    {
+      id: 'cloud-storage',
+      name: 'Cloud Storage',
+      description: 'Upload and manage files in cloud storage services with advanced organization',
+      icon: Cloud,
+      category: 'storage',
+      isEnabled: false,
+      color: 'from-gray-500 to-slate-500',
+      metrics: { connected: 512, success: 99.3, lastUsed: '11 min ago' },
+      features: ['Auto Organization', 'Version Control', 'Access Control', 'Backup & Sync']
+    },
+    {
+      id: 'analytics',
+      name: 'Advanced Analytics',
+      description: 'Track detailed insights and performance metrics with custom dashboards',
+      icon: BarChart3,
+      category: 'analytics',
+      isEnabled: false,
+      isPremium: true,
+      color: 'from-violet-500 to-purple-500',
+      metrics: { connected: 167, success: 99.7, lastUsed: '9 min ago' },
+      features: ['Custom Dashboards', 'Real-time Data', 'Export Reports', 'Predictive Analytics']
     }
   ];
 
   const categories = [
-    { id: 'all', label: 'All Integrations', count: integrations.length },
-    { id: 'notifications', label: 'Notifications', count: integrations.filter(i => i.category === 'notifications').length },
-    { id: 'storage', label: 'Data Storage', count: integrations.filter(i => i.category === 'storage').length },
-    { id: 'automation', label: 'Automation', count: integrations.filter(i => i.category === 'automation').length },
-    { id: 'crm', label: 'CRM', count: integrations.filter(i => i.category === 'crm').length },
-    { id: 'marketing', label: 'Marketing', count: integrations.filter(i => i.category === 'marketing').length },
-    { id: 'apis', label: 'APIs', count: integrations.filter(i => i.category === 'apis').length }
+    { id: 'all', name: 'All Integrations', count: integrations.length, icon: Layers },
+    { id: 'communication', name: 'Communication', count: integrations.filter(i => i.category === 'communication').length, icon: MessageSquare },
+    { id: 'automation', name: 'Automation', count: integrations.filter(i => i.category === 'automation').length, icon: Zap },
+    { id: 'storage', name: 'Storage', count: integrations.filter(i => i.category === 'storage').length, icon: Database },
+    { id: 'marketing', name: 'Marketing', count: integrations.filter(i => i.category === 'marketing').length, icon: Mail },
+    { id: 'payment', name: 'Payment', count: integrations.filter(i => i.category === 'payment').length, icon: CreditCard },
+    { id: 'scheduling', name: 'Scheduling', count: integrations.filter(i => i.category === 'scheduling').length, icon: Calendar },
+    { id: 'crm', name: 'CRM', count: integrations.filter(i => i.category === 'crm').length, icon: Users },
+    { id: 'analytics', name: 'Analytics', count: integrations.filter(i => i.category === 'analytics').length, icon: BarChart3 }
   ];
 
   const filteredIntegrations = integrations.filter(integration => {
-    const matchesCategory = selectedCategory === 'all' || integration.category === selectedCategory;
     const matchesSearch = integration.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          integration.description.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
+    const matchesCategory = selectedCategory === 'all' || integration.category === selectedCategory;
+    return matchesSearch && matchesCategory;
   });
 
-  const connectedIntegrations = integrations.filter(i => i.connected);
-  const popularIntegrations = integrations.filter(i => i.popular);
+  const enabledIntegrations = integrations.filter(i => i.isEnabled);
+  const popularIntegrations = integrations.filter(i => i.isPopular);
 
-  const handleConnect = (integration: Integration) => {
+  const handleConfigureIntegration = (integration: Integration) => {
+    if (!selectedFormId) {
+      toast({
+        title: "Select a Form",
+        description: "Please select a form to configure integrations for.",
+        variant: "destructive"
+      });
+      return;
+    }
     setSelectedIntegration(integration);
+    setConfigModalOpen(true);
   };
 
-  const handleDisconnect = (integrationId: string) => {
-    toast({
-      title: "Integration Disconnected",
-      description: "The integration has been successfully disconnected.",
-    });
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'connected':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'available':
-        return <Clock className="h-4 w-4 text-blue-500" />;
-      case 'premium':
-        return <Star className="h-4 w-4 text-yellow-500" />;
-      default:
-        return <AlertCircle className="h-4 w-4 text-gray-400" />;
-    }
-  };
-
-  const getStatusBadge = (status: string, connected?: boolean) => {
-    if (connected) {
-      return <Badge className="bg-green-100 text-green-700">Connected</Badge>;
-    }
+  const IntegrationCard = ({ integration }: { integration: Integration }) => {
+    const IconComponent = integration.icon;
     
-    switch (status) {
-      case 'connected':
-        return <Badge className="bg-green-100 text-green-700">Ready to Connect</Badge>;
-      case 'available':
-        return <Badge className="bg-blue-100 text-blue-700">Available</Badge>;
-      case 'premium':
-        return <Badge className="bg-yellow-100 text-yellow-700">Premium</Badge>;
-      default:
-        return <Badge variant="secondary">Unknown</Badge>;
-    }
-  };
-
-  const IntegrationCard = ({ integration }: { integration: Integration }) => (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      className="h-full"
-    >
-      <Card className="h-full hover:shadow-xl transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm overflow-hidden group">
-        <div className={`h-2 bg-gradient-to-r ${integration.gradient}`} />
-        
-        <CardHeader className="pb-4">
-          <div className="flex items-start justify-between">
-            <div className={`p-3 rounded-xl bg-gradient-to-r ${integration.gradient} text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-              <integration.icon className="h-6 w-6" />
-            </div>
-            <div className="flex items-center gap-2">
-              {integration.popular && (
-                <Badge className="bg-gradient-to-r from-pink-500 to-purple-500 text-white">
-                  <Star className="h-3 w-3 mr-1" />
-                  Popular
-                </Badge>
-              )}
-              {getStatusIcon(integration.status)}
-            </div>
-          </div>
+    return (
+      <motion.div
+        layout
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        whileHover={{ y: -12, scale: 1.03 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+      >
+        <Card className={`relative overflow-hidden transition-all duration-500 hover:shadow-2xl group ${
+          integration.isEnabled ? 'ring-2 ring-green-400 bg-gradient-to-br from-green-50 to-emerald-50' : 'hover:shadow-xl bg-white'
+        }`}>
+          {/* Animated Background Gradient */}
+          <div className={`absolute inset-0 bg-gradient-to-r ${integration.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
           
-          <div className="space-y-2 mt-4">
-            <CardTitle className="text-xl font-bold text-gray-900">
-              {integration.name}
-            </CardTitle>
-            <p className="text-gray-600 text-sm leading-relaxed">
-              {integration.description}
-            </p>
-          </div>
-        </CardHeader>
-        
-        <CardContent className="pt-0">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              {getStatusBadge(integration.status, integration.connected)}
-              <div className="text-xs text-gray-500">
-                {integration.features.length} features
+          {/* Premium Badge */}
+          {integration.isPremium && (
+            <motion.div 
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="absolute top-4 left-4 z-10"
+            >
+              <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 shadow-lg">
+                <Sparkles className="h-3 w-3 mr-1" />
+                Premium
+              </Badge>
+            </motion.div>
+          )}
+          
+          {/* Popular Badge */}
+          {integration.isPopular && !integration.isPremium && (
+            <motion.div 
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="absolute top-4 left-4 z-10"
+            >
+              <Badge className="bg-gradient-to-r from-orange-400 to-red-500 text-white border-0 shadow-lg">
+                <Star className="h-3 w-3 mr-1" />
+                Popular
+              </Badge>
+            </motion.div>
+          )}
+
+          {/* Status Indicator */}
+          {integration.isEnabled && (
+            <motion.div 
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="absolute top-4 right-4 z-10"
+            >
+              <div className="flex items-center gap-2 bg-green-100 rounded-full px-3 py-1">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-xs text-green-700 font-medium">Active</span>
               </div>
-            </div>
-            
-            <div className="space-y-2">
-              <h4 className="text-sm font-semibold text-gray-700">Key Features:</h4>
-              <div className="grid grid-cols-2 gap-1">
-                {integration.features.slice(0, 4).map((feature, index) => (
-                  <div key={index} className="flex items-center gap-1 text-xs text-gray-600">
-                    <CheckCircle className="h-3 w-3 text-green-500 flex-shrink-0" />
-                    <span className="truncate">{feature}</span>
+            </motion.div>
+          )}
+
+          <CardHeader className="pb-4">
+            <div className="flex items-start gap-4">
+              <motion.div 
+                whileHover={{ rotate: 5, scale: 1.1 }}
+                transition={{ duration: 0.2 }}
+                className={`p-4 rounded-2xl transition-all duration-300 ${
+                  integration.isEnabled 
+                    ? 'bg-gradient-to-br from-green-100 to-emerald-100 shadow-md' 
+                    : `bg-gradient-to-br ${integration.color} shadow-lg`
+                }`}
+              >
+                <IconComponent className={`h-8 w-8 transition-colors duration-300 ${
+                  integration.isEnabled ? 'text-green-600' : 'text-white'
+                }`} />
+              </motion.div>
+              
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-2">
+                  <CardTitle className="text-xl font-semibold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                    {integration.name}
+                  </CardTitle>
+                  {integration.isEnabled && (
+                    <Check className="h-5 w-5 text-green-600" />
+                  )}
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed line-clamp-2 mb-3">
+                  {integration.description}
+                </p>
+                
+                {/* Metrics */}
+                <div className="flex items-center gap-4 text-xs text-gray-500">
+                  <div className="flex items-center gap-1">
+                    <Users className="h-3 w-3" />
+                    {integration.metrics.connected.toLocaleString()}
                   </div>
-                ))}
+                  <div className="flex items-center gap-1">
+                    <Activity className="h-3 w-3" />
+                    {integration.metrics.success}%
+                  </div>
+                  {integration.metrics.lastUsed && (
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {integration.metrics.lastUsed}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-            
-            <div className="flex gap-2 pt-2">
-              {integration.connected ? (
-                <>
-                  <Button 
+          </CardHeader>
+          
+          <CardContent className="pt-0">
+            {/* Features */}
+            <div className="mb-4">
+              <div className="flex flex-wrap gap-1">
+                {integration.features.slice(0, 3).map((feature, index) => (
+                  <Badge 
+                    key={index}
                     variant="outline" 
-                    size="sm" 
-                    className="flex-1"
-                    onClick={() => handleConnect(integration)}
+                    className="text-xs bg-gray-50 text-gray-600 border-gray-200"
                   >
-                    <Settings className="h-4 w-4 mr-1" />
-                    Configure
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => handleDisconnect(integration.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </>
-              ) : (
-                <Button 
-                  className={`w-full bg-gradient-to-r ${integration.gradient} hover:opacity-90`}
-                  onClick={() => handleConnect(integration)}
-                  disabled={integration.status === 'premium'}
+                    {feature}
+                  </Badge>
+                ))}
+                {integration.features.length > 3 && (
+                  <Badge variant="outline" className="text-xs bg-gray-50 text-gray-600 border-gray-200">
+                    +{integration.features.length - 3} more
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <Badge variant="outline" className="text-xs font-medium capitalize bg-white/80">
+                {integration.category}
+              </Badge>
+              
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-gray-300 text-gray-600 hover:bg-gray-50"
                 >
-                  {integration.status === 'premium' ? (
+                  <Eye className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant={integration.isEnabled ? "outline" : "default"}
+                  onClick={() => handleConfigureIntegration(integration)}
+                  className={`transition-all duration-300 ${
+                    integration.isEnabled 
+                      ? 'border-green-300 text-green-700 hover:bg-green-50' 
+                      : `bg-gradient-to-r ${integration.color} hover:shadow-lg text-white border-0`
+                  }`}
+                >
+                  {integration.isEnabled ? (
                     <>
-                      <Star className="h-4 w-4 mr-2" />
-                      Upgrade to Connect
+                      <Settings className="h-4 w-4 mr-2" />
+                      Configure
                     </>
                   ) : (
                     <>
                       <Plus className="h-4 w-4 mr-2" />
-                      Connect
+                      Setup
                     </>
                   )}
                 </Button>
-              )}
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
+          </CardContent>
+        </Card>
+      </motion.div>
+    );
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+    <div className="space-y-8 p-6">
       {/* Enhanced Header */}
-      <div className="bg-white/95 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
-        <div className="px-6 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                onClick={onBack}
-                className="hover:bg-gray-100"
-              >
-                <ArrowLeft className="h-5 w-5 mr-2" />
-                Back to Builder
-              </Button>
-              
-              <div className="h-8 w-px bg-gray-300" />
-              
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl text-white">
-                  <Zap className="h-6 w-6" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    Integration Hub
-                  </h1>
-                  <p className="text-gray-600 text-sm">
-                    Connect your forms to powerful external services
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                <Activity className="h-3 w-3 mr-1" />
-                {connectedIntegrations.length} Connected
-              </Badge>
-              
-              <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
-                <Plus className="h-4 w-4 mr-2" />
-                Browse All
-              </Button>
-            </div>
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center"
+      >
+        <div className="inline-flex items-center gap-4 mb-6">
+          <motion.div 
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="p-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-3xl shadow-xl"
+          >
+            <Sparkles className="h-10 w-10 text-white" />
+          </motion.div>
+          <div>
+            <h2 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+              Integration Hub
+            </h2>
+            <p className="text-lg text-gray-600 mt-2">Enterprise-grade integrations for modern workflows</p>
           </div>
         </div>
-      </div>
-
-      <div className="px-6 py-8">
-        <div className="max-w-7xl mx-auto space-y-8">
-          {/* Quick Stats */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="grid grid-cols-1 md:grid-cols-4 gap-6"
-          >
-            <Card className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-0">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-blue-100 text-sm">Available Integrations</p>
-                    <p className="text-3xl font-bold">{integrations.length}</p>
-                  </div>
-                  <Globe className="h-8 w-8 text-blue-200" />
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-green-100 text-sm">Connected</p>
-                    <p className="text-3xl font-bold">{connectedIntegrations.length}</p>
-                  </div>
-                  <CheckCircle className="h-8 w-8 text-green-200" />
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-purple-100 text-sm">Categories</p>
-                    <p className="text-3xl font-bold">{categories.length - 1}</p>
-                  </div>
-                  <Target className="h-8 w-8 text-purple-200" />
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-orange-100 text-sm">Popular</p>
-                    <p className="text-3xl font-bold">{popularIntegrations.length}</p>
-                  </div>
-                  <Star className="h-8 w-8 text-orange-200" />
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Filters and Search */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-              <CardContent className="p-6">
-                <div className="flex flex-col lg:flex-row gap-4">
-                  <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      placeholder="Search integrations..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 bg-white/80 border-gray-200"
-                    />
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2">
-                    {categories.map((category) => (
-                      <Button
-                        key={category.id}
-                        variant={selectedCategory === category.id ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setSelectedCategory(category.id)}
-                        className={selectedCategory === category.id ? 
-                          "bg-gradient-to-r from-blue-500 to-purple-600" : 
-                          "bg-white/80 hover:bg-gray-50"
-                        }
-                      >
-                        {category.label}
-                        <Badge 
-                          variant="secondary" 
-                          className="ml-2 text-xs bg-gray-100 text-gray-600"
-                        >
-                          {category.count}
-                        </Badge>
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Connected Integrations */}
-          {connectedIntegrations.length > 0 && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg text-white">
-                  <CheckCircle className="h-5 w-5" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Connected Integrations</h2>
-                  <p className="text-gray-600">Manage your active connections</p>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                {connectedIntegrations.map((integration) => (
-                  <IntegrationCard key={integration.id} integration={integration} />
-                ))}
-              </div>
-              
-              <Separator className="my-8" />
-            </motion.div>
-          )}
-
-          {/* All Integrations */}
+        
+        {/* Stats */}
+        <div className="flex justify-center gap-12 mb-8">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
+            className="text-center"
           >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg text-white">
-                <Globe className="h-5 w-5" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">
-                  {selectedCategory === 'all' ? 'All Integrations' : 
-                   categories.find(c => c.id === selectedCategory)?.label}
-                </h2>
-                <p className="text-gray-600">
-                  {filteredIntegrations.length} integration{filteredIntegrations.length !== 1 ? 's' : ''} available
-                </p>
-              </div>
+            <div className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">50+</div>
+            <div className="text-sm text-gray-600">Integrations</div>
+          </motion.div>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="text-center"
+          >
+            <div className="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">99.2%</div>
+            <div className="text-sm text-gray-600">Uptime</div>
+          </motion.div>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="text-center"
+          >
+            <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">1M+</div>
+            <div className="text-sm text-gray-600">Connections</div>
+          </motion.div>
+        </div>
+      </motion.div>
+
+      {/* Form Selection */}
+      {availableForms.length > 0 && (
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl p-8 border border-blue-200"
+        >
+          <div className="flex items-center gap-6">
+            <motion.div 
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className="p-4 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl shadow-lg"
+            >
+              <FormInput className="h-8 w-8 text-white" />
+            </motion.div>
+            <div className="flex-1">
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">Select Target Form</h3>
+              <p className="text-gray-600">Choose which form to configure integrations for and monitor performance</p>
             </div>
-            
-            <AnimatePresence>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Select value={selectedFormId} onValueChange={setSelectedFormId}>
+              <SelectTrigger className="w-80 h-14 bg-white border-gray-300 shadow-sm text-lg">
+                <SelectValue placeholder="Select a form" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border shadow-lg">
+                {availableForms.map((form) => (
+                  <SelectItem key={form.primary_id} value={form.primary_id} className="text-lg py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      {form.name}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Search and Filter */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="flex flex-col lg:flex-row gap-6"
+      >
+        <div className="relative flex-1">
+          <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 h-6 w-6 text-gray-400" />
+          <Input
+            placeholder="Search integrations by name, capability, or feature..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-16 h-16 text-lg border-gray-300 bg-white shadow-sm rounded-2xl"
+          />
+        </div>
+        
+        <div className="flex gap-4">
+          <Button
+            variant={activeView === 'grid' ? 'default' : 'outline'}
+            onClick={() => setActiveView('grid')}
+            className="h-16 px-6"
+          >
+            <Layers className="h-5 w-5 mr-2" />
+            Grid View
+          </Button>
+          <Button
+            variant={activeView === 'list' ? 'default' : 'outline'}
+            onClick={() => setActiveView('list')}
+            className="h-16 px-6"
+          >
+            <FileText className="h-5 w-5 mr-2" />
+            List View
+          </Button>
+        </div>
+      </motion.div>
+
+      {/* Categories */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="flex flex-wrap gap-3"
+      >
+        {categories.map((category, index) => {
+          const IconComponent = category.icon;
+          return (
+            <motion.div
+              key={category.id}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 + index * 0.05 }}
+            >
+              <Button
+                variant={selectedCategory === category.id ? 'default' : 'outline'}
+                onClick={() => setSelectedCategory(category.id)}
+                className={`flex items-center gap-3 h-14 px-6 transition-all duration-300 ${
+                  selectedCategory === category.id 
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg scale-105' 
+                    : 'bg-white border-gray-300 hover:bg-gray-50 hover:shadow-md'
+                }`}
+              >
+                <IconComponent className="h-5 w-5" />
+                {category.name} ({category.count})
+              </Button>
+            </motion.div>
+          );
+        })}
+      </motion.div>
+
+      {/* Tabs */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <Tabs defaultValue="browse" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 h-16 bg-gray-100 p-2 rounded-2xl">
+            <TabsTrigger value="browse" className="h-12 text-lg rounded-xl">Browse All</TabsTrigger>
+            <TabsTrigger value="enabled" className="h-12 text-lg rounded-xl">Enabled ({enabledIntegrations.length})</TabsTrigger>
+            <TabsTrigger value="popular" className="h-12 text-lg rounded-xl">Popular</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="browse" className="mt-8">
+            <motion.div layout className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+              <AnimatePresence>
                 {filteredIntegrations.map((integration) => (
                   <IntegrationCard key={integration.id} integration={integration} />
                 ))}
-              </div>
-            </AnimatePresence>
-            
-            {filteredIntegrations.length === 0 && (
-              <div className="text-center py-12">
-                <div className="p-4 bg-gray-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                  <Search className="h-8 w-8 text-gray-400" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No integrations found</h3>
-                <p className="text-gray-600 mb-4">
-                  Try adjusting your search terms or selecting a different category.
+              </AnimatePresence>
+            </motion.div>
+          </TabsContent>
+          
+          <TabsContent value="enabled" className="mt-8">
+            {enabledIntegrations.length > 0 ? (
+              <motion.div layout className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                <AnimatePresence>
+                  {enabledIntegrations.map((integration) => (
+                    <IntegrationCard key={integration.id} integration={integration} />
+                  ))}
+                </AnimatePresence>
+              </motion.div>
+            ) : (
+              <div className="text-center py-20">
+                <motion.div 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="mx-auto w-32 h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-6"
+                >
+                  <Zap className="h-12 w-12 text-gray-400" />
+                </motion.div>
+                <h3 className="text-2xl font-semibold text-gray-900 mb-3">No integrations enabled</h3>
+                <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                  Start by enabling your first integration from the browse tab to automate your form workflows.
                 </p>
                 <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setSearchTerm('');
-                    setSelectedCategory('all');
-                  }}
+                  onClick={() => setSelectedCategory('all')}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
                 >
-                  Clear Filters
+                  <Wand2 className="mr-2 h-5 w-5" />
+                  Browse Integrations
+                  <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </div>
             )}
-          </motion.div>
-        </div>
-      </div>
+          </TabsContent>
+          
+          <TabsContent value="popular" className="mt-8">
+            <motion.div layout className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+              <AnimatePresence>
+                {popularIntegrations.map((integration) => (
+                  <IntegrationCard key={integration.id} integration={integration} />
+                ))}
+              </AnimatePresence>
+            </motion.div>
+          </TabsContent>
+        </Tabs>
+      </motion.div>
+
+      {/* Configuration Modal */}
+      <IntegrationConfigModal
+        integration={selectedIntegration}
+        isOpen={configModalOpen}
+        onClose={() => {
+          setConfigModalOpen(false);
+          setSelectedIntegration(null);
+        }}
+        formId={selectedFormId}
+      />
     </div>
   );
 };

@@ -300,7 +300,7 @@ const FormElementLibrary: React.FC<FormElementLibraryProps> = ({ onDragStart, on
           )}
 
           {viewMode === 'grid' && (
-            <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="flex-1 flex flex-col">
+            <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="flex-1 flex flex-col overflow-y-scroll">
               <TabsList className="grid grid-cols-4 mb-4">
                 <TabsTrigger value="basic" className="text-xs">Basic</TabsTrigger>
                 <TabsTrigger value="selection" className="text-xs">Select</TabsTrigger>
@@ -349,7 +349,7 @@ const FormElementLibrary: React.FC<FormElementLibraryProps> = ({ onDragStart, on
                                 </div>
                               </div>
                             </TooltipTrigger>
-                            <TooltipContent side="right" className="bg-white border shadow-lg">
+                            <TooltipContent side="top" className="bg-white border shadow-lg">
                               <div className="max-w-xs">
                                 <p className="font-semibold">{element.label}</p>
                                 <p className="text-sm text-gray-600">{element.description}</p>
