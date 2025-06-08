@@ -5,6 +5,8 @@ import { triggerIntegrations } from '@/services/integrations';
 // Save a new form submission
 export const saveFormSubmission = async (formId: string, submissionData: Record<string, any>): Promise<void> => {
   try {
+    console.log('Saving form submission:', { formId, submissionData });
+    
     // Convert string to number for API call
     const numericFormId = parseInt(formId, 10);
     if (isNaN(numericFormId)) {
@@ -20,6 +22,8 @@ export const saveFormSubmission = async (formId: string, submissionData: Record<
     // Trigger integrations for this form submission
     console.log('Triggering integrations for form submission:', { formId, submissionData });
     await triggerIntegrations(formId, submissionData);
+    
+    console.log('Form submission saved and integrations triggered successfully');
     
   } catch (error) {
     console.error('Error saving form submission:', error);
@@ -42,6 +46,7 @@ const updateFormSubmissionCount = async (formId: string): Promise<void> => {
         submissions: (form.submissions || 0) + 1
       };
       await formsApi.updateForm(formToUpdate);
+      console.log('Form submission count updated:', formToUpdate.submissions);
     }
   } catch (error) {
     console.error('Error updating form submission count:', error);
@@ -55,5 +60,25 @@ export const getFormSubmissions = async (formId: string): Promise<FormSubmission
   } catch (error) {
     console.error('Error getting form submissions:', error);
     return [];
+  }
+};
+
+// Test integrations for a form
+export const testFormIntegrations = async (formId: string): Promise<void> => {
+  try {
+    const testData = {
+      name: 'Test User',
+      email: 'test@example.com',
+      message: 'This is a test submission to verify integrations are working correctly.',
+      timestamp: new Date().toISOString(),
+      source: 'integration_test'
+    };
+
+    console.log('Testing integrations for form:', formId);
+    await triggerIntegrations(formId, testData);
+    console.log('Integration test completed successfully');
+  } catch (error) {
+    console.error('Error testing integrations:', error);
+    throw error;
   }
 };
