@@ -19,6 +19,7 @@ import IntegrationConfigModal from './IntegrationConfigModal';
 import { useToast } from '@/hooks/use-toast';
 import { formsApi, FormData } from '@/services/api/forms';
 import { IntegrationsService } from '@/services/integrations';
+import { FormConfig } from '@/components/FormBuilder/types';
 
 interface Integration {
   id: string;
@@ -62,13 +63,26 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       } catch (error) {
         console.error('Error loading forms:', error);
         // Create a demo form if API fails
+        const demoFormConfig: FormConfig = {
+          elements: [],
+          settings: {
+            theme: 'default',
+            layout: {
+              style: 'default'
+            },
+            submitButton: {
+              text: 'Submit'
+            }
+          }
+        };
+        
         const demoForm: FormData = {
           primary_id: 'demo-form-123',
           name: 'Demo Contact Form',
           createdAt: new Date().toISOString(),
           last_modified: new Date().toISOString(),
           published: true,
-          config: {},
+          config: demoFormConfig,
           submissions: 0
         };
         setAvailableForms([demoForm]);
