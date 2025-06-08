@@ -13,7 +13,7 @@ import {
   ArrowRight, Star, Sparkles, FormInput, 
   Layers, Palette, Wand2, TrendingUp, Activity,
   Monitor, BarChart3, Bell, Eye, ExternalLink,
-  Shield, Globe, Code, Clock
+  Shield, Globe, Code, Clock, AlertCircle
 } from 'lucide-react';
 import IntegrationConfigModal from './IntegrationConfigModal';
 import { useToast } from '@/hooks/use-toast';
@@ -43,14 +43,16 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
   const [configModalOpen, setConfigModalOpen] = useState(false);
-  const [selectedFormId, setSelectedFormId] = useState(formId || '');
+  const [selectedFormId, setSelectedFormId] = useState(formId || 'demo-form-123');
   const [availableForms, setAvailableForms] = useState<FormData[]>([]);
   const [activeView, setActiveView] = useState('grid');
+  const [formsLoading, setFormsLoading] = useState(false);
   const { toast } = useToast();
 
-  // Load available forms
+  // Load available forms with error handling
   useEffect(() => {
     const loadForms = async () => {
+      setFormsLoading(true);
       try {
         const forms = await formsApi.getAllForms();
         setAvailableForms(forms);
@@ -59,16 +61,41 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
         }
       } catch (error) {
         console.error('Error loading forms:', error);
+        // Create a demo form if API fails
+        const demoForm: FormData = {
+          primary_id: 'demo-form-123',
+          name: 'Demo Contact Form',
+          createdAt: new Date().toISOString(),
+          last_modified: new Date().toISOString(),
+          published: true,
+          config: {},
+          submissions: 0
+        };
+        setAvailableForms([demoForm]);
+        setSelectedFormId('demo-form-123');
+        
+        toast({
+          title: "Using Demo Mode",
+          description: "Using demo form for integration setup. Connect to view your actual forms.",
+          variant: "default"
+        });
+      } finally {
+        setFormsLoading(false);
       }
     };
     loadForms();
-  }, [selectedFormId]);
+  }, [selectedFormId, toast]);
 
   // Check if integration is configured
   const isIntegrationConfigured = (integrationId: string) => {
     if (!selectedFormId) return false;
-    const config = IntegrationsService.getIntegration(selectedFormId, integrationId);
-    return config && config.enabled;
+    try {
+      const config = IntegrationsService.getIntegration(selectedFormId, integrationId);
+      return config && config.enabled;
+    } catch (error) {
+      console.error('Error checking integration config:', error);
+      return false;
+    }
   };
 
   const integrations: Integration[] = [
@@ -237,7 +264,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
   const popularIntegrations = integrations.filter(i => i.isPopular);
 
   const handleConfigureIntegration = (integration: Integration) => {
-    console.log('Configuring integration:', integration.id, 'for form:', selectedFormId);
+    console.log('🚀 Configuring integration:', integration.id, 'for form:', selectedFormId);
     
     if (!selectedFormId) {
       toast({
@@ -248,15 +275,17 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       return;
     }
     
+    console.log('🔧 Opening modal for integration:', integration.name);
     setSelectedIntegration(integration);
     setConfigModalOpen(true);
   };
 
   const handleModalClose = () => {
+    console.log('🔒 Closing integration modal');
     setConfigModalOpen(false);
     setSelectedIntegration(null);
-    // Refresh the integration status by updating the integrations array
-    window.location.reload();
+    // Force re-render to update integration status
+    window.dispatchEvent(new Event('integrationUpdated'));
   };
 
   const IntegrationCard = ({ integration }: { integration: Integration }) => {
@@ -400,14 +429,24 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
                   size="sm"
                   variant="outline"
                   className="border-gray-300 text-gray-600 hover:bg-gray-50"
-                  onClick={() => handleConfigureIntegration(integration)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('👁️ Preview clicked for:', integration.name);
+                    handleConfigureIntegration(integration);
+                  }}
                 >
                   <Eye className="h-4 w-4" />
                 </Button>
                 <Button
                   size="sm"
                   variant={integration.isEnabled ? "outline" : "default"}
-                  onClick={() => handleConfigureIntegration(integration)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('⚙️ Setup/Configure clicked for:', integration.name);
+                    handleConfigureIntegration(integration);
+                  }}
                   className={`transition-all duration-300 ${
                     integration.isEnabled 
                       ? 'border-green-300 text-green-700 hover:bg-green-50' 
@@ -491,45 +530,49 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
         </div>
       </motion.div>
 
-      {/* Form Selection */}
-      {availableForms.length > 0 && (
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl p-8 border border-blue-200"
-        >
-          <div className="flex items-center gap-6">
-            <motion.div 
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="p-4 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl shadow-lg"
-            >
-              <FormInput className="h-8 w-8 text-white" />
-            </motion.div>
-            <div className="flex-1">
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">Select Target Form</h3>
-              <p className="text-gray-600">Choose which form to configure integrations for and monitor performance</p>
-            </div>
-            <Select value={selectedFormId} onValueChange={setSelectedFormId}>
-              <SelectTrigger className="w-80 h-14 bg-white border-gray-300 shadow-sm text-lg">
-                <SelectValue placeholder="Select a form" />
-              </SelectTrigger>
-              <SelectContent className="bg-white border shadow-lg">
-                {availableForms.map((form) => (
-                  <SelectItem key={form.primary_id} value={form.primary_id} className="text-lg py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                      {form.name}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+      {/* Form Selection with loading state */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl p-8 border border-blue-200"
+      >
+        <div className="flex items-center gap-6">
+          <motion.div 
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="p-4 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl shadow-lg"
+          >
+            <FormInput className="h-8 w-8 text-white" />
+          </motion.div>
+          <div className="flex-1">
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">Select Target Form</h3>
+            <p className="text-gray-600">Choose which form to configure integrations for and monitor performance</p>
+            {formsLoading && (
+              <div className="flex items-center gap-2 mt-2 text-blue-600">
+                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-sm">Loading forms...</span>
+              </div>
+            )}
           </div>
-        </motion.div>
-      )}
+          <Select value={selectedFormId} onValueChange={setSelectedFormId} disabled={formsLoading}>
+            <SelectTrigger className="w-80 h-14 bg-white border-gray-300 shadow-sm text-lg">
+              <SelectValue placeholder="Select a form" />
+            </SelectTrigger>
+            <SelectContent className="bg-white border shadow-lg">
+              {availableForms.map((form) => (
+                <SelectItem key={form.primary_id} value={form.primary_id} className="text-lg py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    {form.name}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </motion.div>
 
       {/* Search and Filter */}
       <motion.div 
@@ -669,6 +712,15 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
           </TabsContent>
         </Tabs>
       </motion.div>
+
+      {/* Debug info */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="mt-8 p-4 bg-gray-100 rounded-lg text-xs">
+          <div>Selected Form: {selectedFormId}</div>
+          <div>Modal Open: {configModalOpen.toString()}</div>
+          <div>Selected Integration: {selectedIntegration?.name || 'None'}</div>
+        </div>
+      )}
 
       {/* Configuration Modal */}
       <IntegrationConfigModal

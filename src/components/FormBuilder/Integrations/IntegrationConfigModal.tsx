@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { IntegrationsService } from '@/services/integrations';
-import { Save, TestTube, Mail, Webhook, MessageSquare, Zap, Database, FileText } from 'lucide-react';
+import { Save, TestTube, Mail, Webhook, MessageSquare, Zap, Database, FileText, Check, AlertCircle } from 'lucide-react';
 
 interface IntegrationConfigModalProps {
   integration: any;
@@ -29,14 +29,25 @@ const IntegrationConfigModal: React.FC<IntegrationConfigModalProps> = ({
   const [config, setConfig] = useState<any>({});
   const [enabled, setEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [testLoading, setTestLoading] = useState(false);
 
   useEffect(() => {
+    console.log('🔧 Modal opened for integration:', integration?.id, 'Form:', formId);
     if (integration && formId) {
-      const existingConfig = IntegrationsService.getIntegration(formId, integration.id);
-      if (existingConfig) {
-        setConfig(existingConfig.config);
-        setEnabled(existingConfig.enabled);
-      } else {
+      try {
+        const existingConfig = IntegrationsService.getIntegration(formId, integration.id);
+        if (existingConfig) {
+          console.log('📝 Existing config found:', existingConfig);
+          setConfig(existingConfig.config);
+          setEnabled(existingConfig.enabled);
+        } else {
+          console.log('🆕 No existing config, using defaults');
+          const defaultConfig = getDefaultConfig(integration.id);
+          setConfig(defaultConfig);
+          setEnabled(false);
+        }
+      } catch (error) {
+        console.error('Error loading integration config:', error);
         setConfig(getDefaultConfig(integration.id));
         setEnabled(false);
       }
@@ -90,15 +101,21 @@ const IntegrationConfigModal: React.FC<IntegrationConfigModalProps> = ({
   };
 
   const handleSave = async () => {
-    if (!formId || !integration) return;
+    if (!formId || !integration) {
+      console.error('❌ Missing formId or integration');
+      return;
+    }
 
     setIsLoading(true);
+    console.log('💾 Saving integration config:', { formId, integrationId: integration.id, config, enabled });
+    
     try {
       IntegrationsService.saveIntegration(formId, integration.id, {
         ...config,
         enabled
       });
 
+      console.log('✅ Integration saved successfully');
       toast({
         title: "Integration Saved",
         description: `${integration.name} has been configured successfully.`,
@@ -106,7 +123,7 @@ const IntegrationConfigModal: React.FC<IntegrationConfigModalProps> = ({
 
       onClose();
     } catch (error) {
-      console.error('Error saving integration:', error);
+      console.error('❌ Error saving integration:', error);
       toast({
         title: "Save Failed",
         description: "Failed to save integration configuration.",
@@ -118,15 +135,21 @@ const IntegrationConfigModal: React.FC<IntegrationConfigModalProps> = ({
   };
 
   const handleTest = async () => {
-    if (!formId || !integration) return;
+    if (!formId || !integration) {
+      console.error('❌ Missing formId or integration for test');
+      return;
+    }
 
-    setIsLoading(true);
+    setTestLoading(true);
+    console.log('🧪 Testing integration:', integration.id);
+    
     try {
       // Create test submission data with proper structure
       const testSubmissionData = {
         name: 'Test User',
         email: 'test@example.com',
-        message: 'This is a test submission to verify the integration is working correctly.'
+        message: 'This is a test submission to verify the integration is working correctly.',
+        timestamp: new Date().toISOString()
       };
 
       // Temporarily save the current config for testing
@@ -134,6 +157,8 @@ const IntegrationConfigModal: React.FC<IntegrationConfigModalProps> = ({
         ...config,
         enabled: true
       });
+
+      console.log('🔄 Triggering test integration with data:', testSubmissionData);
 
       // Trigger test integration with proper submission data structure
       await IntegrationsService.processSubmission({
@@ -147,23 +172,25 @@ const IntegrationConfigModal: React.FC<IntegrationConfigModalProps> = ({
         }
       });
 
+      console.log('✅ Test completed successfully');
       toast({
         title: "Test Successful",
         description: `${integration.name} test completed. Check your integration endpoint for the test data.`,
       });
     } catch (error) {
-      console.error('Test failed:', error);
+      console.error('❌ Test failed:', error);
       toast({
         title: "Test Failed",
         description: "Integration test failed. Please check your configuration.",
         variant: "destructive"
       });
     } finally {
-      setIsLoading(false);
+      setTestLoading(false);
     }
   };
 
   const updateConfig = (key: string, value: any) => {
+    console.log('🔄 Updating config:', key, '=', value);
     setConfig(prev => ({ ...prev, [key]: value }));
   };
 
@@ -184,7 +211,12 @@ const IntegrationConfigModal: React.FC<IntegrationConfigModalProps> = ({
       default:
         return (
           <div className="text-center py-8">
-            <p className="text-gray-500">Configuration form for {integration.name} is not available yet.</p>
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <AlertCircle className="h-8 w-8 text-yellow-500" />
+              <h3 className="text-lg font-semibold">Coming Soon</h3>
+            </div>
+            <p className="text-gray-500">Configuration form for {integration.name} is being developed.</p>
+            <p className="text-sm text-gray-400 mt-2">You can still enable this integration to use default settings.</p>
           </div>
         );
     }
@@ -207,7 +239,7 @@ const IntegrationConfigModal: React.FC<IntegrationConfigModalProps> = ({
         </DialogHeader>
 
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
             <div>
               <h4 className="font-medium">Enable Integration</h4>
               <p className="text-sm text-gray-600">
@@ -221,14 +253,14 @@ const IntegrationConfigModal: React.FC<IntegrationConfigModalProps> = ({
 
           {renderConfigForm()}
 
-          <div className="flex justify-between gap-3 pt-4">
+          <div className="flex justify-between gap-3 pt-4 border-t">
             <Button
               variant="outline"
               onClick={handleTest}
-              disabled={isLoading || !enabled}
+              disabled={testLoading || !enabled}
             >
               <TestTube className="h-4 w-4 mr-2" />
-              Test Integration
+              {testLoading ? 'Testing...' : 'Test Integration'}
             </Button>
             <div className="flex gap-3">
               <Button variant="outline" onClick={onClose}>
@@ -309,7 +341,6 @@ const EmailConfigForm: React.FC<{ config: any; updateConfig: (key: string, value
   </div>
 );
 
-// Slack Configuration Form
 const SlackConfigForm: React.FC<{ config: any; updateConfig: (key: string, value: any) => void }> = ({ config, updateConfig }) => (
   <div className="space-y-4">
     <div>
@@ -365,7 +396,6 @@ const SlackConfigForm: React.FC<{ config: any; updateConfig: (key: string, value
   </div>
 );
 
-// Webhook Configuration Form
 const WebhookConfigForm: React.FC<{ config: any; updateConfig: (key: string, value: any) => void }> = ({ config, updateConfig }) => (
   <div className="space-y-4">
     <div>
@@ -433,7 +463,6 @@ const WebhookConfigForm: React.FC<{ config: any; updateConfig: (key: string, val
   </div>
 );
 
-// Zapier Configuration Form
 const ZapierConfigForm: React.FC<{ config: any; updateConfig: (key: string, value: any) => void }> = ({ config, updateConfig }) => (
   <div className="space-y-4">
     <div>
@@ -451,7 +480,6 @@ const ZapierConfigForm: React.FC<{ config: any; updateConfig: (key: string, valu
   </div>
 );
 
-// Google Sheets Configuration Form
 const GoogleSheetsConfigForm: React.FC<{ config: any; updateConfig: (key: string, value: any) => void }> = ({ config, updateConfig }) => (
   <div className="space-y-4">
     <div>
