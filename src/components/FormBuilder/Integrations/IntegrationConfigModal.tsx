@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -279,7 +280,7 @@ const EmailConfigForm: React.FC<{ config: any; updateConfig: (key: string, value
         rows={4}
       />
       <p className="text-xs text-gray-500 mt-1">
-        Use placeholders: {{formName}}, {{submissionData}}, {{timestamp}}, {{submissionId}}
+        Use placeholders: &#123;&#123;formName&#125;&#125;, &#123;&#123;submissionData&#125;&#125;, &#123;&#123;timestamp&#125;&#125;, &#123;&#123;submissionId&#125;&#125;
       </p>
     </div>
 
