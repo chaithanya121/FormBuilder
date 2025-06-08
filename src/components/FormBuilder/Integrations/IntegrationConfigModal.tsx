@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -122,8 +121,8 @@ const IntegrationConfigModal: React.FC<IntegrationConfigModalProps> = ({
 
     setIsLoading(true);
     try {
-      // Create test submission data
-      const testData = {
+      // Create test submission data with proper structure
+      const testSubmissionData = {
         name: 'Test User',
         email: 'test@example.com',
         message: 'This is a test submission to verify the integration is working correctly.'
@@ -135,12 +134,12 @@ const IntegrationConfigModal: React.FC<IntegrationConfigModalProps> = ({
         enabled: true
       });
 
-      // Trigger test integration
+      // Trigger test integration with proper submission data structure
       await IntegrationsService.processSubmission({
-        formId,
+        formId: formId,
         submissionId: `test_${Date.now()}`,
         timestamp: new Date().toISOString(),
-        data: testData,
+        data: testSubmissionData,
         metadata: {
           ip: 'test',
           userAgent: 'Test Agent'
