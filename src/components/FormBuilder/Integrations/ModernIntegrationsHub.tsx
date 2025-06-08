@@ -18,6 +18,7 @@ import {
 import IntegrationConfigModal from './IntegrationConfigModal';
 import { useToast } from '@/hooks/use-toast';
 import { formsApi, FormData } from '@/services/api/forms';
+import { IntegrationsService } from '@/services/integrations';
 
 interface Integration {
   id: string;
@@ -63,6 +64,13 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
     loadForms();
   }, [selectedFormId]);
 
+  // Check if integration is configured
+  const isIntegrationConfigured = (integrationId: string) => {
+    if (!selectedFormId) return false;
+    const config = IntegrationsService.getIntegration(selectedFormId, integrationId);
+    return config && config.enabled;
+  };
+
   const integrations: Integration[] = [
     {
       id: 'email',
@@ -70,7 +78,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Send automated email notifications with customizable templates and smart triggers',
       icon: Mail,
       category: 'communication',
-      isEnabled: false,
+      isEnabled: isIntegrationConfigured('email'),
       isPopular: true,
       color: 'from-blue-500 to-cyan-500',
       metrics: { connected: 1247, success: 99.2, lastUsed: '2 min ago' },
@@ -82,7 +90,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Send real-time data to any URL endpoint with advanced retry mechanisms and monitoring',
       icon: Webhook,
       category: 'automation',
-      isEnabled: false,
+      isEnabled: isIntegrationConfigured('webhook'),
       isPopular: true,
       color: 'from-purple-500 to-pink-500',
       metrics: { connected: 892, success: 98.7, lastUsed: '5 min ago' },
@@ -94,7 +102,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Send instant notifications to Slack channels with rich formatting and interactive buttons',
       icon: MessageSquare,
       category: 'communication',
-      isEnabled: false,
+      isEnabled: isIntegrationConfigured('slack'),
       color: 'from-green-500 to-emerald-500',
       metrics: { connected: 634, success: 99.8, lastUsed: '1 min ago' },
       features: ['Rich Messages', 'Interactive Buttons', 'Channel Routing', 'User Mentions']
@@ -105,7 +113,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Connect with 5000+ apps and automate complex workflows with conditional logic',
       icon: Zap,
       category: 'automation',
-      isEnabled: false,
+      isEnabled: isIntegrationConfigured('zapier'),
       isPopular: true,
       color: 'from-orange-500 to-red-500',
       metrics: { connected: 2156, success: 97.9, lastUsed: '3 min ago' },
@@ -117,7 +125,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Store submissions in popular databases with custom field mapping and data validation',
       icon: Database,
       category: 'storage',
-      isEnabled: false,
+      isEnabled: isIntegrationConfigured('database'),
       color: 'from-indigo-500 to-purple-500',
       metrics: { connected: 445, success: 99.1, lastUsed: '12 min ago' },
       features: ['Field Mapping', 'Data Validation', 'Multiple DBs', 'Schema Sync']
@@ -128,7 +136,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Automatically populate Google Sheets with form responses and advanced formatting',
       icon: FileText,
       category: 'storage',
-      isEnabled: false,
+      isEnabled: isIntegrationConfigured('google-sheets'),
       isPopular: true,
       color: 'from-green-400 to-blue-500',
       metrics: { connected: 1567, success: 99.5, lastUsed: '7 min ago' },
@@ -229,6 +237,8 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
   const popularIntegrations = integrations.filter(i => i.isPopular);
 
   const handleConfigureIntegration = (integration: Integration) => {
+    console.log('Configuring integration:', integration.id, 'for form:', selectedFormId);
+    
     if (!selectedFormId) {
       toast({
         title: "Select a Form",
@@ -237,8 +247,16 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       });
       return;
     }
+    
     setSelectedIntegration(integration);
     setConfigModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setConfigModalOpen(false);
+    setSelectedIntegration(null);
+    // Refresh the integration status by updating the integrations array
+    window.location.reload();
   };
 
   const IntegrationCard = ({ integration }: { integration: Integration }) => {
@@ -382,6 +400,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
                   size="sm"
                   variant="outline"
                   className="border-gray-300 text-gray-600 hover:bg-gray-50"
+                  onClick={() => handleConfigureIntegration(integration)}
                 >
                   <Eye className="h-4 w-4" />
                 </Button>
@@ -655,10 +674,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       <IntegrationConfigModal
         integration={selectedIntegration}
         isOpen={configModalOpen}
-        onClose={() => {
-          setConfigModalOpen(false);
-          setSelectedIntegration(null);
-        }}
+        onClose={handleModalClose}
         formId={selectedFormId}
       />
     </div>
