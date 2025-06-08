@@ -44,24 +44,40 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
   const [configModalOpen, setConfigModalOpen] = useState(false);
-  const [selectedFormId, setSelectedFormId] = useState(formId || 'demo-form-123');
+  const [selectedFormId, setSelectedFormId] = useState(formId || '');
   const [availableForms, setAvailableForms] = useState<FormData[]>([]);
   const [activeView, setActiveView] = useState('grid');
   const [formsLoading, setFormsLoading] = useState(false);
+  const [integrationStates, setIntegrationStates] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
+
+  console.log('🔄 ModernIntegrationsHub rendered with:', { 
+    formId, 
+    selectedFormId, 
+    configModalOpen, 
+    selectedIntegration: selectedIntegration?.id 
+  });
 
   // Load available forms with error handling
   useEffect(() => {
+    console.log('📋 Loading forms...');
     const loadForms = async () => {
       setFormsLoading(true);
       try {
+        console.log('🌐 Fetching forms from API...');
         const forms = await formsApi.getAllForms();
+        console.log('✅ Forms loaded successfully:', forms.length, 'forms');
         setAvailableForms(forms);
+        
         if (forms.length > 0 && !selectedFormId) {
-          setSelectedFormId(forms[0].primary_id);
+          const firstFormId = forms[0].primary_id;
+          console.log('🎯 Auto-selecting first form:', firstFormId);
+          setSelectedFormId(firstFormId);
         }
       } catch (error) {
-        console.error('Error loading forms:', error);
+        console.error('❌ Error loading forms:', error);
+        console.log('🔄 Creating demo form fallback...');
+        
         // Create a demo form if API fails
         const demoFormConfig: FormConfig = {
           elements: [],
@@ -85,8 +101,10 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
           config: demoFormConfig,
           submissions: 0
         };
+        
         setAvailableForms([demoForm]);
         setSelectedFormId('demo-form-123');
+        console.log('🎭 Demo form created and selected');
         
         toast({
           title: "Using Demo Mode",
@@ -95,19 +113,72 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
         });
       } finally {
         setFormsLoading(false);
+        console.log('🏁 Forms loading completed');
       }
     };
     loadForms();
   }, [selectedFormId, toast]);
 
+  // Update integration states when form changes
+  useEffect(() => {
+    if (selectedFormId) {
+      console.log('🔄 Updating integration states for form:', selectedFormId);
+      const states: Record<string, boolean> = {};
+      
+      // Check each integration type
+      const integrationTypes = ['email', 'webhook', 'slack', 'zapier', 'database', 'google-sheets', 'stripe', 'calendar', 'crm', 'cloud-storage', 'analytics'];
+      
+      integrationTypes.forEach(type => {
+        const isConfigured = isIntegrationConfigured(type);
+        states[type] = isConfigured;
+        console.log(`🔍 Integration ${type}:`, isConfigured ? 'ENABLED' : 'DISABLED');
+      });
+      
+      setIntegrationStates(states);
+      console.log('✅ Integration states updated:', states);
+    }
+  }, [selectedFormId]);
+
+  // Listen for integration updates
+  useEffect(() => {
+    console.log('👂 Setting up integration update listener...');
+    const handleIntegrationUpdate = () => {
+      console.log('🔔 Integration updated, refreshing states...');
+      if (selectedFormId) {
+        const states: Record<string, boolean> = {};
+        const integrationTypes = ['email', 'webhook', 'slack', 'zapier', 'database', 'google-sheets', 'stripe', 'calendar', 'crm', 'cloud-storage', 'analytics'];
+        
+        integrationTypes.forEach(type => {
+          states[type] = isIntegrationConfigured(type);
+        });
+        
+        setIntegrationStates(states);
+        console.log('🔄 Integration states refreshed:', states);
+      }
+    };
+
+    window.addEventListener('integrationUpdated', handleIntegrationUpdate);
+    return () => {
+      console.log('🧹 Cleaning up integration update listener');
+      window.removeEventListener('integrationUpdated', handleIntegrationUpdate);
+    };
+  }, [selectedFormId]);
+
   // Check if integration is configured
   const isIntegrationConfigured = (integrationId: string) => {
-    if (!selectedFormId) return false;
+    if (!selectedFormId) {
+      console.log('⚠️ No form selected, integration check failed for:', integrationId);
+      return false;
+    }
+    
     try {
+      console.log('🔍 Checking integration config for:', { formId: selectedFormId, integrationId });
       const config = IntegrationsService.getIntegration(selectedFormId, integrationId);
-      return config && config.enabled;
+      const isEnabled = config && config.enabled;
+      console.log(`✅ Integration ${integrationId} check result:`, isEnabled ? 'ENABLED' : 'DISABLED');
+      return isEnabled;
     } catch (error) {
-      console.error('Error checking integration config:', error);
+      console.error('❌ Error checking integration config:', error);
       return false;
     }
   };
@@ -119,7 +190,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Send automated email notifications with customizable templates and smart triggers',
       icon: Mail,
       category: 'communication',
-      isEnabled: isIntegrationConfigured('email'),
+      isEnabled: integrationStates['email'] || false,
       isPopular: true,
       color: 'from-blue-500 to-cyan-500',
       metrics: { connected: 1247, success: 99.2, lastUsed: '2 min ago' },
@@ -131,7 +202,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Send real-time data to any URL endpoint with advanced retry mechanisms and monitoring',
       icon: Webhook,
       category: 'automation',
-      isEnabled: isIntegrationConfigured('webhook'),
+      isEnabled: integrationStates['webhook'] || false,
       isPopular: true,
       color: 'from-purple-500 to-pink-500',
       metrics: { connected: 892, success: 98.7, lastUsed: '5 min ago' },
@@ -143,7 +214,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Send instant notifications to Slack channels with rich formatting and interactive buttons',
       icon: MessageSquare,
       category: 'communication',
-      isEnabled: isIntegrationConfigured('slack'),
+      isEnabled: integrationStates['slack'] || false,
       color: 'from-green-500 to-emerald-500',
       metrics: { connected: 634, success: 99.8, lastUsed: '1 min ago' },
       features: ['Rich Messages', 'Interactive Buttons', 'Channel Routing', 'User Mentions']
@@ -154,7 +225,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Connect with 5000+ apps and automate complex workflows with conditional logic',
       icon: Zap,
       category: 'automation',
-      isEnabled: isIntegrationConfigured('zapier'),
+      isEnabled: integrationStates['zapier'] || false,
       isPopular: true,
       color: 'from-orange-500 to-red-500',
       metrics: { connected: 2156, success: 97.9, lastUsed: '3 min ago' },
@@ -166,7 +237,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Store submissions in popular databases with custom field mapping and data validation',
       icon: Database,
       category: 'storage',
-      isEnabled: isIntegrationConfigured('database'),
+      isEnabled: integrationStates['database'] || false,
       color: 'from-indigo-500 to-purple-500',
       metrics: { connected: 445, success: 99.1, lastUsed: '12 min ago' },
       features: ['Field Mapping', 'Data Validation', 'Multiple DBs', 'Schema Sync']
@@ -177,7 +248,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Automatically populate Google Sheets with form responses and advanced formatting',
       icon: FileText,
       category: 'storage',
-      isEnabled: isIntegrationConfigured('google-sheets'),
+      isEnabled: integrationStates['google-sheets'] || false,
       isPopular: true,
       color: 'from-green-400 to-blue-500',
       metrics: { connected: 1567, success: 99.5, lastUsed: '7 min ago' },
@@ -189,7 +260,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Add subscribers to email lists with advanced segmentation and campaign automation',
       icon: Mail,
       category: 'marketing',
-      isEnabled: false,
+      isEnabled: integrationStates['mailchimp'] || false,
       color: 'from-yellow-500 to-orange-500',
       metrics: { connected: 789, success: 98.3, lastUsed: '15 min ago' },
       features: ['List Segmentation', 'Campaign Automation', 'Analytics', 'A/B Testing']
@@ -200,7 +271,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Accept secure payments and subscriptions with advanced fraud protection',
       icon: CreditCard,
       category: 'payment',
-      isEnabled: false,
+      isEnabled: integrationStates['stripe'] || false,
       isPremium: true,
       color: 'from-blue-600 to-indigo-600',
       metrics: { connected: 234, success: 99.9, lastUsed: '4 min ago' },
@@ -212,7 +283,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Enable appointment scheduling with calendar integration and automated reminders',
       icon: Calendar,
       category: 'scheduling',
-      isEnabled: false,
+      isEnabled: integrationStates['calendar'] || false,
       isPremium: true,
       color: 'from-teal-500 to-cyan-500',
       metrics: { connected: 156, success: 98.8, lastUsed: '8 min ago' },
@@ -224,7 +295,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Sync contacts and leads with popular CRM systems with advanced field mapping',
       icon: Users,
       category: 'crm',
-      isEnabled: false,
+      isEnabled: integrationStates['crm'] || false,
       isPremium: true,
       color: 'from-pink-500 to-rose-500',
       metrics: { connected: 378, success: 98.6, lastUsed: '6 min ago' },
@@ -236,7 +307,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Upload and manage files in cloud storage services with advanced organization',
       icon: Cloud,
       category: 'storage',
-      isEnabled: false,
+      isEnabled: integrationStates['cloud-storage'] || false,
       color: 'from-gray-500 to-slate-500',
       metrics: { connected: 512, success: 99.3, lastUsed: '11 min ago' },
       features: ['Auto Organization', 'Version Control', 'Access Control', 'Backup & Sync']
@@ -247,7 +318,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Track detailed insights and performance metrics with custom dashboards',
       icon: BarChart3,
       category: 'analytics',
-      isEnabled: false,
+      isEnabled: integrationStates['analytics'] || false,
       isPremium: true,
       color: 'from-violet-500 to-purple-500',
       metrics: { connected: 167, success: 99.7, lastUsed: '9 min ago' },
@@ -278,9 +349,15 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
   const popularIntegrations = integrations.filter(i => i.isPopular);
 
   const handleConfigureIntegration = (integration: Integration) => {
-    console.log('🚀 Configuring integration:', integration.id, 'for form:', selectedFormId);
+    console.log('🚀 Configure integration clicked:', {
+      integrationId: integration.id,
+      integrationName: integration.name,
+      selectedFormId,
+      currentModalState: configModalOpen
+    });
     
     if (!selectedFormId) {
+      console.error('❌ No form selected for integration configuration');
       toast({
         title: "Select a Form",
         description: "Please select a form to configure integrations for.",
@@ -289,17 +366,25 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       return;
     }
     
-    console.log('🔧 Opening modal for integration:', integration.name);
+    console.log('✅ Opening configuration modal for:', integration.name);
     setSelectedIntegration(integration);
     setConfigModalOpen(true);
+    console.log('🔄 Modal state updated - should be opening...');
   };
 
   const handleModalClose = () => {
     console.log('🔒 Closing integration modal');
     setConfigModalOpen(false);
     setSelectedIntegration(null);
-    // Force re-render to update integration status
+    
+    // Force refresh of integration states
+    console.log('🔄 Triggering integration update event...');
     window.dispatchEvent(new Event('integrationUpdated'));
+  };
+
+  const handleFormChange = (newFormId: string) => {
+    console.log('📋 Form selection changed:', { from: selectedFormId, to: newFormId });
+    setSelectedFormId(newFormId);
   };
 
   const IntegrationCard = ({ integration }: { integration: Integration }) => {
@@ -446,7 +531,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('👁️ Preview clicked for:', integration.name);
+                    console.log('👁️ Preview button clicked for:', integration.name);
                     handleConfigureIntegration(integration);
                   }}
                 >
@@ -458,7 +543,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('⚙️ Setup/Configure clicked for:', integration.name);
+                    console.log('⚙️ Setup/Configure button clicked for:', integration.name, 'with form:', selectedFormId);
                     handleConfigureIntegration(integration);
                   }}
                   className={`transition-all duration-300 ${
@@ -544,7 +629,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
         </div>
       </motion.div>
 
-      {/* Form Selection with loading state */}
+      {/* Enhanced Form Selection */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -561,8 +646,35 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
             <FormInput className="h-8 w-8 text-white" />
           </motion.div>
           <div className="flex-1">
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">Select Target Form</h3>
-            <p className="text-gray-600">Choose which form to configure integrations for and monitor performance</p>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">Configure Integrations</h3>
+            <p className="text-gray-600 mb-4">Select a form to configure integrations and monitor their performance</p>
+            <div className="flex items-center gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Target Form</label>
+                <Select value={selectedFormId} onValueChange={handleFormChange} disabled={formsLoading}>
+                  <SelectTrigger className="w-full h-12 bg-white border-gray-300 shadow-sm">
+                    <SelectValue placeholder="Select a form to configure integrations" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border shadow-lg">
+                    {availableForms.map((form) => (
+                      <SelectItem key={form.primary_id} value={form.primary_id}>
+                        <div className="flex items-center gap-3">
+                          <div className={`w-3 h-3 rounded-full ${form.published ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                          <span>{form.name}</span>
+                          <span className="text-xs text-gray-500">({form.submissions} submissions)</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {selectedFormId && (
+                <div className="text-sm text-gray-600">
+                  <div className="font-medium">Active Integrations</div>
+                  <div className="text-green-600">{enabledIntegrations.length} enabled</div>
+                </div>
+              )}
+            </div>
             {formsLoading && (
               <div className="flex items-center gap-2 mt-2 text-blue-600">
                 <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
@@ -570,21 +682,6 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
               </div>
             )}
           </div>
-          <Select value={selectedFormId} onValueChange={setSelectedFormId} disabled={formsLoading}>
-            <SelectTrigger className="w-80 h-14 bg-white border-gray-300 shadow-sm text-lg">
-              <SelectValue placeholder="Select a form" />
-            </SelectTrigger>
-            <SelectContent className="bg-white border shadow-lg">
-              {availableForms.map((form) => (
-                <SelectItem key={form.primary_id} value={form.primary_id} className="text-lg py-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    {form.name}
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
       </motion.div>
 
@@ -727,12 +824,16 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
         </Tabs>
       </motion.div>
 
-      {/* Debug info */}
+      {/* Enhanced Debug info */}
       {process.env.NODE_ENV === 'development' && (
-        <div className="mt-8 p-4 bg-gray-100 rounded-lg text-xs">
-          <div>Selected Form: {selectedFormId}</div>
+        <div className="mt-8 p-4 bg-gray-100 rounded-lg text-xs space-y-2">
+          <div><strong>Debug Information:</strong></div>
+          <div>Selected Form: {selectedFormId || 'None'}</div>
+          <div>Available Forms: {availableForms.length}</div>
           <div>Modal Open: {configModalOpen.toString()}</div>
           <div>Selected Integration: {selectedIntegration?.name || 'None'}</div>
+          <div>Integration States: {JSON.stringify(integrationStates, null, 2)}</div>
+          <div>Enabled Integrations Count: {enabledIntegrations.length}</div>
         </div>
       )}
 
