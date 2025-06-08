@@ -44,7 +44,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
   const [configModalOpen, setConfigModalOpen] = useState(false);
-  const [selectedFormId, setSelectedFormId] = useState(formId || '');
+  const [selectedFormId, setSelectedFormId] = useState('');
   const [availableForms, setAvailableForms] = useState<FormData[]>([]);
   const [activeView, setActiveView] = useState('grid');
   const [formsLoading, setFormsLoading] = useState(false);
@@ -69,7 +69,11 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
         console.log('✅ Forms loaded successfully:', forms.length, 'forms');
         setAvailableForms(forms);
         
-        if (forms.length > 0 && !selectedFormId) {
+        // Set the selected form properly
+        if (formId && forms.some(f => f.primary_id === formId)) {
+          console.log('🎯 Using provided formId:', formId);
+          setSelectedFormId(formId);
+        } else if (forms.length > 0) {
           const firstFormId = forms[0].primary_id;
           console.log('🎯 Auto-selecting first form:', firstFormId);
           setSelectedFormId(firstFormId);
@@ -117,7 +121,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       }
     };
     loadForms();
-  }, [selectedFormId, toast]);
+  }, []); // Remove selectedFormId dependency to prevent loops
 
   // Update integration states when form changes
   useEffect(() => {
@@ -164,8 +168,8 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
     };
   }, [selectedFormId]);
 
-  // Check if integration is configured
-  const isIntegrationConfigured = (integrationId: string) => {
+  // Check if integration is configured - fixed to return boolean
+  const isIntegrationConfigured = (integrationId: string): boolean => {
     if (!selectedFormId) {
       console.log('⚠️ No form selected, integration check failed for:', integrationId);
       return false;
@@ -174,7 +178,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
     try {
       console.log('🔍 Checking integration config for:', { formId: selectedFormId, integrationId });
       const config = IntegrationsService.getIntegration(selectedFormId, integrationId);
-      const isEnabled = config && config.enabled;
+      const isEnabled = config ? config.enabled === true : false;
       console.log(`✅ Integration ${integrationId} check result:`, isEnabled ? 'ENABLED' : 'DISABLED');
       return isEnabled;
     } catch (error) {
@@ -190,7 +194,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Send automated email notifications with customizable templates and smart triggers',
       icon: Mail,
       category: 'communication',
-      isEnabled: integrationStates['email'] || false,
+      isEnabled: integrationStates['email'] === true,
       isPopular: true,
       color: 'from-blue-500 to-cyan-500',
       metrics: { connected: 1247, success: 99.2, lastUsed: '2 min ago' },
@@ -202,7 +206,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Send real-time data to any URL endpoint with advanced retry mechanisms and monitoring',
       icon: Webhook,
       category: 'automation',
-      isEnabled: integrationStates['webhook'] || false,
+      isEnabled: integrationStates['webhook'] === true,
       isPopular: true,
       color: 'from-purple-500 to-pink-500',
       metrics: { connected: 892, success: 98.7, lastUsed: '5 min ago' },
@@ -214,7 +218,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Send instant notifications to Slack channels with rich formatting and interactive buttons',
       icon: MessageSquare,
       category: 'communication',
-      isEnabled: integrationStates['slack'] || false,
+      isEnabled: integrationStates['slack'] === true,
       color: 'from-green-500 to-emerald-500',
       metrics: { connected: 634, success: 99.8, lastUsed: '1 min ago' },
       features: ['Rich Messages', 'Interactive Buttons', 'Channel Routing', 'User Mentions']
@@ -225,7 +229,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Connect with 5000+ apps and automate complex workflows with conditional logic',
       icon: Zap,
       category: 'automation',
-      isEnabled: integrationStates['zapier'] || false,
+      isEnabled: integrationStates['zapier'] === true,
       isPopular: true,
       color: 'from-orange-500 to-red-500',
       metrics: { connected: 2156, success: 97.9, lastUsed: '3 min ago' },
@@ -237,7 +241,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Store submissions in popular databases with custom field mapping and data validation',
       icon: Database,
       category: 'storage',
-      isEnabled: integrationStates['database'] || false,
+      isEnabled: integrationStates['database'] === true,
       color: 'from-indigo-500 to-purple-500',
       metrics: { connected: 445, success: 99.1, lastUsed: '12 min ago' },
       features: ['Field Mapping', 'Data Validation', 'Multiple DBs', 'Schema Sync']
@@ -248,7 +252,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Automatically populate Google Sheets with form responses and advanced formatting',
       icon: FileText,
       category: 'storage',
-      isEnabled: integrationStates['google-sheets'] || false,
+      isEnabled: integrationStates['google-sheets'] === true,
       isPopular: true,
       color: 'from-green-400 to-blue-500',
       metrics: { connected: 1567, success: 99.5, lastUsed: '7 min ago' },
@@ -260,7 +264,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Add subscribers to email lists with advanced segmentation and campaign automation',
       icon: Mail,
       category: 'marketing',
-      isEnabled: integrationStates['mailchimp'] || false,
+      isEnabled: integrationStates['mailchimp'] === true,
       color: 'from-yellow-500 to-orange-500',
       metrics: { connected: 789, success: 98.3, lastUsed: '15 min ago' },
       features: ['List Segmentation', 'Campaign Automation', 'Analytics', 'A/B Testing']
@@ -271,7 +275,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Accept secure payments and subscriptions with advanced fraud protection',
       icon: CreditCard,
       category: 'payment',
-      isEnabled: integrationStates['stripe'] || false,
+      isEnabled: integrationStates['stripe'] === true,
       isPremium: true,
       color: 'from-blue-600 to-indigo-600',
       metrics: { connected: 234, success: 99.9, lastUsed: '4 min ago' },
@@ -283,7 +287,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Enable appointment scheduling with calendar integration and automated reminders',
       icon: Calendar,
       category: 'scheduling',
-      isEnabled: integrationStates['calendar'] || false,
+      isEnabled: integrationStates['calendar'] === true,
       isPremium: true,
       color: 'from-teal-500 to-cyan-500',
       metrics: { connected: 156, success: 98.8, lastUsed: '8 min ago' },
@@ -295,7 +299,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Sync contacts and leads with popular CRM systems with advanced field mapping',
       icon: Users,
       category: 'crm',
-      isEnabled: integrationStates['crm'] || false,
+      isEnabled: integrationStates['crm'] === true,
       isPremium: true,
       color: 'from-pink-500 to-rose-500',
       metrics: { connected: 378, success: 98.6, lastUsed: '6 min ago' },
@@ -307,7 +311,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Upload and manage files in cloud storage services with advanced organization',
       icon: Cloud,
       category: 'storage',
-      isEnabled: integrationStates['cloud-storage'] || false,
+      isEnabled: integrationStates['cloud-storage'] === true,
       color: 'from-gray-500 to-slate-500',
       metrics: { connected: 512, success: 99.3, lastUsed: '11 min ago' },
       features: ['Auto Organization', 'Version Control', 'Access Control', 'Backup & Sync']
@@ -318,7 +322,7 @@ const ModernIntegrationsHub: React.FC<{ formId?: string }> = ({ formId }) => {
       description: 'Track detailed insights and performance metrics with custom dashboards',
       icon: BarChart3,
       category: 'analytics',
-      isEnabled: integrationStates['analytics'] || false,
+      isEnabled: integrationStates['analytics'] === true,
       isPremium: true,
       color: 'from-violet-500 to-purple-500',
       metrics: { connected: 167, success: 99.7, lastUsed: '9 min ago' },
