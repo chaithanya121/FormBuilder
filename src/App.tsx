@@ -34,6 +34,13 @@ import EnhancedFormWizard from './components/Enhanced/EnhancedFormWizard';
 import PersonalizedDashboard from './components/PersonalizedDashboard';
 import ESMRouter from './components/ESM/ESMRouter';
 
+// Import onboarding components for direct access
+import SplashScreen from './components/ESM/onboarding/SplashScreen';
+import RoleSelection from './components/ESM/onboarding/RoleSelection';
+import SignUpForm from './components/ESM/onboarding/SignUpForm';
+import MFAScreen from './components/ESM/onboarding/MFAScreen';
+import ProfileSetup from './components/ESM/onboarding/ProfileSetup';
+
 const queryClient = new QueryClient();
 
 function App() {
@@ -53,6 +60,14 @@ function App() {
                 <Route path="/platform/ecommerce" element={<Layout><div className="p-8 text-center"><h1 className="text-2xl font-bold text-gray-600">E-Commerce Builder Coming Soon</h1></div></Layout>} />
                 <Route path="/platform/presentation" element={<Layout><div className="p-8 text-center"><h1 className="text-2xl font-bold text-gray-600">Presentation Builder Coming Soon</h1></div></Layout>} />
                 <Route path="/platform/portfolio" element={<Layout><div className="p-8 text-center"><h1 className="text-2xl font-bold text-gray-600">Portfolio Builder Coming Soon</h1></div></Layout>} />
+                
+                {/* Direct onboarding routes (for backwards compatibility) */}
+                <Route path="/splash" element={<SplashScreen />} />
+                <Route path="/onboarding/role-selection" element={<RoleSelection />} />
+                <Route path="/onboarding/signup/:role" element={<SignUpForm />} />
+                <Route path="/onboarding/mfa" element={<MFAScreen />} />
+                <Route path="/onboarding/profile-setup" element={<ProfileSetup />} />
+                <Route path="/onboarding/profile-setup/:role" element={<ProfileSetup />} />
                 
                 {/* Form Creation and Wizard */}
                 <Route path="/form-wizard" element={<Layout><EnhancedFormWizard /></Layout>} />

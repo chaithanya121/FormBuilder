@@ -9,6 +9,7 @@ import SplashScreen from './onboarding/SplashScreen';
 import RoleSelection from './onboarding/RoleSelection';
 import SignUpForm from './onboarding/SignUpForm';
 import MFAScreen from './onboarding/MFAScreen';
+import ProfileSetup from './onboarding/ProfileSetup';
 
 const ESMRouter = () => {
   return (
@@ -29,6 +30,8 @@ const ESMRouter = () => {
       <Route path="/onboarding/role-selection" element={<RoleSelection />} />
       <Route path="/onboarding/signup/:role" element={<SignUpForm />} />
       <Route path="/onboarding/mfa" element={<MFAScreen />} />
+      <Route path="/onboarding/profile-setup" element={<ProfileSetup />} />
+      <Route path="/onboarding/profile-setup/:role" element={<ProfileSetup />} />
     </Routes>
   );
 };
