@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +21,8 @@ import {
   Shield,
   Cloud,
   Database,
-  Smartphone
+  Smartphone,
+  GraduationCap
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -50,6 +50,16 @@ const PlatformNavigation = () => {
       path: '/platform/resume',
       active: true,
       stats: { templates: 25, downloads: 120 }
+    },
+    {
+      id: 'esm',
+      name: 'ESM',
+      description: 'Education System Management',
+      icon: GraduationCap,
+      color: 'from-indigo-500 to-purple-400',
+      path: '/platform/esm',
+      active: true,
+      stats: { students: 1250, courses: 85 }
     },
     {
       id: 'website',
