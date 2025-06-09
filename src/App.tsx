@@ -55,7 +55,10 @@ function App() {
                 <Route path="/dashboard" element={<Layout><PersonalizedDashboard /></Layout>} />
                 <Route path="/platform/forms" element={<Layout><FormBuilderDashboard /></Layout>} />
                 <Route path="/platform/resume" element={<Layout><ResumePage /></Layout>} />
-                <Route path="/platform/esm/*" element={<Layout><ESMRouter /></Layout>} />
+                
+                {/* ESM Platform Routes - No Layout wrapper since ESM has its own auth flow */}
+                <Route path="/platform/esm/*" element={<ESMRouter />} />
+                
                 <Route path="/platform/website" element={<Layout><div className="p-8 text-center"><h1 className="text-2xl font-bold text-gray-600">Website Builder Coming Soon</h1></div></Layout>} />
                 <Route path="/platform/ecommerce" element={<Layout><div className="p-8 text-center"><h1 className="text-2xl font-bold text-gray-600">E-Commerce Builder Coming Soon</h1></div></Layout>} />
                 <Route path="/platform/presentation" element={<Layout><div className="p-8 text-center"><h1 className="text-2xl font-bold text-gray-600">Presentation Builder Coming Soon</h1></div></Layout>} />
