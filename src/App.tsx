@@ -30,6 +30,7 @@ import ToolRouter from './components/tools/ToolRouter';
 import ResumePage from './pages/platforms/ResumePage';
 import { EmailVerification } from './components/auth/EmailVerification';
 import ResumeBuilderStudio from './components/ResumeBuilder/ResumeBuilderStudio';
+import { EnhancedResumeBuilder } from './components/ResumeBuilder/EnhancedResumeBuilder';
 import EnhancedFormWizard from './components/Enhanced/EnhancedFormWizard';
 import PersonalizedDashboard from './components/PersonalizedDashboard';
 import ESMRouter from './components/ESM/ESMRouter';
@@ -55,6 +56,7 @@ function App() {
                 <Route path="/dashboard" element={<Layout><PersonalizedDashboard /></Layout>} />
                 <Route path="/platform/forms" element={<Layout><FormBuilderDashboard /></Layout>} />
                 <Route path="/platform/resume" element={<Layout><ResumePage /></Layout>} />
+                <Route path="/resume-builder/:id" element={<EnhancedResumeBuilder />} />
                 
                 {/* ESM Platform Routes - No Layout wrapper since ESM has its own auth flow */}
                 <Route path="/platform/esm/*" element={<ESMRouter />} />
