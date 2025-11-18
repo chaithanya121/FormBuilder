@@ -1,0 +1,155 @@
+{
+  "name": "Form Builder Agent - OpenAI",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "form-builder-agent",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [250, 300],
+      "webhookId": "form-builder-agent"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "user-prompt",
+              "name": "userPrompt",
+              "value": "={{ $json.body.prompt || $json.prompt }}",
+              "type": "string"
+            },
+            {
+              "id": "form-context",
+              "name": "formContext",
+              "value": "={{ $json.body.context || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "extract-input",
+      "name": "Extract Input",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "operation": "create",
+        "modelId": "gpt-4o",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a professional form builder AI agent. Your task is to generate complete, valid form configurations based on user descriptions.\n\nYou MUST respond with valid JSON matching this exact structure:\n\n{\n  \"name\": \"form-name\",\n  \"title\": \"Form Title\",\n  \"description\": \"Form description\",\n  \"elements\": [\n    {\n      \"id\": \"unique-id\",\n      \"type\": \"text|email|number|textarea|select|radio|checkbox|date|time|file|phone|url|range|color|rating|signature|divider|heading|paragraph|image|video|spacer|html|code\",\n      \"label\": \"Field Label\",\n      \"placeholder\": \"Placeholder text\",\n      \"required\": true|false,\n      \"options\": [\"Option 1\", \"Option 2\"],\n      \"helpText\": \"Help text\",\n      \"validation\": {\n        \"min\": 0,\n        \"max\": 100,\n        \"minLength\": 0,\n        \"maxLength\": 500,\n        \"pattern\": \"regex-pattern\",\n        \"message\": \"Error message\"\n      },\n      \"fieldStyles\": {\n        \"className\": \"custom-class\",\n        \"width\": \"full\"\n      }\n    }\n  ],\n  \"settings\": {\n    \"theme\": \"modern\",\n    \"layout\": {\n      \"style\": \"card\",\n      \"questionSpacing\": 24,\n      \"labelAlignment\": \"top\",\n      \"gridColumns\": 1\n    },\n    \"submitButton\": {\n      \"text\": \"Submit\",\n      \"style\": \"primary\",\n      \"position\": \"right\"\n    },\n    \"validation\": {\n      \"liveValidation\": \"onBlur\"\n    }\n  }\n}\n\nAvailable field types:\n- text: Single-line text input\n- email: Email input with validation\n- number: Numeric input\n- textarea: Multi-line text area\n- select: Dropdown selection\n- radio: Radio button group\n- checkbox: Checkbox input or group\n- date: Date picker\n- time: Time picker\n- file: File upload\n- phone: Phone number input\n- url: URL input\n- range: Slider input\n- color: Color picker\n- rating: Star rating\n- signature: Signature pad\n- divider: Visual separator\n- heading: Section heading\n- paragraph: Descriptive text\n- image: Image display\n- video: Video embed\n- spacer: Spacing element\n- html: Custom HTML\n- code: Code block\n\nGenerate forms that are:\n1. Well-structured with logical field ordering\n2. Include appropriate validation rules\n3. Use proper field types for data collection\n4. Have clear labels and helpful placeholder text\n5. Include help text for complex fields\n6. Apply responsive layout settings\n\nIMPORTANT: Return ONLY the JSON object, no markdown formatting, no explanations."
+            },
+            {
+              "role": "user",
+              "content": "={{ $json.userPrompt }}"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.7,
+          "maxTokens": 4000
+        }
+      },
+      "id": "openai-chat",
+      "name": "OpenAI Chat",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.3,
+      "position": [690, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "openai-credentials",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst messageContent = response.choices[0].message.content;\n\n// Clean the response - remove markdown code blocks if present\nlet cleanedContent = messageContent.trim();\nif (cleanedContent.startsWith('```json')) {\n  cleanedContent = cleanedContent.replace(/^```json\\n/, '').replace(/\\n```$/, '');\n} else if (cleanedContent.startsWith('```')) {\n  cleanedContent = cleanedContent.replace(/^```\\n/, '').replace(/\\n```$/, '');\n}\n\ntry {\n  // Parse the JSON\n  const formConfig = JSON.parse(cleanedContent);\n  \n  // Validate and ensure all elements have unique IDs\n  if (formConfig.elements && Array.isArray(formConfig.elements)) {\n    formConfig.elements = formConfig.elements.map((element, index) => {\n      if (!element.id) {\n        element.id = `element-${Date.now()}-${index}`;\n      }\n      return element;\n    });\n  }\n  \n  // Ensure required settings structure\n  if (!formConfig.settings) {\n    formConfig.settings = {};\n  }\n  if (!formConfig.settings.layout) {\n    formConfig.settings.layout = {\n      style: 'card',\n      questionSpacing: 24,\n      labelAlignment: 'top',\n      gridColumns: 1\n    };\n  }\n  if (!formConfig.settings.submitButton) {\n    formConfig.settings.submitButton = {\n      text: 'Submit',\n      style: 'primary',\n      position: 'right'\n    };\n  }\n  \n  return [{\n    json: {\n      success: true,\n      formConfig: formConfig,\n      metadata: {\n        generatedAt: new Date().toISOString(),\n        model: 'gpt-4o',\n        provider: 'openai'\n      }\n    }\n  }];\n} catch (error) {\n  return [{\n    json: {\n      success: false,\n      error: 'Failed to parse AI response',\n      details: error.message,\n      rawResponse: cleanedContent\n    }\n  }];\n}"
+      },
+      "id": "parse-response",
+      "name": "Parse & Validate Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [910, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "id": "webhook-response",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1130, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Input": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat": {
+      "main": [
+        [
+          {
+            "node": "Parse & Validate Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse & Validate Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-01-18T00:00:00.000Z",
+  "versionId": "1"
+}
