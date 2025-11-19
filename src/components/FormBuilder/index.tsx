@@ -29,7 +29,7 @@ import {
   HelpCircle, Info, Lightbulb, Zap, Target, Search, Filter,
   CircleArrowLeft, TrendingUp, Users, Activity, Calculator,
   Bell, Cloud, Database, Smartphone, Accessibility, MessageSquare,
-  Image
+  Image, FileUp
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -152,6 +152,9 @@ const FormBuilder: React.FC = () => {
   const [showAIEnhance, setShowAIEnhance] = useState(false);
   const [showCalculationBuilder, setShowCalculationBuilder] = useState(false);
   const [showNotificationBuilder, setShowNotificationBuilder] = useState(false);
+
+  // Ref for file input
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // Services
   const [calculationEngine] = useState(new CalculationEngine());
@@ -440,6 +443,82 @@ const FormBuilder: React.FC = () => {
     e.dataTransfer.effectAllowed = 'copy';
   }, []);
 
+  const handleImportJSON = useCallback((jsonString: string) => {
+    try {
+      const parsed = JSON.parse(jsonString);
+      
+      // Validate if it's a valid FormConfig
+      if (parsed && typeof parsed === 'object') {
+        if (parsed.elements && Array.isArray(parsed.elements)) {
+          setFormConfig(parsed as FormConfig);
+          toast({
+            title: "Import Successful",
+            description: `Imported ${parsed.elements.length} elements successfully!`,
+          });
+        } else if (Array.isArray(parsed)) {
+          // If only elements array is provided
+          setFormConfig(prev => ({
+            ...prev,
+            elements: parsed
+          }));
+          toast({
+            title: "Import Successful",
+            description: `Imported ${parsed.length} elements successfully!`,
+          });
+        } else {
+          toast({
+            title: "Invalid Format",
+            description: "The JSON must contain an 'elements' array or be an array of elements.",
+            variant: "destructive",
+          });
+        }
+      }
+    } catch (error) {
+      toast({
+        title: "Import Failed",
+        description: "Invalid JSON format. Please check your JSON and try again.",
+        variant: "destructive",
+      });
+    }
+  }, [toast]);
+
+  const handleFileImport = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target?.result as string;
+        handleImportJSON(content);
+      };
+      reader.readAsText(file);
+    }
+    // Reset input so same file can be selected again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, [handleImportJSON]);
+
+  const handlePaste = useCallback((event: ClipboardEvent) => {
+    // Only handle paste if not in an input field
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+      return;
+    }
+
+    const pastedText = event.clipboardData?.getData('text');
+    if (pastedText) {
+      handleImportJSON(pastedText);
+    }
+  }, [handleImportJSON]);
+
+  // Add paste event listener
+  useEffect(() => {
+    document.addEventListener('paste', handlePaste);
+    return () => {
+      document.removeEventListener('paste', handlePaste);
+    };
+  }, [handlePaste]);
+
   // Memoized side panel to prevent unnecessary re-renders
   const renderEnhancedSidePanel = useMemo(() => {
     switch (activePanel) {
@@ -608,9 +687,27 @@ const FormBuilder: React.FC = () => {
                   <Grid className="h-4 w-4 xl:h-6 xl:w-6 text-white" />
                 </div>
                 <div className="min-w-0">
-                  <h1 className="text-lg xl:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent truncate">
-                    FormCraft Pro Enhanced
-                  </h1>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-lg xl:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent truncate">
+                      FormCraft Pro Enhanced
+                    </h1>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="h-6 w-6 p-0 hover:bg-blue-50"
+                      title="Import JSON (or Ctrl+V to paste)"
+                    >
+                      <FileUp className="h-4 w-4 text-blue-600" />
+                    </Button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".json"
+                      onChange={handleFileImport}
+                      className="hidden"
+                    />
+                  </div>
                   <p className="text-xs xl:text-sm text-gray-600 hidden sm:block">
                     {formConfig.elements.length} elements • AI-Powered • Real-time
                   </p>
