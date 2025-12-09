@@ -6,15 +6,384 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useTheme } from '@/components/theme-provider';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Zap, ArrowLeft, Wand, Sparkles, Copy, Download, 
   Eye, Settings, RefreshCw, Save, Share2, Brain,
   Lightbulb, Target, Wand2, Stars, Rocket, ChevronRight,
-  Upload, FileUp, ExternalLink
+  Upload, FileUp, ExternalLink, Layers
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import FormElementRenderer from '@/components/FormBuilder/FormElementRenderer';
+import { FormConfig, FormElement } from '@/components/FormBuilder/types';
+
+// Animated loader component
+const AIGeneratingLoader = () => {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-violet-600/95 via-purple-600/95 to-indigo-600/95 backdrop-blur-sm rounded-xl"
+    >
+      {/* Animated Background Particles */}
+      <div className="absolute inset-0 overflow-hidden">
+        {[...Array(20)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-2 h-2 bg-white/30 rounded-full"
+            initial={{
+              x: Math.random() * 400,
+              y: Math.random() * 400,
+            }}
+            animate={{
+              x: Math.random() * 400,
+              y: Math.random() * 400,
+              scale: [1, 1.5, 1],
+              opacity: [0.3, 0.7, 0.3],
+            }}
+            transition={{
+              duration: 3 + Math.random() * 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="relative z-10 text-center">
+        {/* Main spinning brain */}
+        <motion.div
+          animate={{
+            scale: [1, 1.1, 1],
+            rotate: [0, 360],
+          }}
+          transition={{
+            scale: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
+            rotate: { duration: 8, repeat: Infinity, ease: "linear" }
+          }}
+          className="relative mx-auto mb-6"
+        >
+          <div className="w-24 h-24 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+            <Brain className="h-12 w-12 text-white" />
+          </div>
+          
+          {/* Orbiting sparkles */}
+          {[...Array(3)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute"
+              animate={{
+                rotate: 360,
+              }}
+              transition={{
+                duration: 2 + i * 0.5,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+              style={{
+                top: '50%',
+                left: '50%',
+                transformOrigin: '0 0',
+              }}
+            >
+              <motion.div
+                className="absolute"
+                style={{
+                  left: `${40 + i * 10}px`,
+                  top: '-6px',
+                }}
+              >
+                <Sparkles className="h-4 w-4 text-yellow-300" />
+              </motion.div>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Loading text */}
+        <motion.h3
+          animate={{ opacity: [0.7, 1, 0.7] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+          className="text-xl font-bold text-white mb-2"
+        >
+          AI is crafting your form
+        </motion.h3>
+
+        {/* Progress dots */}
+        <div className="flex items-center justify-center gap-2">
+          {[0, 1, 2].map((i) => (
+            <motion.div
+              key={i}
+              className="w-3 h-3 bg-white rounded-full"
+              animate={{
+                scale: [1, 1.5, 1],
+                opacity: [0.5, 1, 0.5],
+              }}
+              transition={{
+                duration: 1,
+                repeat: Infinity,
+                delay: i * 0.2,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Status messages */}
+        <motion.div
+          className="mt-4 space-y-1"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          <AnimatePresence mode="wait">
+            <motion.p
+              key="analyzing"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="text-sm text-white/80"
+            >
+              Analyzing your requirements...
+            </motion.p>
+          </AnimatePresence>
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+};
+
+// Canvas Preview Component - matches FormBuilder canvas style
+const CanvasPreview: React.FC<{ formConfig: FormConfig | null; isGenerating: boolean }> = ({ 
+  formConfig, 
+  isGenerating 
+}) => {
+  const { theme } = useTheme();
+
+  const getCanvasStyles = () => {
+    const styles = formConfig?.settings?.canvasStyles || {};
+    return {
+      background: styles.backgroundImage && styles.backgroundImage !== '' 
+        ? `url(${styles.backgroundImage})`
+        : styles.backgroundColor || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      fontFamily: styles.fontFamily || 'Inter',
+      fontSize: `${styles.fontSize || 16}px`,
+      color: styles.fontColor || '#000000'
+    };
+  };
+
+  const getFormStyles = () => {
+    const styles = formConfig?.settings?.canvasStyles || {};
+    return {
+      backgroundColor: styles.formBackgroundColor || '#ffffff',
+      borderRadius: styles.borderRadius || '16px',
+      padding: styles.padding || '32px',
+      margin: '20px auto',
+      maxWidth: `${styles.formWidth || 600}px`,
+      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 20px 40px -20px rgba(0, 0, 0, 0.1)',
+      border: '1px solid rgba(255, 255, 255, 0.2)',
+      backdropFilter: 'blur(20px)',
+      position: 'relative' as const,
+      overflow: 'hidden' as const,
+    };
+  };
+
+  if (!formConfig && !isGenerating) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className="h-full min-h-[500px] flex items-center justify-center"
+        style={{
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          borderRadius: '16px',
+        }}
+      >
+        <div className="text-center py-16 px-8">
+          <motion.div
+            animate={{ rotate: [0, 10, -10, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            className="mb-6"
+          >
+            <div className="w-24 h-24 mx-auto bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4">
+              <Brain className="h-12 w-12 text-white" />
+            </div>
+          </motion.div>
+          <h3 className="text-2xl font-bold text-white mb-2">AI Form Canvas</h3>
+          <p className="text-white/80 max-w-md mx-auto mb-4">
+            Your AI-generated form will appear here with full canvas preview
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Badge className="bg-white/20 text-white border-0">
+              <Sparkles className="h-3 w-3 mr-1" />
+              AI Powered
+            </Badge>
+            <Badge className="bg-white/20 text-white border-0">
+              <Eye className="h-3 w-3 mr-1" />
+              Live Preview
+            </Badge>
+            <Badge className="bg-white/20 text-white border-0">
+              <Layers className="h-3 w-3 mr-1" />
+              Canvas View
+            </Badge>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  return (
+    <div 
+      className="relative min-h-[500px] rounded-xl overflow-hidden"
+      style={getCanvasStyles()}
+    >
+      {/* Loading overlay */}
+      <AnimatePresence>
+        {isGenerating && <AIGeneratingLoader />}
+      </AnimatePresence>
+
+      {/* Animated Background Particles */}
+      {!isGenerating && (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {[...Array(8)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-2 h-2 bg-white/20 rounded-full"
+              initial={{
+                x: Math.random() * 600,
+                y: Math.random() * 600,
+              }}
+              animate={{
+                x: Math.random() * 600,
+                y: Math.random() * 600,
+              }}
+              transition={{
+                duration: 10 + Math.random() * 20,
+                repeat: Infinity,
+                ease: "linear"
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Logo Display */}
+      {formConfig?.settings?.logo?.enabled && formConfig.settings.logo.url && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="absolute z-20"
+          style={{
+            top: `${formConfig.settings.logo.position?.top || 20}px`,
+            left: formConfig.settings.logo.position?.alignment?.includes('center')
+              ? '50%'
+              : `${formConfig.settings.logo.position?.left || 20}px`,
+            transform: formConfig.settings.logo.position?.alignment?.includes('center')
+              ? 'translateX(-50%)'
+              : 'none',
+            opacity: formConfig.settings.logo.opacity || 1
+          }}
+        >
+          <img
+            src={formConfig.settings.logo.url}
+            alt="Form Logo"
+            style={{
+              width: `${formConfig.settings.logo.width || 100}px`,
+              height: `${formConfig.settings.logo.height || 100}px`,
+              borderRadius: `${formConfig.settings.logo.borderRadius || 0}px`,
+              objectFit: 'contain'
+            }}
+            className="shadow-lg"
+          />
+        </motion.div>
+      )}
+
+      {/* Main Form Container */}
+      {formConfig && !isGenerating && (
+        <div className="relative z-10 p-4 md:p-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, type: "spring" }}
+            style={getFormStyles()}
+          >
+            {/* Form Header */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-center mb-6"
+            >
+              <h1 className="text-2xl md:text-3xl font-bold mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                {formConfig.name || 'Untitled Form'}
+              </h1>
+              {formConfig.description && (
+                <p className="text-gray-600 text-base max-w-xl mx-auto">
+                  {formConfig.description}
+                </p>
+              )}
+            </motion.div>
+
+            {/* Form Elements */}
+            <div className="space-y-4">
+              <AnimatePresence>
+                {formConfig.elements.map((element, index) => (
+                  <motion.div
+                    key={element.id}
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    className="bg-white/90 backdrop-blur-sm rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
+                        {element.type}
+                      </Badge>
+                      {element.required && (
+                        <Badge variant="outline" className="text-xs text-red-500 border-red-200">
+                          Required
+                        </Badge>
+                      )}
+                    </div>
+                    <FormElementRenderer
+                      element={element}
+                      value=""
+                      onChange={() => {}}
+                      formConfig={formConfig}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+
+            {/* Submit Button Preview */}
+            {formConfig.elements.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="mt-6"
+              >
+                <Button 
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 rounded-xl font-semibold shadow-lg"
+                  disabled
+                >
+                  Submit Form
+                </Button>
+              </motion.div>
+            )}
+          </motion.div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const AIFormGenerator = () => {
   const { theme } = useTheme();
@@ -23,7 +392,7 @@ export const AIFormGenerator = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedForm, setGeneratedForm] = useState<any>(null);
+  const [generatedForm, setGeneratedForm] = useState<FormConfig | null>(null);
   const [formTitle, setFormTitle] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [model, setModel] = useState('qwen/qwen-2.5-72b-instruct:free');
@@ -66,8 +435,8 @@ export const AIFormGenerator = () => {
 
       const data = await response.json();
       
-      // Handle the response - extract form data
-      const formData = data.form || data;
+      // Handle the response - normalize to FormConfig format
+      const formData = normalizeFormConfig(data.form || data);
       setGeneratedForm(formData);
       
       toast({
@@ -86,6 +455,60 @@ export const AIFormGenerator = () => {
     }
   };
 
+  // Normalize API response to FormConfig format
+  const normalizeFormConfig = (data: any): FormConfig => {
+    const elements: FormElement[] = (data.elements || data.fields || []).map((el: any, index: number) => ({
+      id: el.id || `element-${Date.now()}-${index}`,
+      type: el.type || 'text',
+      label: el.label || `Field ${index + 1}`,
+      placeholder: el.placeholder || '',
+      required: el.required || false,
+      options: el.options || [],
+      validation: el.validation || {},
+      settings: el.settings || {},
+      fieldStyles: el.fieldStyles || {
+        className: 'w-full',
+        backgroundColor: '#ffffff',
+        borderColor: '#d1d5db',
+        borderRadius: '8px',
+        padding: '12px',
+        fontSize: '16px',
+        fontFamily: 'Inter',
+        color: '#374151'
+      },
+      labelStyles: el.labelStyles || {
+        color: '#374151',
+        fontSize: '14px',
+        fontWeight: '500',
+        fontFamily: 'Inter'
+      }
+    }));
+
+    return {
+      name: data.name || data.title || formTitle || 'AI Generated Form',
+      description: data.description || formDescription || '',
+      elements,
+      settings: {
+        layout: {
+          gridColumns: 1,
+          questionSpacing: 24,
+          elementWidth: 'full',
+          labelAlignment: 'top'
+        },
+        canvasStyles: data.settings?.canvasStyles || {
+          backgroundColor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          formBackgroundColor: '#ffffff',
+          borderRadius: '16px',
+          padding: '32px',
+          formWidth: 600,
+          fontFamily: 'Inter',
+          fontSize: 16,
+          fontColor: '#374151'
+        }
+      }
+    };
+  };
+
   const handleUploadJson = () => {
     fileInputRef.current?.click();
   };
@@ -98,7 +521,7 @@ export const AIFormGenerator = () => {
     reader.onload = (event) => {
       try {
         const jsonData = JSON.parse(event.target?.result as string);
-        const formData = jsonData.form || jsonData;
+        const formData = normalizeFormConfig(jsonData.form || jsonData);
         setGeneratedForm(formData);
         toast({
           title: "JSON Imported",
@@ -118,7 +541,6 @@ export const AIFormGenerator = () => {
 
   const openInFormBuilder = () => {
     if (generatedForm) {
-      // Store the form in sessionStorage for the FormBuilder to pick up
       sessionStorage.setItem('importedFormConfig', JSON.stringify(generatedForm));
       navigate('/form-builder');
       toast({
@@ -144,14 +566,8 @@ export const AIFormGenerator = () => {
     });
   };
 
-  const saveForm = () => {
-    toast({
-      title: "Form Saved",
-      description: "Your form has been saved to your dashboard",
-    });
-  };
-
   const copyFormCode = () => {
+    if (!generatedForm) return;
     navigator.clipboard.writeText(JSON.stringify(generatedForm, null, 2));
     toast({
       title: "Code Copied",
@@ -181,8 +597,8 @@ export const AIFormGenerator = () => {
             opacity: [0.3, 0.5, 0.3]
           }}
           transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className={`absolute top-20 right-20 w-96 h-96 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-3xl`}
-        ></motion.div>
+          className="absolute top-20 right-20 w-96 h-96 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-3xl"
+        />
         <motion.div 
           animate={{ 
             scale: [1.2, 1, 1.2],
@@ -190,17 +606,8 @@ export const AIFormGenerator = () => {
             x: [-20, 20, -20]
           }}
           transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-          className={`absolute bottom-20 left-20 w-96 h-96 bg-gradient-to-r from-violet-400/20 to-blue-400/20 rounded-full blur-3xl`}
-        ></motion.div>
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.3, 1],
-            y: [-10, 10, -10],
-            opacity: [0.2, 0.4, 0.2]
-          }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl`}
-        ></motion.div>
+          className="absolute bottom-20 left-20 w-96 h-96 bg-gradient-to-r from-violet-400/20 to-blue-400/20 rounded-full blur-3xl"
+        />
       </div>
 
       <div className="max-w-7xl mx-auto space-y-8 relative z-10 p-6">
@@ -211,33 +618,24 @@ export const AIFormGenerator = () => {
           className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6"
         >
           <div className="flex items-center gap-4">
-            {/* <Link to="/tools">
-              <Button variant="outline" size="sm" className={`${theme === 'light' ? 'bg-white/80 hover:bg-white' : 'bg-gray-800/50 hover:bg-gray-700'} backdrop-blur-sm border-gray-300 dark:border-gray-600`}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Tools
-              </Button>
-            </Link>
-            <ChevronRight className="h-4 w-4 text-gray-400" /> */}
-            <div className="flex items-center gap-4">
-              <motion.div 
-                initial={{ scale: 0.8, rotate: -10 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="p-4 bg-gradient-to-r from-violet-500 to-purple-600 rounded-3xl shadow-2xl"
-              >
-                <Brain className="h-10 w-10 text-white" />
-              </motion.div>
-              <div>
-                <h1 className={`text-4xl font-bold bg-gradient-to-r ${theme === 'light' 
-                  ? 'from-gray-900 via-violet-800 to-purple-900' 
-                  : 'from-white via-violet-200 to-purple-200'
-                } bg-clip-text text-transparent`}>
-                  AI Form Generator
-                </h1>
-                <p className={`text-lg ${theme === 'light' ? 'text-gray-600' : 'text-gray-300'}`}>
-                  Create intelligent forms with advanced AI assistance
-                </p>
-              </div>
+            <motion.div 
+              initial={{ scale: 0.8, rotate: -10 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="p-4 bg-gradient-to-r from-violet-500 to-purple-600 rounded-3xl shadow-2xl"
+            >
+              <Brain className="h-10 w-10 text-white" />
+            </motion.div>
+            <div>
+              <h1 className={`text-4xl font-bold bg-gradient-to-r ${theme === 'light' 
+                ? 'from-gray-900 via-violet-800 to-purple-900' 
+                : 'from-white via-violet-200 to-purple-200'
+              } bg-clip-text text-transparent`}>
+                AI Form Generator
+              </h1>
+              <p className={`text-lg ${theme === 'light' ? 'text-gray-600' : 'text-gray-300'}`}>
+                Create intelligent forms with advanced AI assistance
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -253,7 +651,7 @@ export const AIFormGenerator = () => {
         </motion.div>
 
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* Enhanced Input Panel */}
+          {/* Input Panel */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -265,8 +663,7 @@ export const AIFormGenerator = () => {
               : 'bg-gray-800/50 border-gray-700 shadow-2xl'
             } backdrop-blur-sm overflow-hidden relative group`}>
               
-              {/* Card Background Effect */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-violet-500/10 to-transparent rounded-bl-full opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-violet-500/10 to-transparent rounded-bl-full opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
               
               <CardHeader className="relative z-10">
                 <CardTitle className="flex items-center gap-3 text-xl">
@@ -281,13 +678,9 @@ export const AIFormGenerator = () => {
                     Smart
                   </Badge>
                 </CardTitle>
-                <p className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
-                  Describe your form and let AI create it for you
-                </p>
               </CardHeader>
               
-              <CardContent className="space-y-6 relative z-10">
-                {/* Hidden file input for JSON upload */}
+              <CardContent className="space-y-5 relative z-10">
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -296,7 +689,7 @@ export const AIFormGenerator = () => {
                   className="hidden"
                 />
 
-                {/* Webhook URL Configuration */}
+                {/* Webhook URL */}
                 <div>
                   <label className={`block text-sm font-semibold mb-2 ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
                     Webhook URL
@@ -312,7 +705,7 @@ export const AIFormGenerator = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className={`block text-sm font-semibold mb-2 ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
                       Form Title
@@ -320,14 +713,13 @@ export const AIFormGenerator = () => {
                     <Input
                       value={formTitle}
                       onChange={(e) => setFormTitle(e.target.value)}
-                      placeholder="e.g., Customer Feedback Survey"
+                      placeholder="e.g., Customer Survey"
                       className={`${theme === 'light' 
-                        ? 'bg-white border-gray-300 focus:border-violet-500' 
-                        : 'bg-gray-700 border-gray-600 focus:border-violet-400'
+                        ? 'bg-white border-gray-300' 
+                        : 'bg-gray-700 border-gray-600'
                       } rounded-xl`}
                     />
                   </div>
-
                   <div>
                     <label className={`block text-sm font-semibold mb-2 ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
                       AI Model
@@ -336,8 +728,8 @@ export const AIFormGenerator = () => {
                       value={model}
                       onChange={(e) => setModel(e.target.value)}
                       className={`w-full px-3 py-2 rounded-xl border ${theme === 'light' 
-                        ? 'bg-white border-gray-300 focus:border-violet-500' 
-                        : 'bg-gray-700 border-gray-600 focus:border-violet-400'
+                        ? 'bg-white border-gray-300' 
+                        : 'bg-gray-700 border-gray-600'
                       }`}
                     >
                       <option value="qwen/qwen-2.5-72b-instruct:free">Qwen 2.5 72B (Free)</option>
@@ -350,15 +742,15 @@ export const AIFormGenerator = () => {
 
                 <div>
                   <label className={`block text-sm font-semibold mb-2 ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
-                    Form Description / Context
+                    Context (Optional)
                   </label>
                   <Input
                     value={context}
                     onChange={(e) => setContext(e.target.value)}
-                    placeholder="Additional context for the AI (e.g., target audience, industry, style preferences)"
+                    placeholder="Target audience, industry, style preferences..."
                     className={`${theme === 'light' 
-                      ? 'bg-white border-gray-300 focus:border-violet-500' 
-                      : 'bg-gray-700 border-gray-600 focus:border-violet-400'
+                      ? 'bg-white border-gray-300' 
+                      : 'bg-gray-700 border-gray-600'
                     } rounded-xl`}
                   />
                 </div>
@@ -371,32 +763,31 @@ export const AIFormGenerator = () => {
                   <Textarea
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
-                    placeholder="Describe the form you want to create. Be specific about fields, validation, styling, and functionality..."
-                    rows={6}
+                    placeholder="Describe the form you want to create..."
+                    rows={5}
                     className={`${theme === 'light' 
-                      ? 'bg-white border-gray-300 focus:border-violet-500' 
-                      : 'bg-gray-700 border-gray-600 focus:border-violet-400'
+                      ? 'bg-white border-gray-300' 
+                      : 'bg-gray-700 border-gray-600'
                     } rounded-xl resize-none`}
                   />
                 </div>
 
-                {/* AI Suggestions */}
+                {/* Quick Suggestions */}
                 <div>
-                  <p className={`text-xs font-medium mb-3 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} flex items-center gap-1`}>
-                    <Target className="h-3 w-3" />
+                  <p className={`text-xs font-medium mb-2 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
                     Quick suggestions:
                   </p>
-                  <div className="grid grid-cols-1 gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {suggestions.map((suggestion, index) => (
                       <motion.button
                         key={index}
-                        whileHover={{ scale: 1.02, x: 4 }}
+                        whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => setPrompt(suggestion)}
-                        className={`text-left p-3 rounded-lg border-2 border-dashed ${theme === 'light' 
-                          ? 'border-gray-200 hover:border-violet-300 hover:bg-violet-50 text-gray-600 hover:text-violet-700' 
-                          : 'border-gray-600 hover:border-violet-500 hover:bg-violet-900/20 text-gray-400 hover:text-violet-300'
-                        } transition-all duration-200 text-sm`}
+                        className={`text-xs p-2 rounded-lg border ${theme === 'light' 
+                          ? 'border-gray-200 hover:border-violet-300 hover:bg-violet-50 text-gray-600' 
+                          : 'border-gray-600 hover:border-violet-500 hover:bg-violet-900/20 text-gray-400'
+                        } transition-all`}
                       >
                         {suggestion}
                       </motion.button>
@@ -405,44 +796,40 @@ export const AIFormGenerator = () => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <Button 
-                      onClick={generateForm}
-                      disabled={isGenerating}
-                      className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white shadow-xl py-6 rounded-xl text-lg font-semibold"
-                    >
-                      {isGenerating ? (
-                        <>
-                          <RefreshCw className="h-5 w-5 mr-3 animate-spin" />
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="h-5 w-5 mr-3" />
-                          Generate
-                        </>
-                      )}
-                    </Button>
-                  </motion.div>
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <Button 
-                      onClick={handleUploadJson}
-                      variant="outline"
-                      className={`w-full py-6 rounded-xl text-lg font-semibold ${theme === 'light' 
-                        ? 'border-violet-300 hover:bg-violet-50 text-violet-700' 
-                        : 'border-violet-500 hover:bg-violet-900/20 text-violet-300'
-                      }`}
-                    >
-                      <Upload className="h-5 w-5 mr-3" />
-                      Upload JSON
-                    </Button>
-                  </motion.div>
+                  <Button 
+                    onClick={generateForm}
+                    disabled={isGenerating}
+                    className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white py-5 rounded-xl font-semibold"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-5 w-5 mr-2" />
+                        Generate
+                      </>
+                    )}
+                  </Button>
+                  <Button 
+                    onClick={handleUploadJson}
+                    variant="outline"
+                    className={`w-full py-5 rounded-xl font-semibold ${theme === 'light' 
+                      ? 'border-violet-300 hover:bg-violet-50 text-violet-700' 
+                      : 'border-violet-500 hover:bg-violet-900/20 text-violet-300'
+                    }`}
+                  >
+                    <Upload className="h-5 w-5 mr-2" />
+                    Upload JSON
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           </motion.div>
 
-          {/* Enhanced Preview Panel */}
+          {/* Canvas Preview Panel */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -451,12 +838,9 @@ export const AIFormGenerator = () => {
             <Card className={`${theme === 'light' 
               ? 'bg-white/90 border-white/50 shadow-2xl' 
               : 'bg-gray-800/50 border-gray-700 shadow-2xl'
-            } backdrop-blur-sm h-full overflow-hidden relative group`}>
+            } backdrop-blur-sm h-full overflow-hidden`}>
               
-              {/* Card Background Effect */}
-              <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-transparent rounded-br-full opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
-              
-              <CardHeader className="relative z-10">
+              <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-3 text-xl">
                     <motion.div 
@@ -465,180 +849,36 @@ export const AIFormGenerator = () => {
                     >
                       <Eye className="h-6 w-6 text-white" />
                     </motion.div>
-                    Live Preview
+                    Canvas Preview
                     {generatedForm && (
                       <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
-                        Generated
+                        {generatedForm.elements.length} elements
                       </Badge>
                     )}
                   </CardTitle>
                   {generatedForm && (
                     <div className="flex gap-2">
-                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                        <Button variant="outline" size="sm" onClick={copyFormCode} className="rounded-lg">
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                      </motion.div>
-                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                        <Button variant="outline" size="sm" onClick={downloadJson} className="rounded-lg">
-                          <Download className="h-4 w-4" />
-                        </Button>
-                      </motion.div>
-                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                        <Button variant="outline" size="sm" onClick={openInFormBuilder} className="rounded-lg bg-gradient-to-r from-violet-500 to-purple-600 text-white border-0 hover:from-violet-600 hover:to-purple-700">
-                          <ExternalLink className="h-4 w-4 mr-1" />
-                          Open in Canvas
-                        </Button>
-                      </motion.div>
+                      <Button variant="outline" size="sm" onClick={copyFormCode} className="rounded-lg">
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={downloadJson} className="rounded-lg">
+                        <Download className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        onClick={openInFormBuilder} 
+                        className="rounded-lg bg-gradient-to-r from-violet-500 to-purple-600 text-white border-0"
+                      >
+                        <ExternalLink className="h-4 w-4 mr-1" />
+                        Open in Canvas
+                      </Button>
                     </div>
                   )}
                 </div>
-                <p className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
-                  Real-time preview of your AI-generated form
-                </p>
               </CardHeader>
               
-              <CardContent className="relative z-10">
-                {generatedForm ? (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="space-y-6"
-                  >
-                    <div className={`p-6 rounded-xl border-2 border-dashed ${theme === 'light' ? 'border-gray-200 bg-gray-50' : 'border-gray-600 bg-gray-700/50'}`}>
-                      <motion.h3 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.2 }}
-                        className={`text-2xl font-bold mb-2 ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}
-                      >
-                        {generatedForm.title || generatedForm.name || 'Generated Form'}
-                      </motion.h3>
-                      <motion.p 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.3 }}
-                        className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}
-                      >
-                        {generatedForm.description || 'AI-generated form configuration'}
-                      </motion.p>
-                    </div>
-                    
-                    {/* Render elements from API response */}
-                    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
-                      {(generatedForm.elements || generatedForm.fields || []).map((element: any, index: number) => (
-                        <motion.div
-                          key={element.id || index}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.4 + index * 0.05 }}
-                          className={`p-4 rounded-lg border ${theme === 'light' ? 'border-gray-200 bg-white' : 'border-gray-600 bg-gray-800'}`}
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <label className={`text-sm font-semibold ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
-                              {element.label || element.type} {element.required && <span className="text-red-500">*</span>}
-                            </label>
-                            <Badge variant="outline" className="text-xs capitalize">
-                              {element.type}
-                            </Badge>
-                          </div>
-                          {element.type === 'textarea' || element.type === 'rich-text' ? (
-                            <Textarea
-                              placeholder={element.placeholder || `Enter ${element.label}`}
-                              className={`${theme === 'light' 
-                                ? 'bg-gray-50 border-gray-300' 
-                                : 'bg-gray-700 border-gray-600'
-                              } rounded-xl`}
-                              disabled
-                            />
-                          ) : element.type === 'select' || element.type === 'dropdown' ? (
-                            <select 
-                              className={`w-full px-3 py-2 rounded-xl border ${theme === 'light' 
-                                ? 'bg-gray-50 border-gray-300' 
-                                : 'bg-gray-700 border-gray-600'
-                              }`}
-                              disabled
-                            >
-                              <option>{element.placeholder || `Select ${element.label}`}</option>
-                              {(element.options || []).map((opt: any, i: number) => (
-                                <option key={i} value={opt.value || opt}>{opt.label || opt}</option>
-                              ))}
-                            </select>
-                          ) : element.type === 'checkbox' ? (
-                            <div className="flex items-center gap-2">
-                              <input type="checkbox" disabled className="rounded" />
-                              <span className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
-                                {element.placeholder || element.label}
-                              </span>
-                            </div>
-                          ) : element.type === 'radio' ? (
-                            <div className="space-y-2">
-                              {(element.options || [{ label: 'Option 1' }, { label: 'Option 2' }]).map((opt: any, i: number) => (
-                                <div key={i} className="flex items-center gap-2">
-                                  <input type="radio" name={element.id} disabled className="rounded-full" />
-                                  <span className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
-                                    {opt.label || opt}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          ) : element.type === 'heading' || element.type === 'section-header' ? (
-                            <h4 className={`text-lg font-bold ${theme === 'light' ? 'text-gray-800' : 'text-gray-200'}`}>
-                              {element.content || element.label}
-                            </h4>
-                          ) : element.type === 'paragraph' || element.type === 'text-block' ? (
-                            <p className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
-                              {element.content || element.placeholder}
-                            </p>
-                          ) : (
-                            <Input
-                              type={element.type === 'email' ? 'email' : element.type === 'number' ? 'number' : 'text'}
-                              placeholder={element.placeholder || `Enter ${element.label}`}
-                              className={`${theme === 'light' 
-                                ? 'bg-gray-50 border-gray-300' 
-                                : 'bg-gray-700 border-gray-600'
-                              } rounded-xl`}
-                              disabled
-                            />
-                          )}
-                        </motion.div>
-                      ))}
-                    </div>
-                    
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.8 }}
-                      className="flex gap-3"
-                    >
-                      <Button 
-                        onClick={openInFormBuilder}
-                        className="flex-1 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white py-4 rounded-xl text-lg font-semibold shadow-lg"
-                      >
-                        <ExternalLink className="h-5 w-5 mr-2" />
-                        Open in Form Builder
-                      </Button>
-                    </motion.div>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5 }}
-                    className={`text-center py-16 ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}
-                  >
-                    <motion.div
-                      animate={{ rotate: [0, 10, -10, 0] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                    >
-                      <Brain className="h-16 w-16 mx-auto mb-6 opacity-50" />
-                    </motion.div>
-                    <h3 className="text-xl font-semibold mb-2">AI Form Preview</h3>
-                    <p className="text-sm mb-4">Your generated form will appear here</p>
-                    <p className="text-xs">Enter a prompt and click generate, or upload a JSON file</p>
-                  </motion.div>
-                )}
+              <CardContent className="p-2">
+                <CanvasPreview formConfig={generatedForm} isGenerating={isGenerating} />
               </CardContent>
             </Card>
           </motion.div>
