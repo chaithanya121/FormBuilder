@@ -175,6 +175,34 @@ const FormBuilder: React.FC = () => {
     }
   }, [dispatch, id]);
 
+  // Check for imported form config from AI Form Generator
+  useEffect(() => {
+    const importedConfig = sessionStorage.getItem('importedFormConfig');
+    if (importedConfig) {
+      try {
+        const parsedConfig = JSON.parse(importedConfig);
+        // Merge with default config structure
+        const mergedConfig: FormConfig = {
+          ...formConfig,
+          name: parsedConfig.name || parsedConfig.title || formConfig.name,
+          elements: parsedConfig.elements || parsedConfig.fields || [],
+          settings: {
+            ...formConfig.settings,
+            ...parsedConfig.settings
+          }
+        };
+        setFormConfig(mergedConfig);
+        sessionStorage.removeItem('importedFormConfig');
+        toast({
+          title: "Form Imported",
+          description: `Loaded ${mergedConfig.elements.length} elements from AI generator`,
+        });
+      } catch (e) {
+        console.error('Failed to parse imported form config:', e);
+      }
+    }
+  }, []);
+
   // Update local state when Redux state changes
   useEffect(() => {
     if (currentForm && currentForm.config) {

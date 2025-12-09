@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,19 +10,25 @@ import { motion } from 'framer-motion';
 import { 
   Zap, ArrowLeft, Wand, Sparkles, Copy, Download, 
   Eye, Settings, RefreshCw, Save, Share2, Brain,
-  Lightbulb, Target, Wand2, Stars, Rocket, ChevronRight
+  Lightbulb, Target, Wand2, Stars, Rocket, ChevronRight,
+  Upload, FileUp, ExternalLink
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
 export const AIFormGenerator = () => {
   const { theme } = useTheme();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedForm, setGeneratedForm] = useState<any>(null);
   const [formTitle, setFormTitle] = useState('');
   const [formDescription, setFormDescription] = useState('');
+  const [model, setModel] = useState('qwen/qwen-2.5-72b-instruct:free');
+  const [context, setContext] = useState('');
+  const [webhookUrl, setWebhookUrl] = useState('http://localhost:5678/webhook-test/generate-form');
 
   const generateForm = async () => {
     if (!prompt.trim()) {
@@ -36,44 +42,106 @@ export const AIFormGenerator = () => {
 
     setIsGenerating(true);
     
-    // Simulate AI generation
-    setTimeout(() => {
-      const mockGeneratedForm = {
-        title: formTitle || "AI Generated Form",
-        description: formDescription || "Generated using AI prompts",
-        fields: [
-          {
-            id: '1',
-            type: 'text',
-            label: 'Full Name',
-            placeholder: 'Enter your full name',
-            required: true
-          },
-          {
-            id: '2',
-            type: 'email',
-            label: 'Email Address',
-            placeholder: 'Enter your email',
-            required: true
-          },
-          {
-            id: '3',
-            type: 'textarea',
-            label: 'Message',
-            placeholder: 'Enter your message',
-            required: false
-          }
-        ]
+    try {
+      const payload = {
+        prompt: prompt,
+        model: model,
+        context: context,
+        styleReference: '',
+        includeValidation: true,
+        createdAt: new Date().toISOString()
       };
+
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
       
-      setGeneratedForm(mockGeneratedForm);
-      setIsGenerating(false);
+      // Handle the response - extract form data
+      const formData = data.form || data;
+      setGeneratedForm(formData);
       
       toast({
         title: "Form Generated!",
         description: "Your AI-powered form has been created successfully",
       });
-    }, 3000);
+    } catch (error) {
+      console.error('Error generating form:', error);
+      toast({
+        title: "Generation Failed",
+        description: error instanceof Error ? error.message : "Failed to generate form. Please check your webhook URL.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleUploadJson = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const jsonData = JSON.parse(event.target?.result as string);
+        const formData = jsonData.form || jsonData;
+        setGeneratedForm(formData);
+        toast({
+          title: "JSON Imported",
+          description: "Form configuration loaded successfully",
+        });
+      } catch (error) {
+        toast({
+          title: "Import Failed",
+          description: "Invalid JSON file format",
+          variant: "destructive"
+        });
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const openInFormBuilder = () => {
+    if (generatedForm) {
+      // Store the form in sessionStorage for the FormBuilder to pick up
+      sessionStorage.setItem('importedFormConfig', JSON.stringify(generatedForm));
+      navigate('/form-builder');
+      toast({
+        title: "Opening in Form Builder",
+        description: "Your form is being loaded in the canvas",
+      });
+    }
+  };
+
+  const downloadJson = () => {
+    if (!generatedForm) return;
+    const dataStr = JSON.stringify(generatedForm, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${generatedForm.name || 'form'}-config.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast({
+      title: "Downloaded",
+      description: "Form JSON downloaded successfully",
+    });
   };
 
   const saveForm = () => {
@@ -219,6 +287,31 @@ export const AIFormGenerator = () => {
               </CardHeader>
               
               <CardContent className="space-y-6 relative z-10">
+                {/* Hidden file input for JSON upload */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  accept=".json"
+                  className="hidden"
+                />
+
+                {/* Webhook URL Configuration */}
+                <div>
+                  <label className={`block text-sm font-semibold mb-2 ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
+                    Webhook URL
+                  </label>
+                  <Input
+                    value={webhookUrl}
+                    onChange={(e) => setWebhookUrl(e.target.value)}
+                    placeholder="http://localhost:5678/webhook-test/generate-form"
+                    className={`${theme === 'light' 
+                      ? 'bg-white border-gray-300 focus:border-violet-500' 
+                      : 'bg-gray-700 border-gray-600 focus:border-violet-400'
+                    } rounded-xl font-mono text-sm`}
+                  />
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className={`block text-sm font-semibold mb-2 ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
@@ -237,28 +330,32 @@ export const AIFormGenerator = () => {
 
                   <div>
                     <label className={`block text-sm font-semibold mb-2 ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
-                      Category
+                      AI Model
                     </label>
-                    <select className={`w-full px-3 py-2 rounded-xl border ${theme === 'light' 
-                      ? 'bg-white border-gray-300 focus:border-violet-500' 
-                      : 'bg-gray-700 border-gray-600 focus:border-violet-400'
-                    }`}>
-                      <option>Contact Form</option>
-                      <option>Survey</option>
-                      <option>Registration</option>
-                      <option>Feedback</option>
+                    <select 
+                      value={model}
+                      onChange={(e) => setModel(e.target.value)}
+                      className={`w-full px-3 py-2 rounded-xl border ${theme === 'light' 
+                        ? 'bg-white border-gray-300 focus:border-violet-500' 
+                        : 'bg-gray-700 border-gray-600 focus:border-violet-400'
+                      }`}
+                    >
+                      <option value="qwen/qwen-2.5-72b-instruct:free">Qwen 2.5 72B (Free)</option>
+                      <option value="tngtech/deepseek-r1t2-chimera:free">DeepSeek R1T2 (Free)</option>
+                      <option value="qwen/qwen2.5-vl-32b-instruct">Qwen 2.5 VL 32B</option>
+                      <option value="openai/gpt-4o">GPT-4o</option>
                     </select>
                   </div>
                 </div>
 
                 <div>
                   <label className={`block text-sm font-semibold mb-2 ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
-                    Form Description
+                    Form Description / Context
                   </label>
                   <Input
-                    value={formDescription}
-                    onChange={(e) => setFormDescription(e.target.value)}
-                    placeholder="Brief description of the form purpose"
+                    value={context}
+                    onChange={(e) => setContext(e.target.value)}
+                    placeholder="Additional context for the AI (e.g., target audience, industry, style preferences)"
                     className={`${theme === 'light' 
                       ? 'bg-white border-gray-300 focus:border-violet-500' 
                       : 'bg-gray-700 border-gray-600 focus:border-violet-400'
@@ -307,26 +404,40 @@ export const AIFormGenerator = () => {
                   </div>
                 </div>
 
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button 
-                    onClick={generateForm}
-                    disabled={isGenerating}
-                    className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white shadow-xl py-6 rounded-xl text-lg font-semibold"
-                  >
-                    {isGenerating ? (
-                      <>
-                        <RefreshCw className="h-5 w-5 mr-3 animate-spin" />
-                        AI is crafting your form...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-5 w-5 mr-3" />
-                        Generate with AI
-                        <Rocket className="h-5 w-5 ml-3" />
-                      </>
-                    )}
-                  </Button>
-                </motion.div>
+                <div className="grid grid-cols-2 gap-3">
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <Button 
+                      onClick={generateForm}
+                      disabled={isGenerating}
+                      className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white shadow-xl py-6 rounded-xl text-lg font-semibold"
+                    >
+                      {isGenerating ? (
+                        <>
+                          <RefreshCw className="h-5 w-5 mr-3 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-5 w-5 mr-3" />
+                          Generate
+                        </>
+                      )}
+                    </Button>
+                  </motion.div>
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <Button 
+                      onClick={handleUploadJson}
+                      variant="outline"
+                      className={`w-full py-6 rounded-xl text-lg font-semibold ${theme === 'light' 
+                        ? 'border-violet-300 hover:bg-violet-50 text-violet-700' 
+                        : 'border-violet-500 hover:bg-violet-900/20 text-violet-300'
+                      }`}
+                    >
+                      <Upload className="h-5 w-5 mr-3" />
+                      Upload JSON
+                    </Button>
+                  </motion.div>
+                </div>
               </CardContent>
             </Card>
           </motion.div>
@@ -369,13 +480,14 @@ export const AIFormGenerator = () => {
                         </Button>
                       </motion.div>
                       <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                        <Button variant="outline" size="sm" onClick={saveForm} className="rounded-lg">
-                          <Save className="h-4 w-4" />
+                        <Button variant="outline" size="sm" onClick={downloadJson} className="rounded-lg">
+                          <Download className="h-4 w-4" />
                         </Button>
                       </motion.div>
                       <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                        <Button variant="outline" size="sm" className="rounded-lg">
-                          <Share2 className="h-4 w-4" />
+                        <Button variant="outline" size="sm" onClick={openInFormBuilder} className="rounded-lg bg-gradient-to-r from-violet-500 to-purple-600 text-white border-0 hover:from-violet-600 hover:to-purple-700">
+                          <ExternalLink className="h-4 w-4 mr-1" />
+                          Open in Canvas
                         </Button>
                       </motion.div>
                     </div>
@@ -401,7 +513,7 @@ export const AIFormGenerator = () => {
                         transition={{ delay: 0.2 }}
                         className={`text-2xl font-bold mb-2 ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}
                       >
-                        {generatedForm.title}
+                        {generatedForm.title || generatedForm.name || 'Generated Form'}
                       </motion.h3>
                       <motion.p 
                         initial={{ opacity: 0 }}
@@ -409,34 +521,80 @@ export const AIFormGenerator = () => {
                         transition={{ delay: 0.3 }}
                         className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}
                       >
-                        {generatedForm.description}
+                        {generatedForm.description || 'AI-generated form configuration'}
                       </motion.p>
                     </div>
                     
-                    <div className="space-y-4">
-                      {generatedForm.fields.map((field: any, index: number) => (
+                    {/* Render elements from API response */}
+                    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                      {(generatedForm.elements || generatedForm.fields || []).map((element: any, index: number) => (
                         <motion.div
-                          key={field.id}
+                          key={element.id || index}
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.4 + index * 0.1 }}
+                          transition={{ delay: 0.4 + index * 0.05 }}
+                          className={`p-4 rounded-lg border ${theme === 'light' ? 'border-gray-200 bg-white' : 'border-gray-600 bg-gray-800'}`}
                         >
-                          <label className={`block text-sm font-semibold mb-2 ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
-                            {field.label} {field.required && <span className="text-red-500">*</span>}
-                          </label>
-                          {field.type === 'textarea' ? (
+                          <div className="flex items-center justify-between mb-2">
+                            <label className={`text-sm font-semibold ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
+                              {element.label || element.type} {element.required && <span className="text-red-500">*</span>}
+                            </label>
+                            <Badge variant="outline" className="text-xs capitalize">
+                              {element.type}
+                            </Badge>
+                          </div>
+                          {element.type === 'textarea' || element.type === 'rich-text' ? (
                             <Textarea
-                              placeholder={field.placeholder}
+                              placeholder={element.placeholder || `Enter ${element.label}`}
                               className={`${theme === 'light' 
                                 ? 'bg-gray-50 border-gray-300' 
                                 : 'bg-gray-700 border-gray-600'
                               } rounded-xl`}
                               disabled
                             />
+                          ) : element.type === 'select' || element.type === 'dropdown' ? (
+                            <select 
+                              className={`w-full px-3 py-2 rounded-xl border ${theme === 'light' 
+                                ? 'bg-gray-50 border-gray-300' 
+                                : 'bg-gray-700 border-gray-600'
+                              }`}
+                              disabled
+                            >
+                              <option>{element.placeholder || `Select ${element.label}`}</option>
+                              {(element.options || []).map((opt: any, i: number) => (
+                                <option key={i} value={opt.value || opt}>{opt.label || opt}</option>
+                              ))}
+                            </select>
+                          ) : element.type === 'checkbox' ? (
+                            <div className="flex items-center gap-2">
+                              <input type="checkbox" disabled className="rounded" />
+                              <span className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
+                                {element.placeholder || element.label}
+                              </span>
+                            </div>
+                          ) : element.type === 'radio' ? (
+                            <div className="space-y-2">
+                              {(element.options || [{ label: 'Option 1' }, { label: 'Option 2' }]).map((opt: any, i: number) => (
+                                <div key={i} className="flex items-center gap-2">
+                                  <input type="radio" name={element.id} disabled className="rounded-full" />
+                                  <span className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
+                                    {opt.label || opt}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : element.type === 'heading' || element.type === 'section-header' ? (
+                            <h4 className={`text-lg font-bold ${theme === 'light' ? 'text-gray-800' : 'text-gray-200'}`}>
+                              {element.content || element.label}
+                            </h4>
+                          ) : element.type === 'paragraph' || element.type === 'text-block' ? (
+                            <p className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
+                              {element.content || element.placeholder}
+                            </p>
                           ) : (
                             <Input
-                              type={field.type}
-                              placeholder={field.placeholder}
+                              type={element.type === 'email' ? 'email' : element.type === 'number' ? 'number' : 'text'}
+                              placeholder={element.placeholder || `Enter ${element.label}`}
                               className={`${theme === 'light' 
                                 ? 'bg-gray-50 border-gray-300' 
                                 : 'bg-gray-700 border-gray-600'
@@ -452,9 +610,14 @@ export const AIFormGenerator = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.8 }}
+                      className="flex gap-3"
                     >
-                      <Button className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-4 rounded-xl text-lg font-semibold shadow-lg" disabled>
-                        Submit Form
+                      <Button 
+                        onClick={openInFormBuilder}
+                        className="flex-1 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white py-4 rounded-xl text-lg font-semibold shadow-lg"
+                      >
+                        <ExternalLink className="h-5 w-5 mr-2" />
+                        Open in Form Builder
                       </Button>
                     </motion.div>
                   </motion.div>
@@ -473,7 +636,7 @@ export const AIFormGenerator = () => {
                     </motion.div>
                     <h3 className="text-xl font-semibold mb-2">AI Form Preview</h3>
                     <p className="text-sm mb-4">Your generated form will appear here</p>
-                    <p className="text-xs">Enter a prompt and click generate to get started</p>
+                    <p className="text-xs">Enter a prompt and click generate, or upload a JSON file</p>
                   </motion.div>
                 )}
               </CardContent>
