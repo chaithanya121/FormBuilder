@@ -1,50 +1,93 @@
-
-import React, { useState, useRef } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useRef, useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 import { useTheme } from '@/components/theme-provider';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Zap, ArrowLeft, Wand, Sparkles, Copy, Download, 
-  Eye, Settings, RefreshCw, Save, Share2, Brain,
-  Lightbulb, Target, Wand2, Stars, Rocket, ChevronRight,
-  Upload, FileUp, ExternalLink, Layers
+  Zap, ArrowLeft, Sparkles, Copy, Download, 
+  Eye, Settings, RefreshCw, Brain, Wand2, 
+  Upload, FileUp, ExternalLink, Layers, Check,
+  History, Palette, Code, Play, ChevronRight,
+  FileText, Layout, Lightbulb, Target, Rocket,
+  Clock, Star, Trash2, Save, Share2, Grid3X3,
+  Monitor, Smartphone, Tablet, ArrowRight
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import FormElementRenderer from '@/components/FormBuilder/FormElementRenderer';
 import { FormConfig, FormElement } from '@/components/FormBuilder/types';
 
-// Animated loader component
+// Stunning AI Generating Loader
 const AIGeneratingLoader = () => {
+  const [statusIndex, setStatusIndex] = useState(0);
+  const statuses = [
+    "Analyzing your requirements...",
+    "Generating form structure...",
+    "Applying AI optimizations...",
+    "Finalizing your form..."
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStatusIndex(prev => (prev + 1) % statuses.length);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-violet-600/95 via-purple-600/95 to-indigo-600/95 backdrop-blur-sm rounded-xl"
+      className="absolute inset-0 z-50 flex items-center justify-center overflow-hidden rounded-2xl"
     >
-      {/* Animated Background Particles */}
+      {/* Animated gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700">
+        <motion.div
+          className="absolute inset-0"
+          animate={{
+            background: [
+              'radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+              'radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+              'radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+            ]
+          }}
+          transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+        />
+      </div>
+
+      {/* Floating particles */}
       <div className="absolute inset-0 overflow-hidden">
-        {[...Array(20)].map((_, i) => (
+        {[...Array(30)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-2 h-2 bg-white/30 rounded-full"
+            className="absolute rounded-full"
+            style={{
+              width: Math.random() * 6 + 2,
+              height: Math.random() * 6 + 2,
+              background: `rgba(255,255,255,${Math.random() * 0.3 + 0.1})`,
+            }}
             initial={{
-              x: Math.random() * 400,
-              y: Math.random() * 400,
+              x: Math.random() * 500,
+              y: Math.random() * 500,
             }}
             animate={{
-              x: Math.random() * 400,
-              y: Math.random() * 400,
+              x: Math.random() * 500,
+              y: Math.random() * 500,
               scale: [1, 1.5, 1],
-              opacity: [0.3, 0.7, 0.3],
+              opacity: [0.2, 0.6, 0.2],
             }}
             transition={{
-              duration: 3 + Math.random() * 2,
+              duration: 4 + Math.random() * 4,
               repeat: Infinity,
               ease: "easeInOut"
             }}
@@ -52,50 +95,55 @@ const AIGeneratingLoader = () => {
         ))}
       </div>
 
-      <div className="relative z-10 text-center">
-        {/* Main spinning brain */}
-        <motion.div
-          animate={{
-            scale: [1, 1.1, 1],
-            rotate: [0, 360],
-          }}
-          transition={{
-            scale: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
-            rotate: { duration: 8, repeat: Infinity, ease: "linear" }
-          }}
-          className="relative mx-auto mb-6"
-        >
-          <div className="w-24 h-24 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-            <Brain className="h-12 w-12 text-white" />
-          </div>
+      <div className="relative z-10 text-center px-8">
+        {/* Main animated brain icon */}
+        <motion.div className="relative mx-auto mb-8">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            className="absolute -inset-8"
+          >
+            <div className="w-full h-full rounded-full border border-white/10" />
+          </motion.div>
+          <motion.div
+            animate={{ rotate: -360 }}
+            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+            className="absolute -inset-16"
+          >
+            <div className="w-full h-full rounded-full border border-white/5" />
+          </motion.div>
           
-          {/* Orbiting sparkles */}
-          {[...Array(3)].map((_, i) => (
+          <motion.div
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            className="relative w-28 h-28 mx-auto"
+          >
+            <div className="absolute inset-0 bg-white/20 backdrop-blur-xl rounded-3xl rotate-45" />
+            <div className="absolute inset-2 bg-white/10 backdrop-blur-sm rounded-2xl rotate-45" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Brain className="h-12 w-12 text-white" />
+            </div>
+          </motion.div>
+
+          {/* Orbiting elements */}
+          {[0, 1, 2].map((i) => (
             <motion.div
               key={i}
-              className="absolute"
-              animate={{
-                rotate: 360,
-              }}
+              className="absolute top-1/2 left-1/2"
+              animate={{ rotate: 360 }}
               transition={{
-                duration: 2 + i * 0.5,
+                duration: 3 + i,
                 repeat: Infinity,
                 ease: "linear",
+                delay: i * 0.5,
               }}
-              style={{
-                top: '50%',
-                left: '50%',
-                transformOrigin: '0 0',
-              }}
+              style={{ transformOrigin: '0 0' }}
             >
               <motion.div
                 className="absolute"
-                style={{
-                  left: `${40 + i * 10}px`,
-                  top: '-6px',
-                }}
+                style={{ left: `${50 + i * 15}px`, top: '-8px' }}
               >
-                <Sparkles className="h-4 w-4 text-yellow-300" />
+                <Sparkles className={`h-4 w-4 ${i === 0 ? 'text-yellow-300' : i === 1 ? 'text-pink-300' : 'text-cyan-300'}`} />
               </motion.div>
             </motion.div>
           ))}
@@ -103,62 +151,55 @@ const AIGeneratingLoader = () => {
 
         {/* Loading text */}
         <motion.h3
+          className="text-2xl font-bold text-white mb-3"
           animate={{ opacity: [0.7, 1, 0.7] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          className="text-xl font-bold text-white mb-2"
+          transition={{ duration: 2, repeat: Infinity }}
         >
           AI is crafting your form
         </motion.h3>
 
-        {/* Progress dots */}
-        <div className="flex items-center justify-center gap-2">
-          {[0, 1, 2].map((i) => (
-            <motion.div
-              key={i}
-              className="w-3 h-3 bg-white rounded-full"
-              animate={{
-                scale: [1, 1.5, 1],
-                opacity: [0.5, 1, 0.5],
-              }}
-              transition={{
-                duration: 1,
-                repeat: Infinity,
-                delay: i * 0.2,
-              }}
-            />
-          ))}
-        </div>
+        {/* Status text */}
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={statusIndex}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="text-white/70 text-sm mb-6"
+          >
+            {statuses[statusIndex]}
+          </motion.p>
+        </AnimatePresence>
 
-        {/* Status messages */}
-        <motion.div
-          className="mt-4 space-y-1"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-        >
-          <AnimatePresence mode="wait">
-            <motion.p
-              key="analyzing"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="text-sm text-white/80"
-            >
-              Analyzing your requirements...
-            </motion.p>
-          </AnimatePresence>
-        </motion.div>
+        {/* Progress bar */}
+        <div className="w-64 mx-auto">
+          <div className="h-1 bg-white/20 rounded-full overflow-hidden">
+            <motion.div
+              className="h-full bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400"
+              initial={{ width: '0%' }}
+              animate={{ width: '100%' }}
+              transition={{ duration: 8, ease: "easeInOut" }}
+            />
+          </div>
+        </div>
       </div>
     </motion.div>
   );
 };
 
-// Canvas Preview Component - matches FormBuilder canvas style
-const CanvasPreview: React.FC<{ formConfig: FormConfig | null; isGenerating: boolean }> = ({ 
-  formConfig, 
-  isGenerating 
-}) => {
-  const { theme } = useTheme();
+// Canvas Preview Component - Exact match to FormBuilder
+const CanvasPreview: React.FC<{ 
+  formConfig: FormConfig | null; 
+  isGenerating: boolean;
+  deviceView: 'desktop' | 'tablet' | 'mobile';
+}> = ({ formConfig, isGenerating, deviceView }) => {
+  const getDeviceWidth = () => {
+    switch (deviceView) {
+      case 'mobile': return '375px';
+      case 'tablet': return '768px';
+      default: return '100%';
+    }
+  };
 
   const getCanvasStyles = () => {
     const styles = formConfig?.settings?.canvasStyles || {};
@@ -179,58 +220,102 @@ const CanvasPreview: React.FC<{ formConfig: FormConfig | null; isGenerating: boo
     const styles = formConfig?.settings?.canvasStyles || {};
     return {
       backgroundColor: styles.formBackgroundColor || '#ffffff',
-      borderRadius: styles.borderRadius || '16px',
-      padding: styles.padding || '32px',
-      margin: '20px auto',
-      maxWidth: `${styles.formWidth || 600}px`,
-      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 20px 40px -20px rgba(0, 0, 0, 0.1)',
-      border: '1px solid rgba(255, 255, 255, 0.2)',
-      backdropFilter: 'blur(20px)',
-      position: 'relative' as const,
-      overflow: 'hidden' as const,
+      borderRadius: styles.borderRadius || '20px',
+      padding: deviceView === 'mobile' ? '20px' : '32px',
+      margin: '24px auto',
+      maxWidth: deviceView === 'mobile' ? '100%' : `${styles.formWidth || 600}px`,
+      boxShadow: '0 25px 80px -12px rgba(0, 0, 0, 0.35), 0 10px 30px -10px rgba(0, 0, 0, 0.2)',
+      border: '1px solid rgba(255, 255, 255, 0.15)',
     };
   };
 
   if (!formConfig && !isGenerating) {
     return (
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
+        initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        className="h-full min-h-[500px] flex items-center justify-center"
+        className="h-full min-h-[600px] flex items-center justify-center rounded-2xl overflow-hidden"
         style={{
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          borderRadius: '16px',
         }}
       >
-        <div className="text-center py-16 px-8">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          {[...Array(5)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute rounded-full bg-white/5"
+              style={{
+                width: 100 + i * 100,
+                height: 100 + i * 100,
+              }}
+              initial={{ x: '50%', y: '50%', scale: 0 }}
+              animate={{ 
+                scale: [1, 1.2, 1],
+                opacity: [0.1, 0.2, 0.1],
+              }}
+              transition={{
+                duration: 4 + i,
+                repeat: Infinity,
+                delay: i * 0.5,
+              }}
+            />
+          ))}
+        </div>
+
+        <div className="relative z-10 text-center py-16 px-8">
           <motion.div
-            animate={{ rotate: [0, 10, -10, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            className="mb-6"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", duration: 0.8 }}
+            className="mb-8"
           >
-            <div className="w-24 h-24 mx-auto bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4">
-              <Brain className="h-12 w-12 text-white" />
+            <div className="w-32 h-32 mx-auto relative">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                className="absolute inset-0 rounded-full border-2 border-dashed border-white/20"
+              />
+              <div className="absolute inset-4 bg-white/10 backdrop-blur-xl rounded-2xl flex items-center justify-center">
+                <Brain className="h-14 w-14 text-white" />
+              </div>
             </div>
           </motion.div>
-          <h3 className="text-2xl font-bold text-white mb-2">AI Form Canvas</h3>
-          <p className="text-white/80 max-w-md mx-auto mb-4">
-            Your AI-generated form will appear here with full canvas preview
-          </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            <Badge className="bg-white/20 text-white border-0">
-              <Sparkles className="h-3 w-3 mr-1" />
-              AI Powered
-            </Badge>
-            <Badge className="bg-white/20 text-white border-0">
-              <Eye className="h-3 w-3 mr-1" />
-              Live Preview
-            </Badge>
-            <Badge className="bg-white/20 text-white border-0">
-              <Layers className="h-3 w-3 mr-1" />
-              Canvas View
-            </Badge>
-          </div>
+          
+          <motion.h3
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="text-3xl font-bold text-white mb-3"
+          >
+            AI Form Canvas
+          </motion.h3>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="text-white/70 max-w-md mx-auto mb-6 text-lg"
+          >
+            Describe your form and watch AI create it instantly
+          </motion.p>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="flex flex-wrap justify-center gap-3"
+          >
+            {[
+              { icon: Sparkles, label: 'AI Powered' },
+              { icon: Eye, label: 'Live Preview' },
+              { icon: Layers, label: 'Canvas View' },
+            ].map(({ icon: Icon, label }) => (
+              <Badge key={label} className="bg-white/15 text-white border-0 px-4 py-2 text-sm backdrop-blur-sm">
+                <Icon className="h-4 w-4 mr-2" />
+                {label}
+              </Badge>
+            ))}
+          </motion.div>
         </div>
       </motion.div>
     );
@@ -238,34 +323,27 @@ const CanvasPreview: React.FC<{ formConfig: FormConfig | null; isGenerating: boo
 
   return (
     <div 
-      className="relative min-h-[500px] rounded-xl overflow-hidden"
-      style={getCanvasStyles()}
+      className="relative min-h-[600px] rounded-2xl overflow-hidden transition-all duration-500"
+      style={{
+        ...getCanvasStyles(),
+        width: getDeviceWidth(),
+        margin: deviceView !== 'desktop' ? '0 auto' : undefined,
+      }}
     >
-      {/* Loading overlay */}
       <AnimatePresence>
         {isGenerating && <AIGeneratingLoader />}
       </AnimatePresence>
 
-      {/* Animated Background Particles */}
+      {/* Background particles */}
       {!isGenerating && (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(8)].map((_, i) => (
+          {[...Array(10)].map((_, i) => (
             <motion.div
               key={i}
-              className="absolute w-2 h-2 bg-white/20 rounded-full"
-              initial={{
-                x: Math.random() * 600,
-                y: Math.random() * 600,
-              }}
-              animate={{
-                x: Math.random() * 600,
-                y: Math.random() * 600,
-              }}
-              transition={{
-                duration: 10 + Math.random() * 20,
-                repeat: Infinity,
-                ease: "linear"
-              }}
+              className="absolute w-2 h-2 bg-white/10 rounded-full"
+              initial={{ x: Math.random() * 600, y: Math.random() * 800 }}
+              animate={{ x: Math.random() * 600, y: Math.random() * 800 }}
+              transition={{ duration: 15 + Math.random() * 10, repeat: Infinity, ease: "linear" }}
             />
           ))}
         </div>
@@ -280,11 +358,9 @@ const CanvasPreview: React.FC<{ formConfig: FormConfig | null; isGenerating: boo
           style={{
             top: `${formConfig.settings.logo.position?.top || 20}px`,
             left: formConfig.settings.logo.position?.alignment?.includes('center')
-              ? '50%'
-              : `${formConfig.settings.logo.position?.left || 20}px`,
+              ? '50%' : `${formConfig.settings.logo.position?.left || 20}px`,
             transform: formConfig.settings.logo.position?.alignment?.includes('center')
-              ? 'translateX(-50%)'
-              : 'none',
+              ? 'translateX(-50%)' : 'none',
             opacity: formConfig.settings.logo.opacity || 1
           }}
         >
@@ -297,7 +373,7 @@ const CanvasPreview: React.FC<{ formConfig: FormConfig | null; isGenerating: boo
               borderRadius: `${formConfig.settings.logo.borderRadius || 0}px`,
               objectFit: 'contain'
             }}
-            className="shadow-lg"
+            className="shadow-xl"
           />
         </motion.div>
       )}
@@ -306,57 +382,60 @@ const CanvasPreview: React.FC<{ formConfig: FormConfig | null; isGenerating: boo
       {formConfig && !isGenerating && (
         <div className="relative z-10 p-4 md:p-6">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, type: "spring" }}
+            initial={{ opacity: 0, y: 30, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.6, type: "spring", bounce: 0.3 }}
             style={getFormStyles()}
           >
             {/* Form Header */}
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="text-center mb-6"
+              transition={{ delay: 0.2 }}
+              className="text-center mb-8"
             >
-              <h1 className="text-2xl md:text-3xl font-bold mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl md:text-3xl font-bold mb-3 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
                 {formConfig.name || 'Untitled Form'}
               </h1>
               {formConfig.description && (
-                <p className="text-gray-600 text-base max-w-xl mx-auto">
+                <p className="text-muted-foreground text-base max-w-xl mx-auto">
                   {formConfig.description}
                 </p>
               )}
             </motion.div>
 
             {/* Form Elements */}
-            <div className="space-y-4">
+            <div className="space-y-5">
               <AnimatePresence>
                 {formConfig.elements.map((element, index) => (
                   <motion.div
                     key={element.id}
                     layout
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                    className="bg-white/90 backdrop-blur-sm rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    transition={{ duration: 0.4, delay: index * 0.08 }}
+                    className="group relative"
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
-                        {element.type}
-                      </Badge>
-                      {element.required && (
-                        <Badge variant="outline" className="text-xs text-red-500 border-red-200">
-                          Required
+                    <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-violet-500 to-purple-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="bg-background/80 backdrop-blur-sm rounded-xl border border-border/50 p-5 hover:shadow-lg hover:border-primary/20 transition-all duration-300">
+                      <div className="flex items-center justify-between mb-3">
+                        <Badge variant="secondary" className="text-xs bg-primary/10 text-primary font-medium">
+                          {element.type}
                         </Badge>
-                      )}
+                        {element.required && (
+                          <Badge variant="outline" className="text-xs text-destructive border-destructive/30">
+                            Required
+                          </Badge>
+                        )}
+                      </div>
+                      <FormElementRenderer
+                        element={element}
+                        value=""
+                        onChange={() => {}}
+                        formConfig={formConfig}
+                      />
                     </div>
-                    <FormElementRenderer
-                      element={element}
-                      value=""
-                      onChange={() => {}}
-                      formConfig={formConfig}
-                    />
                   </motion.div>
                 ))}
               </AnimatePresence>
@@ -368,10 +447,10 @@ const CanvasPreview: React.FC<{ formConfig: FormConfig | null; isGenerating: boo
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className="mt-6"
+                className="mt-8"
               >
                 <Button 
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 rounded-xl font-semibold shadow-lg"
+                  className="w-full bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-700 hover:via-purple-700 hover:to-indigo-700 text-white py-6 rounded-xl font-semibold text-lg shadow-xl shadow-purple-500/25"
                   disabled
                 >
                   Submit Form
@@ -385,11 +464,31 @@ const CanvasPreview: React.FC<{ formConfig: FormConfig | null; isGenerating: boo
   );
 };
 
+// Quick Prompt Templates
+const promptTemplates = [
+  { icon: '📝', label: 'Contact Form', prompt: 'Create a professional contact form with name, email, phone, subject, and message fields' },
+  { icon: '📊', label: 'Survey', prompt: 'Create a customer satisfaction survey with rating scales and feedback sections' },
+  { icon: '📅', label: 'Event Registration', prompt: 'Create an event registration form with attendee details, ticket selection, and dietary preferences' },
+  { icon: '💼', label: 'Job Application', prompt: 'Create a job application form with personal info, work experience, education, and file upload for resume' },
+  { icon: '🛒', label: 'Order Form', prompt: 'Create a product order form with item selection, quantity, shipping address, and payment info' },
+  { icon: '📋', label: 'Feedback Form', prompt: 'Create a feedback form with rating scales, multiple choice questions, and open-ended responses' },
+];
+
+// AI Models
+const aiModels = [
+  { value: 'qwen/qwen-2.5-72b-instruct:free', label: 'Qwen 2.5 72B (Free)', tier: 'free' },
+  { value: 'meta-llama/llama-3.1-70b-instruct:free', label: 'Llama 3.1 70B (Free)', tier: 'free' },
+  { value: 'google/gemini-pro', label: 'Gemini Pro', tier: 'pro' },
+  { value: 'anthropic/claude-3-haiku', label: 'Claude 3 Haiku', tier: 'pro' },
+  { value: 'openai/gpt-4-turbo', label: 'GPT-4 Turbo', tier: 'premium' },
+];
+
 export const AIFormGenerator = () => {
-  const { theme } = useTheme();
   const { toast } = useToast();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // State
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedForm, setGeneratedForm] = useState<FormConfig | null>(null);
@@ -398,6 +497,11 @@ export const AIFormGenerator = () => {
   const [model, setModel] = useState('qwen/qwen-2.5-72b-instruct:free');
   const [context, setContext] = useState('');
   const [webhookUrl, setWebhookUrl] = useState('http://localhost:5678/webhook-test/generate-form');
+  const [includeValidation, setIncludeValidation] = useState(true);
+  const [deviceView, setDeviceView] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [activeTab, setActiveTab] = useState('generate');
+  const [generationHistory, setGenerationHistory] = useState<Array<{ prompt: string; form: FormConfig; timestamp: Date }>>([]);
+  const [copied, setCopied] = useState(false);
 
   const generateForm = async () => {
     if (!prompt.trim()) {
@@ -413,41 +517,41 @@ export const AIFormGenerator = () => {
     
     try {
       const payload = {
-        prompt: prompt,
-        model: model,
-        context: context,
+        prompt,
+        model,
+        context,
         styleReference: '',
-        includeValidation: true,
+        includeValidation,
         createdAt: new Date().toISOString()
       };
 
       const response = await fetch(webhookUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
       const data = await response.json();
-      
-      // Handle the response - normalize to FormConfig format
       const formData = normalizeFormConfig(data.form || data);
       setGeneratedForm(formData);
       
+      // Add to history
+      setGenerationHistory(prev => [
+        { prompt, form: formData, timestamp: new Date() },
+        ...prev.slice(0, 9)
+      ]);
+      
       toast({
         title: "Form Generated!",
-        description: "Your AI-powered form has been created successfully",
+        description: `Created ${formData.elements.length} form elements`,
       });
     } catch (error) {
       console.error('Error generating form:', error);
       toast({
         title: "Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate form. Please check your webhook URL.",
+        description: error instanceof Error ? error.message : "Check your webhook URL",
         variant: "destructive"
       });
     } finally {
@@ -455,7 +559,6 @@ export const AIFormGenerator = () => {
     }
   };
 
-  // Normalize API response to FormConfig format
   const normalizeFormConfig = (data: any): FormConfig => {
     const elements: FormElement[] = (data.elements || data.fields || []).map((el: any, index: number) => ({
       id: el.id || `element-${Date.now()}-${index}`,
@@ -469,12 +572,12 @@ export const AIFormGenerator = () => {
       fieldStyles: el.fieldStyles || {
         className: 'w-full',
         backgroundColor: '#ffffff',
-        borderColor: '#d1d5db',
-        borderRadius: '8px',
-        padding: '12px',
+        borderColor: '#e5e7eb',
+        borderRadius: '12px',
+        padding: '14px',
         fontSize: '16px',
         fontFamily: 'Inter',
-        color: '#374151'
+        color: '#1f2937'
       },
       labelStyles: el.labelStyles || {
         color: '#374151',
@@ -489,396 +592,439 @@ export const AIFormGenerator = () => {
       description: data.description || formDescription || '',
       elements,
       settings: {
-        layout: {
-          gridColumns: 1,
-          questionSpacing: 24,
-          elementWidth: 'full',
-          labelAlignment: 'top'
-        },
+        layout: { gridColumns: 1, questionSpacing: 24, elementWidth: 'full', labelAlignment: 'top' },
         canvasStyles: data.settings?.canvasStyles || {
           backgroundColor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
           formBackgroundColor: '#ffffff',
-          borderRadius: '16px',
+          borderRadius: '20px',
           padding: '32px',
-          formWidth: 600,
           fontFamily: 'Inter',
           fontSize: 16,
-          fontColor: '#374151'
-        }
+          fontColor: '#1f2937',
+          primaryColor: '#7c3aed',
+          formWidth: 640
+        },
+        logo: data.settings?.logo || { enabled: false }
       }
     };
   };
 
-  const handleUploadJson = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const jsonData = JSON.parse(event.target?.result as string);
-        const formData = normalizeFormConfig(jsonData.form || jsonData);
+        const json = JSON.parse(event.target?.result as string);
+        const formData = normalizeFormConfig(json);
         setGeneratedForm(formData);
-        toast({
-          title: "JSON Imported",
-          description: "Form configuration loaded successfully",
-        });
-      } catch (error) {
-        toast({
-          title: "Import Failed",
-          description: "Invalid JSON file format",
-          variant: "destructive"
-        });
+        toast({ title: "JSON Imported", description: `Loaded ${formData.elements.length} elements` });
+      } catch {
+        toast({ title: "Invalid JSON", description: "Could not parse the file", variant: "destructive" });
       }
     };
     reader.readAsText(file);
-    e.target.value = '';
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const openInFormBuilder = () => {
+  const copyToClipboard = () => {
     if (generatedForm) {
-      sessionStorage.setItem('importedFormConfig', JSON.stringify(generatedForm));
-      navigate('/form-builder');
-      toast({
-        title: "Opening in Form Builder",
-        description: "Your form is being loaded in the canvas",
-      });
+      navigator.clipboard.writeText(JSON.stringify(generatedForm, null, 2));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      toast({ title: "Copied!", description: "JSON copied to clipboard" });
     }
   };
 
-  const downloadJson = () => {
-    if (!generatedForm) return;
-    const dataStr = JSON.stringify(generatedForm, null, 2);
-    const blob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${generatedForm.name || 'form'}-config.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast({
-      title: "Downloaded",
-      description: "Form JSON downloaded successfully",
-    });
+  const downloadJSON = () => {
+    if (generatedForm) {
+      const blob = new Blob([JSON.stringify(generatedForm, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${generatedForm.name?.replace(/\s+/g, '-').toLowerCase() || 'form'}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
   };
 
-  const copyFormCode = () => {
-    if (!generatedForm) return;
-    navigator.clipboard.writeText(JSON.stringify(generatedForm, null, 2));
-    toast({
-      title: "Code Copied",
-      description: "Form code copied to clipboard",
-    });
+  const openInCanvas = () => {
+    if (generatedForm) {
+      sessionStorage.setItem('importedFormConfig', JSON.stringify(generatedForm));
+      navigate('/form-builder');
+    }
   };
-
-  const suggestions = [
-    'Create a customer feedback survey with rating scales',
-    'Build a job application form with file upload',
-    'Design a contact form with conditional fields',
-    'Generate an event registration form with payment'
-  ];
 
   return (
-    <div className={`min-h-screen ${theme === 'light' 
-      ? 'bg-gradient-to-br from-slate-50 via-purple-50 to-pink-100' 
-      : 'bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900'
-    } relative overflow-hidden`}>
-      
-      {/* Enhanced Background Effects */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.2, 1],
-            rotate: [0, 180, 360],
-            opacity: [0.3, 0.5, 0.3]
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute top-20 right-20 w-96 h-96 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-3xl"
-        />
-        <motion.div 
-          animate={{ 
-            scale: [1.2, 1, 1.2],
-            rotate: [360, 180, 0],
-            x: [-20, 20, -20]
-          }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-          className="absolute bottom-20 left-20 w-96 h-96 bg-gradient-to-r from-violet-400/20 to-blue-400/20 rounded-full blur-3xl"
-        />
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
+      {/* Header */}
+      <motion.header
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border/50"
+      >
+        <div className="max-w-[1800px] mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link to="/tools">
+                <Button variant="ghost" size="icon" className="rounded-xl">
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+              </Link>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-500 flex items-center justify-center shadow-lg shadow-purple-500/25">
+                  <Brain className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                    AI Form Generator
+                  </h1>
+                  <p className="text-sm text-muted-foreground">Create forms with natural language</p>
+                </div>
+              </div>
+            </div>
 
-      <div className="max-w-7xl mx-auto space-y-8 relative z-10 p-6">
-        {/* Enhanced Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6"
-        >
-          <div className="flex items-center gap-4">
-            <motion.div 
-              initial={{ scale: 0.8, rotate: -10 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="p-4 bg-gradient-to-r from-violet-500 to-purple-600 rounded-3xl shadow-2xl"
-            >
-              <Brain className="h-10 w-10 text-white" />
-            </motion.div>
-            <div>
-              <h1 className={`text-4xl font-bold bg-gradient-to-r ${theme === 'light' 
-                ? 'from-gray-900 via-violet-800 to-purple-900' 
-                : 'from-white via-violet-200 to-purple-200'
-              } bg-clip-text text-transparent`}>
-                AI Form Generator
-              </h1>
-              <p className={`text-lg ${theme === 'light' ? 'text-gray-600' : 'text-gray-300'}`}>
-                Create intelligent forms with advanced AI assistance
-              </p>
+            <div className="flex items-center gap-3">
+              {/* Device Preview Toggle */}
+              <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-1">
+                {[
+                  { value: 'desktop', icon: Monitor },
+                  { value: 'tablet', icon: Tablet },
+                  { value: 'mobile', icon: Smartphone },
+                ].map(({ value, icon: Icon }) => (
+                  <Button
+                    key={value}
+                    variant={deviceView === value ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setDeviceView(value as any)}
+                    className={`rounded-lg ${deviceView === value ? 'shadow-md' : ''}`}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </Button>
+                ))}
+              </div>
+
+              {generatedForm && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex items-center gap-2"
+                >
+                  <Button variant="outline" size="sm" onClick={copyToClipboard} className="rounded-xl">
+                    {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
+                    {copied ? 'Copied' : 'Copy'}
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={downloadJSON} className="rounded-xl">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+                  <Button onClick={openInCanvas} className="rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 shadow-lg shadow-purple-500/25">
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Open in Canvas
+                  </Button>
+                </motion.div>
+              )}
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Badge className="bg-gradient-to-r from-violet-500 to-purple-600 text-white border-0 px-4 py-2 text-sm">
-              <Sparkles className="h-4 w-4 mr-1" />
-              AI Powered
-            </Badge>
-            <Badge className="bg-gradient-to-r from-emerald-500 to-green-600 text-white border-0 px-4 py-2 text-sm">
-              <Stars className="h-4 w-4 mr-1" />
-              Premium
-            </Badge>
-          </div>
-        </motion.div>
+        </div>
+      </motion.header>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Input Panel */}
+      {/* Main Content */}
+      <div className="max-w-[1800px] mx-auto p-4 lg:p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left Panel - Controls */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
-            className="space-y-6"
+            className="lg:col-span-4 xl:col-span-3 space-y-4"
           >
-            <Card className={`${theme === 'light' 
-              ? 'bg-white/90 border-white/50 shadow-2xl' 
-              : 'bg-gray-800/50 border-gray-700 shadow-2xl'
-            } backdrop-blur-sm overflow-hidden relative group`}>
-              
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-violet-500/10 to-transparent rounded-bl-full opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
-              
-              <CardHeader className="relative z-10">
-                <CardTitle className="flex items-center gap-3 text-xl">
-                  <motion.div 
-                    whileHover={{ rotate: 15, scale: 1.1 }}
-                    className="p-2 bg-gradient-to-r from-violet-500 to-purple-600 rounded-lg shadow-lg"
-                  >
-                    <Wand className="h-6 w-6 text-white" />
-                  </motion.div>
-                  AI Prompt Configuration
-                  <Badge className="ml-auto bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300">
-                    Smart
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              
-              <CardContent className="space-y-5 relative z-10">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  accept=".json"
-                  className="hidden"
-                />
+            <Card className="border-border/50 shadow-xl bg-card/50 backdrop-blur-sm">
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="w-full grid grid-cols-3 p-1.5 bg-muted/50 rounded-xl m-3 mr-6">
+                  <TabsTrigger value="generate" className="rounded-lg data-[state=active]:shadow-md">
+                    <Wand2 className="h-4 w-4 mr-2" />
+                    Generate
+                  </TabsTrigger>
+                  <TabsTrigger value="upload" className="rounded-lg data-[state=active]:shadow-md">
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload
+                  </TabsTrigger>
+                  <TabsTrigger value="history" className="rounded-lg data-[state=active]:shadow-md">
+                    <History className="h-4 w-4 mr-2" />
+                    History
+                  </TabsTrigger>
+                </TabsList>
 
-                {/* Webhook URL */}
-                <div>
-                  <label className={`block text-sm font-semibold mb-2 ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
-                    Webhook URL
-                  </label>
-                  <Input
-                    value={webhookUrl}
-                    onChange={(e) => setWebhookUrl(e.target.value)}
-                    placeholder="http://localhost:5678/webhook-test/generate-form"
-                    className={`${theme === 'light' 
-                      ? 'bg-white border-gray-300 focus:border-violet-500' 
-                      : 'bg-gray-700 border-gray-600 focus:border-violet-400'
-                    } rounded-xl font-mono text-sm`}
-                  />
-                </div>
+                <CardContent className="pt-2">
+                  <TabsContent value="generate" className="space-y-5 mt-0">
+                    {/* Quick Templates */}
+                    <div>
+                      <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3 block">
+                        Quick Templates
+                      </Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {promptTemplates.map((template) => (
+                          <Button
+                            key={template.label}
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPrompt(template.prompt)}
+                            className="justify-start h-auto py-2.5 px-3 text-left rounded-xl hover:bg-primary/5 hover:border-primary/30 transition-all"
+                          >
+                            <span className="mr-2 text-base">{template.icon}</span>
+                            <span className="text-xs font-medium truncate">{template.label}</span>
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className={`block text-sm font-semibold mb-2 ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
-                      Form Title
-                    </label>
-                    <Input
-                      value={formTitle}
-                      onChange={(e) => setFormTitle(e.target.value)}
-                      placeholder="e.g., Customer Survey"
-                      className={`${theme === 'light' 
-                        ? 'bg-white border-gray-300' 
-                        : 'bg-gray-700 border-gray-600'
-                      } rounded-xl`}
-                    />
-                  </div>
-                  <div>
-                    <label className={`block text-sm font-semibold mb-2 ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
-                      AI Model
-                    </label>
-                    <select 
-                      value={model}
-                      onChange={(e) => setModel(e.target.value)}
-                      className={`w-full px-3 py-2 rounded-xl border ${theme === 'light' 
-                        ? 'bg-white border-gray-300' 
-                        : 'bg-gray-700 border-gray-600'
-                      }`}
+                    <Separator />
+
+                    {/* Webhook URL */}
+                    <div>
+                      <Label className="text-sm font-medium mb-2 block">Webhook URL</Label>
+                      <Input
+                        value={webhookUrl}
+                        onChange={(e) => setWebhookUrl(e.target.value)}
+                        placeholder="Enter webhook URL"
+                        className="rounded-xl bg-muted/30 border-border/50"
+                      />
+                    </div>
+
+                    {/* Form Details */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-sm font-medium mb-2 block">Form Title</Label>
+                        <Input
+                          value={formTitle}
+                          onChange={(e) => setFormTitle(e.target.value)}
+                          placeholder="My Form"
+                          className="rounded-xl bg-muted/30 border-border/50"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium mb-2 block">AI Model</Label>
+                        <Select value={model} onValueChange={setModel}>
+                          <SelectTrigger className="rounded-xl bg-muted/30 border-border/50">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {aiModels.map((m) => (
+                              <SelectItem key={m.value} value={m.value}>
+                                <div className="flex items-center gap-2">
+                                  <span>{m.label}</span>
+                                  {m.tier === 'free' && <Badge variant="secondary" className="text-[10px] py-0">Free</Badge>}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    {/* Context */}
+                    <div>
+                      <Label className="text-sm font-medium mb-2 block">Context (Optional)</Label>
+                      <Textarea
+                        value={context}
+                        onChange={(e) => setContext(e.target.value)}
+                        placeholder="Add business context, brand guidelines, or specific requirements..."
+                        className="rounded-xl bg-muted/30 border-border/50 min-h-[80px] resize-none"
+                      />
+                    </div>
+
+                    {/* Prompt */}
+                    <div>
+                      <Label className="text-sm font-medium mb-2 block">Form Description *</Label>
+                      <Textarea
+                        value={prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        placeholder="Describe the form you want to create...
+
+Example: Create a contact form with name, email, phone number, subject dropdown, and a message textarea. Add validation for all fields."
+                        className="rounded-xl bg-muted/30 border-border/50 min-h-[140px] resize-none"
+                      />
+                    </div>
+
+                    {/* Options */}
+                    <div className="flex items-center justify-between py-2">
+                      <div className="flex items-center gap-2">
+                        <Switch checked={includeValidation} onCheckedChange={setIncludeValidation} />
+                        <Label className="text-sm">Include validation rules</Label>
+                      </div>
+                    </div>
+
+                    {/* Generate Button */}
+                    <Button
+                      onClick={generateForm}
+                      disabled={isGenerating || !prompt.trim()}
+                      className="w-full h-14 rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-700 hover:via-purple-700 hover:to-indigo-700 shadow-xl shadow-purple-500/25 text-lg font-semibold"
                     >
-                      <option value="qwen/qwen-2.5-72b-instruct:free">Qwen 2.5 72B (Free)</option>
-                      <option value="tngtech/deepseek-r1t2-chimera:free">DeepSeek R1T2 (Free)</option>
-                      <option value="qwen/qwen2.5-vl-32b-instruct">Qwen 2.5 VL 32B</option>
-                      <option value="openai/gpt-4o">GPT-4o</option>
-                    </select>
-                  </div>
-                </div>
+                      {isGenerating ? (
+                        <>
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          >
+                            <RefreshCw className="h-5 w-5 mr-2" />
+                          </motion.div>
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-5 w-5 mr-2" />
+                          Generate Form
+                        </>
+                      )}
+                    </Button>
+                  </TabsContent>
 
-                <div>
-                  <label className={`block text-sm font-semibold mb-2 ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
-                    Context (Optional)
-                  </label>
-                  <Input
-                    value={context}
-                    onChange={(e) => setContext(e.target.value)}
-                    placeholder="Target audience, industry, style preferences..."
-                    className={`${theme === 'light' 
-                      ? 'bg-white border-gray-300' 
-                      : 'bg-gray-700 border-gray-600'
-                    } rounded-xl`}
-                  />
-                </div>
-
-                <div>
-                  <label className={`block text-sm font-semibold mb-2 ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} flex items-center gap-2`}>
-                    <Lightbulb className="h-4 w-4 text-violet-500" />
-                    AI Prompt
-                  </label>
-                  <Textarea
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    placeholder="Describe the form you want to create..."
-                    rows={5}
-                    className={`${theme === 'light' 
-                      ? 'bg-white border-gray-300' 
-                      : 'bg-gray-700 border-gray-600'
-                    } rounded-xl resize-none`}
-                  />
-                </div>
-
-                {/* Quick Suggestions */}
-                <div>
-                  <p className={`text-xs font-medium mb-2 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
-                    Quick suggestions:
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {suggestions.map((suggestion, index) => (
-                      <motion.button
-                        key={index}
+                  <TabsContent value="upload" className="space-y-5 mt-0">
+                    <div className="text-center py-8">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".json"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                      />
+                      <motion.div
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => setPrompt(suggestion)}
-                        className={`text-xs p-2 rounded-lg border ${theme === 'light' 
-                          ? 'border-gray-200 hover:border-violet-300 hover:bg-violet-50 text-gray-600' 
-                          : 'border-gray-600 hover:border-violet-500 hover:bg-violet-900/20 text-gray-400'
-                        } transition-all`}
+                        onClick={() => fileInputRef.current?.click()}
+                        className="cursor-pointer"
                       >
-                        {suggestion}
-                      </motion.button>
-                    ))}
-                  </div>
-                </div>
+                        <div className="w-24 h-24 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-violet-500/10 to-purple-500/10 border-2 border-dashed border-violet-500/30 flex items-center justify-center hover:border-violet-500/50 transition-colors">
+                          <FileUp className="h-10 w-10 text-violet-500" />
+                        </div>
+                        <h3 className="text-lg font-semibold mb-2">Upload JSON File</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Drag & drop or click to select a form JSON file
+                        </p>
+                        <Button variant="outline" className="rounded-xl">
+                          <Upload className="h-4 w-4 mr-2" />
+                          Select File
+                        </Button>
+                      </motion.div>
+                    </div>
+                  </TabsContent>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <Button 
-                    onClick={generateForm}
-                    disabled={isGenerating}
-                    className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white py-5 rounded-xl font-semibold"
-                  >
-                    {isGenerating ? (
-                      <>
-                        <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-5 w-5 mr-2" />
-                        Generate
-                      </>
-                    )}
-                  </Button>
-                  <Button 
-                    onClick={handleUploadJson}
-                    variant="outline"
-                    className={`w-full py-5 rounded-xl font-semibold ${theme === 'light' 
-                      ? 'border-violet-300 hover:bg-violet-50 text-violet-700' 
-                      : 'border-violet-500 hover:bg-violet-900/20 text-violet-300'
-                    }`}
-                  >
-                    <Upload className="h-5 w-5 mr-2" />
-                    Upload JSON
-                  </Button>
-                </div>
-              </CardContent>
+                  <TabsContent value="history" className="mt-0">
+                    <ScrollArea className="h-[400px]">
+                      {generationHistory.length === 0 ? (
+                        <div className="text-center py-12">
+                          <History className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
+                          <p className="text-muted-foreground">No generation history yet</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {generationHistory.map((item, index) => (
+                            <motion.div
+                              key={index}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: index * 0.05 }}
+                              onClick={() => setGeneratedForm(item.form)}
+                              className="p-4 rounded-xl bg-muted/30 hover:bg-muted/50 cursor-pointer transition-colors border border-transparent hover:border-primary/20"
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium truncate">{item.form.name}</p>
+                                  <p className="text-xs text-muted-foreground truncate mt-1">{item.prompt}</p>
+                                </div>
+                                <div className="text-xs text-muted-foreground whitespace-nowrap">
+                                  {item.form.elements.length} fields
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 mt-2">
+                                <Clock className="h-3 w-3 text-muted-foreground" />
+                                <span className="text-xs text-muted-foreground">
+                                  {item.timestamp.toLocaleTimeString()}
+                                </span>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      )}
+                    </ScrollArea>
+                  </TabsContent>
+                </CardContent>
+              </Tabs>
             </Card>
+
+            {/* Stats Card */}
+            {generatedForm && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+                  <CardContent className="p-4">
+                    <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                      <Grid3X3 className="h-4 w-4 text-primary" />
+                      Form Statistics
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { label: 'Total Fields', value: generatedForm.elements.length },
+                        { label: 'Required', value: generatedForm.elements.filter(e => e.required).length },
+                        { label: 'Field Types', value: new Set(generatedForm.elements.map(e => e.type)).size },
+                        { label: 'With Validation', value: generatedForm.elements.filter(e => e.validation && Object.keys(e.validation).length > 0).length },
+                      ].map((stat) => (
+                        <div key={stat.label} className="p-3 rounded-xl bg-muted/30">
+                          <p className="text-2xl font-bold text-primary">{stat.value}</p>
+                          <p className="text-xs text-muted-foreground">{stat.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
           </motion.div>
 
-          {/* Canvas Preview Panel */}
+          {/* Right Panel - Canvas Preview */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: 0.1 }}
+            className="lg:col-span-8 xl:col-span-9"
           >
-            <Card className={`${theme === 'light' 
-              ? 'bg-white/90 border-white/50 shadow-2xl' 
-              : 'bg-gray-800/50 border-gray-700 shadow-2xl'
-            } backdrop-blur-sm h-full overflow-hidden`}>
-              
-              <CardHeader>
+            <Card className="border-border/50 shadow-xl bg-card/50 backdrop-blur-sm overflow-hidden">
+              {/* Canvas Header */}
+              <div className="px-4 py-3 border-b border-border/50 bg-muted/20">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-3 text-xl">
-                    <motion.div 
-                      whileHover={{ rotate: 15, scale: 1.1 }}
-                      className="p-2 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-lg shadow-lg"
-                    >
-                      <Eye className="h-6 w-6 text-white" />
-                    </motion.div>
-                    Canvas Preview
-                    {generatedForm && (
-                      <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
-                        {generatedForm.elements.length} elements
-                      </Badge>
-                    )}
-                  </CardTitle>
-                  {generatedForm && (
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={copyFormCode} className="rounded-lg">
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={downloadJson} className="rounded-lg">
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        onClick={openInFormBuilder} 
-                        className="rounded-lg bg-gradient-to-r from-violet-500 to-purple-600 text-white border-0"
-                      >
-                        <ExternalLink className="h-4 w-4 mr-1" />
-                        Open in Canvas
-                      </Button>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-3 h-3 rounded-full bg-red-400" />
+                      <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                      <div className="w-3 h-3 rounded-full bg-green-400" />
                     </div>
-                  )}
+                    <Separator orientation="vertical" className="h-5" />
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {generatedForm?.name || 'AI Form Canvas'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Badge variant="outline" className="text-xs">
+                      <Sparkles className="h-3 w-3 mr-1" />
+                      AI-Powered
+                    </Badge>
+                    <span>{generatedForm?.elements.length || 0} elements</span>
+                  </div>
                 </div>
-              </CardHeader>
-              
-              <CardContent className="p-2">
-                <CanvasPreview formConfig={generatedForm} isGenerating={isGenerating} />
+              </div>
+
+              {/* Canvas Content */}
+              <CardContent className="p-4 md:p-6">
+                <div className={`transition-all duration-500 ${deviceView !== 'desktop' ? 'flex justify-center' : ''}`}>
+                  <CanvasPreview 
+                    formConfig={generatedForm} 
+                    isGenerating={isGenerating}
+                    deviceView={deviceView}
+                  />
+                </div>
               </CardContent>
             </Card>
           </motion.div>
@@ -887,3 +1033,5 @@ export const AIFormGenerator = () => {
     </div>
   );
 };
+
+export default AIFormGenerator;
